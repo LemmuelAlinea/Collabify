@@ -1,0 +1,71 @@
+import { useMemo, useState } from 'react'
+import { useGroups } from '../../groups/hooks/useGroups'
+import { useProjects } from '../../projects/hooks/useProjects'
+import { ProjectPlanViewer } from '../components/ProjectPlanViewer'
+import { useTaskGeneration } from '../hooks/useTaskGeneration'
+
+export function TaskGenerationPage() {
+  const { groups } = useGroups()
+  const { projects } = useProjects()
+  const [projectId, setProjectId] = useState('')
+  const [groupId, setGroupId] = useState('')
+  const visibleGroups = useMemo(() => groups.filter((group) => !projectId || group.projectId === projectId), [groups, projectId])
+  const {
+    accept,
+    error,
+    generate,
+    generations,
+    isGenerating,
+    isLoading,
+  } = useTaskGeneration(projectId, groupId)
+  const activeGeneration = generations[0]
+
+  return (
+    <section className="module-page">
+      <div className="module-header">
+        <div>
+          <p className="eyebrow">AI Planner</p>
+          <h2>AI Task Generation</h2>
+          <p>Generate tasks, subtasks, milestones, dependencies, deadlines, points, and workload plans.</p>
+        </div>
+        <button className="primary-button" type="button" disabled={!projectId || !groupId || isGenerating} onClick={generate}>
+          {isGenerating ? 'Generating...' : 'Generate Tasks with AI'}
+        </button>
+      </div>
+      {error ? <p className="form-error">{error}</p> : null}
+      <div className="analytics-form">
+        <label className="form-field" htmlFor="aiProject">
+          <span>Project</span>
+          <select id="aiProject" value={projectId} onChange={(event) => {
+            setProjectId(event.target.value)
+            setGroupId('')
+          }}>
+            <option value="">Select project</option>
+            {projects.map((project) => <option key={project.id} value={project.id}>{project.title}</option>)}
+          </select>
+        </label>
+        <label className="form-field" htmlFor="aiGroup">
+          <span>Group</span>
+          <select id="aiGroup" value={groupId} onChange={(event) => setGroupId(event.target.value)}>
+            <option value="">Select group</option>
+            {visibleGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
+          </select>
+        </label>
+      </div>
+      {isLoading ? <div className="route-state">Loading generated plans...</div> : null}
+      <ProjectPlanViewer generation={activeGeneration} onAccept={accept} />
+      <section className="validation-section">
+        <h3>Task Generation History</h3>
+        <div className="validation-list">
+          {generations.map((generation) => (
+            <article className="validation-row" key={generation.id}>
+              <strong>Version {generation.projectVersion}</strong>
+              <p>{generation.complexityLabel} / {generation.status}</p>
+              <small>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(generation.createdAt))}</small>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
+  )
+}

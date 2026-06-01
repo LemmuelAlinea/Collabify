@@ -1,0 +1,32 @@
+import {
+  createReassignmentRequest,
+  listReassignmentRequests,
+  reviewReassignmentRequest,
+} from '../services/reassignmentService.js'
+
+export async function getReassignments(req, res, next) {
+  try {
+    const reassignments = await listReassignmentRequests(req.auth.user.id, req.auth.role)
+    res.json({ reassignments })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postReassignment(req, res, next) {
+  try {
+    const reassignment = await createReassignmentRequest(req.auth.user.id, req.auth.role, req.body)
+    res.status(201).json({ reassignment })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function patchReassignmentReview(req, res, next) {
+  try {
+    const reassignment = await reviewReassignmentRequest(req.auth.user.id, req.params.id, req.body)
+    res.json({ reassignment })
+  } catch (error) {
+    next(error)
+  }
+}

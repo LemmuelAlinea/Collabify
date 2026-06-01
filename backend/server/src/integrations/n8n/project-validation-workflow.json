@@ -1,0 +1,158 @@
+{
+  "name": "Collabify - AI Project Validation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "collabify/project-validation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9ad7713e-f01b-4fe2-bcb1-15f3c5fb818b",
+      "name": "Project Validation Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        0
+      ],
+      "webhookId": "collabify-project-validation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\n\nif (!body.input || !body.prompt) {\n  throw new Error('Missing validation input');\n}\n\nreturn [{\n  json: {\n    input: body.input,\n    prompt: body.prompt,\n    requestId: body.requestId ?? Date.now().toString()\n  }\n}];"
+      },
+      "id": "76d4ff9a-50dc-4443-a838-c8a46e0228b5e",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are Collabify Academic Project Adviser Assistant for BSIT programs. Return valid JSON only. Do not approve or reject projects. The professor makes the final decision."
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "temperature": 0.2,
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          },
+          "maxTokens": 4000
+        }
+      },
+      "id": "5e205dcc-d795-4203-8543-5ff590807893",
+      "name": "OpenAI Validation Analysis",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $json.output?.[0]?.content?.[0]?.text\n  ?? $json.output?.content?.[0]?.text\n  ?? $json.content?.[0]?.text\n  ?? $json.text\n  ?? $json.message?.content\n  ?? $json.choices?.[0]?.message?.content\n  ?? $json.data?.[0]?.content?.[0]?.text\n  ?? $json.output\n  ?? $json.content\n  ?? $json;\n\nif (!content) throw new Error('OpenAI returned no content');\n\nlet parsed;\nif (typeof content === 'object') {\n  parsed = content;\n} else {\n  try {\n    parsed = JSON.parse(content);\n  } catch (error) {\n    const match = String(content).match(/\\{[\\s\\S]*\\}/);\n    if (!match) throw new Error('OpenAI returned invalid JSON');\n    parsed = JSON.parse(match[0]);\n  }\n}\n\nif (Array.isArray(parsed?.output)) {\n  parsed = parsed.output[0]?.content?.[0]?.text ?? parsed;\n}\nif (Array.isArray(parsed?.content)) {\n  parsed = parsed.content[0]?.text ?? parsed;\n}\nif (typeof parsed === 'string') {\n  parsed = JSON.parse(parsed);\n}\n\nconst validation = parsed.validation ?? parsed;\nconst requiredCategories = [\n  'curriculum_alignment',\n  'year_level_appropriateness',\n  'scope_realism',\n  'timeline_feasibility',\n  'team_size_suitability',\n  'workload_balance',\n  'skill_coverage',\n  'learning_outcome_prediction',\n  'rubric_quality',\n  'project_type_fit'\n];\n\nfunction clampScore(value) {\n  const score = Number(value);\n  if (!Number.isFinite(score)) return 0;\n  return Math.max(0, Math.min(100, Math.round(score)));\n}\n\nfunction readinessLabel(score) {\n  if (score >= 90) return 'Ready for Release';\n  if (score >= 75) return 'Ready with Minor Improvements';\n  if (score >= 60) return 'Needs Revision';\n  return 'High Risk Project';\n}\n\nfunction difficultyLabel(score) {\n  if (score >= 85) return 'Capstone-Level';\n  if (score >= 70) return 'Advanced';\n  if (score >= 40) return 'Intermediate';\n  return 'Beginner';\n}\n\nconst sourceScores = Array.isArray(validation.scores) ? validation.scores : [];\nconst scores = requiredCategories.map((category) => {\n  const score = sourceScores.find((item) => item.category === category) ?? {};\n  return {\n    category,\n    score: clampScore(score.score),\n    label: score.label || 'Evaluated',\n    explanation: score.explanation || 'Generated from project, class, syllabus, rubric, timeline, and historical context.'\n  };\n});\n\nconst readinessScore = clampScore(validation.readinessScore ?? scores.reduce((sum, item) => sum + item.score, 0) / scores.length);\nconst difficultyScore = clampScore(validation.difficultyScore);\n\nreturn [{\n  json: {\n    validation: {\n      executiveSummary: validation.executiveSummary || 'Project validation completed. Professor review is required before final release.',\n      readinessScore,\n      readinessLabel: validation.readinessLabel || readinessLabel(readinessScore),\n      difficultyScore,\n      difficultyLabel: validation.difficultyLabel || difficultyLabel(difficultyScore),\n      scores,\n      risks: Array.isArray(validation.risks) ? validation.risks : [],\n      recommendations: Array.isArray(validation.recommendations) ? validation.recommendations : [],\n      skillCoverage: Array.isArray(validation.skillCoverage) ? validation.skillCoverage : [],\n      coveredOutcomes: Array.isArray(validation.coveredOutcomes) ? validation.coveredOutcomes : [],\n      missingOutcomes: Array.isArray(validation.missingOutcomes) ? validation.missingOutcomes : [],\n      comparisonReport: validation.comparisonReport || 'No comparison report generated.',\n      validationReport: validation.validationReport || {}\n    }\n  }\n}];"
+      },
+      "id": "16679b7f-dfea-4a70-a1f7-522c4b9d320d",
+      "name": "Normalize Validation JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "7238452f-6c2d-4cd3-ab0e-6a93f2a0b0d3",
+      "name": "Respond Validation",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Project Validation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Validation Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Validation Analysis": {
+      "main": [
+        [
+          {
+            "node": "Normalize Validation JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Validation JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "5b8077f6-c3d9-4df4-b3f2-ae6e7f0c6af4",
+  "triggerCount": 1,
+  "tags": []
+}
