@@ -5705,6 +5705,22 @@ body:has(.dashboard-shell) {
   color: #c6d0df !important;
 }
 
+.dashboard-shell .project-plan-viewer .detail-grid section {
+  background: #0b1220 !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  color: #dbe7ff !important;
+  box-shadow: none !important;
+}
+
+.dashboard-shell .project-plan-viewer .detail-grid h3 {
+  color: #f8fbff !important;
+  text-transform: capitalize;
+}
+
+.dashboard-shell .project-plan-viewer .detail-grid p {
+  color: #b8c7df !important;
+}
+
 .module-header,
 .ui-page-header,
 .content-section {
