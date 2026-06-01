@@ -11,6 +11,7 @@ import {
 } from '../services/authService'
 import { supabase } from '../../../lib/supabase/client'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null)
 
 function normalizeProfile(profile) {
@@ -86,16 +87,18 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!isMounted) return
       setSession(nextSession)
 
-      try {
-        await loadProfile(nextSession)
-      } catch (authError) {
-        setError(authError)
-        setProfile(null)
-      }
+      // Avoid async deadlocks during auth state transitions.
+      queueMicrotask(() => {
+        loadProfile(nextSession).catch((authError) => {
+          if (!isMounted) return
+          setError(authError)
+          setProfile(null)
+        })
+      })
     })
 
     return () => {
@@ -108,7 +111,10 @@ export function AuthProvider({ children }) {
     setError(null)
     const data = await loginUser(credentials)
     setSession(data.session)
-    await loadProfile(data.session)
+    loadProfile(data.session).catch((authError) => {
+      setError(authError)
+      setProfile(null)
+    })
     return data
   }, [loadProfile])
 
