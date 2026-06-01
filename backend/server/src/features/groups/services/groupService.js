@@ -138,21 +138,22 @@ async function getProjectForStudent(projectId, studentId, requiredClassId) {
   if (project.status === 'archived') throw new HttpError(404, 'Project not found')
   if (project.work_mode !== 'group') throw new HttpError(400, 'Only group projects can have groups')
 
-  let releaseQuery = supabaseAdminClient
-    .from('project_class_releases')
-    .select('class_id, release_at, is_active')
-    .eq('project_id', projectId)
-    .eq('is_active', true)
-    .lte('release_at', new Date().toISOString())
+  let classIds = []
 
-  if (requiredClassId) releaseQuery = releaseQuery.eq('class_id', requiredClassId)
+  if (requiredClassId) {
+    classIds = [requiredClassId]
+  } else {
+    const { data: releases, error: releaseError } = await supabaseAdminClient
+      .from('project_class_releases')
+      .select('class_id, release_at, is_active')
+      .eq('project_id', projectId)
+      .eq('is_active', true)
+      .lte('release_at', new Date().toISOString())
 
-  const { data: releases, error: releaseError } = await releaseQuery
-
-  if (releaseError) throw new HttpError(400, 'Unable to load project releases', releaseError.message)
-
-  const classIds = (releases ?? []).map((release) => release.class_id)
-  if (classIds.length === 0) throw new HttpError(404, 'Project not found')
+    if (releaseError) throw new HttpError(400, 'Unable to load project releases', releaseError.message)
+    classIds = (releases ?? []).map((release) => release.class_id)
+    if (classIds.length === 0) throw new HttpError(404, 'Project not found')
+  }
 
   const { data: membership, error: membershipError } = await supabaseAdminClient
     .from('class_members')
