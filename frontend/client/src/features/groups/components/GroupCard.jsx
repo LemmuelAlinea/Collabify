@@ -12,6 +12,7 @@ export function GroupCard({ group, onLock, onMemberUpdate }) {
   const isProfessor = role === USER_ROLES.PROFESSOR
   const isLeader = members.some((member) => member.userId === user?.id && member.isLeader)
   const canManage = isProfessor || isLeader
+  const showInlineManagement = isProfessor
 
   return (
     <article className="group-card">
@@ -42,20 +43,10 @@ export function GroupCard({ group, onLock, onMemberUpdate }) {
           <div className="member-row compact-member-row" key={member.id}>
             <span>{member.displayName}</span>
             <span>{member.isLeader ? 'Leader' : 'Member'}</span>
-            {canManage && member.userId !== user?.id ? (
-              <div className="card-actions">
-                <button className="secondary-button" type="button" onClick={() => onMemberUpdate(group.id, member.userId, { isLeader: !member.isLeader })}>
-                  {member.isLeader ? 'Unset leader' : 'Make leader'}
-                </button>
-                <button className="danger-button" type="button" onClick={() => onMemberUpdate(group.id, member.userId, { status: 'removed' })}>
-                  Remove
-                </button>
-              </div>
-            ) : null}
           </div>
         ))}
       </div>
-      {canManage ? (
+      {showInlineManagement && canManage ? (
         <div className="card-actions">
           <button className="secondary-button" type="button" onClick={() => onLock(group.id, !group.isLocked)}>
             {group.isLocked ? 'Unlock group' : 'Lock group'}

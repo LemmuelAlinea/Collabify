@@ -77,7 +77,7 @@ export function GroupsPage() {
           <h2>Groups</h2>
           <p>{isProfessor ? 'Review and manage all project groups.' : 'Create, join, and manage your project group.'}</p>
         </div>
-        {mode === 'list' ? <button className="primary-button" type="button" onClick={() => setMode('form')}>Create Group</button> : null}
+        {isProfessor && mode === 'list' ? <button className="primary-button" type="button" onClick={() => setMode('form')}>Create Group</button> : null}
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
