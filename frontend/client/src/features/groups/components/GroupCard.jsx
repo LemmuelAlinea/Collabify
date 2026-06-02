@@ -1,5 +1,6 @@
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { Link } from 'react-router-dom'
 
 function activeMembers(group) {
   return group.members.filter((member) => member.status === 'active')
@@ -59,6 +60,11 @@ export function GroupCard({ group, onLock, onMemberUpdate }) {
           <button className="secondary-button" type="button" onClick={() => onLock(group.id, !group.isLocked)}>
             {group.isLocked ? 'Unlock group' : 'Lock group'}
           </button>
+        </div>
+      ) : null}
+      {role === USER_ROLES.STUDENT ? (
+        <div className="card-actions">
+          <Link className="secondary-link-button" to={`/student/groups/${group.id}`}>Open group</Link>
         </div>
       ) : null}
     </article>

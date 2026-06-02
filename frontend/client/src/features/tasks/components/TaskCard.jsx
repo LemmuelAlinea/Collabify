@@ -55,7 +55,7 @@ function CommentBox({ comments, onSubmit }) {
   )
 }
 
-export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete, onUpdate, role, task }) {
+export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete, onOpen, onUpdate, role, task }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [draftProgress, setDraftProgress] = useState(task.progress ?? 0)
   const [status, setStatus] = useState(task.status)
@@ -150,6 +150,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
               role={role}
               onComment={onComment}
               onDelete={onDelete}
+              onOpen={onOpen}
               onUpdate={onUpdate}
             />
           ))}
@@ -170,6 +171,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
         <span>{status}</span>
         <span>{task.groupScoreWeight ?? 0}% pts</span>
         <span>{task.comments.length} comments</span>
+        <button className="task-open-link" type="button" onClick={() => onOpen?.(task.id)}>Open</button>
       </div>
       <div className="task-progress-meter">
         <div className="progress-track"><span style={{ width: `${draftProgress}%` }} /></div>
@@ -231,6 +233,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
           <CommentBox comments={task.comments} onSubmit={(body) => onComment(task.id, { body })} />
 
           <div className="card-actions">
+            <button className="secondary-button" type="button" onClick={() => onOpen?.(task.id)}>Open</button>
             {isProfessor ? <button className="danger-button" type="button" onClick={archiveTask}>Archive</button> : null}
             {!isProfessor ? <button className="danger-button" type="button" onClick={deleteTask}>Delete</button> : null}
           </div>

@@ -55,11 +55,37 @@ const VERSION_SELECT = `
   file_size_bytes,
   notes,
   checksum,
+  archived_at,
+  archived_by,
+  deleted_at,
+  deleted_by,
   created_at,
   users:uploaded_by (
     email
   )
 `
+
+const VERSION_SELECT_LEGACY = `
+  id,
+  submission_id,
+  version,
+  uploaded_by,
+  storage_path,
+  file_name,
+  mime_type,
+  file_size_bytes,
+  notes,
+  checksum,
+  created_at,
+  users:uploaded_by (
+    email
+  )
+`
+
+function isMissingMigrationError(error) {
+  return ['42703', '42P01'].includes(error?.code)
+    || /column .* does not exist|relation .* does not exist/i.test(error?.message ?? '')
+}
 
 function normalizeVersion(version, currentVersionId, profileByUserId = new Map()) {
   const profile = profileByUserId.get(version.uploaded_by)
@@ -74,6 +100,10 @@ function normalizeVersion(version, currentVersionId, profileByUserId = new Map()
     fileSizeBytes: version.file_size_bytes,
     notes: version.notes,
     checksum: version.checksum,
+    archivedAt: version.archived_at,
+    archivedBy: version.archived_by,
+    deletedAt: version.deleted_at,
+    deletedBy: version.deleted_by,
     createdAt: version.created_at,
     isFinal: version.id === currentVersionId,
     email: version.users?.email,
@@ -113,7 +143,9 @@ function normalizeSubmission(submission, versions = [], profileByUserId = new Ma
       className: submission.groups.classes?.title,
       section: submission.groups.classes?.section,
     } : null,
-    versions: versions.map((version) => normalizeVersion(version, submission.current_version_id, profileByUserId)),
+    versions: versions
+      .filter((version) => !version.archived_at && !version.deleted_at)
+      .map((version) => normalizeVersion(version, submission.current_version_id, profileByUserId)),
   }
 }
 
@@ -131,11 +163,22 @@ async function getProfiles(userIds) {
 async function loadVersions(submissionIds) {
   if (submissionIds.length === 0) return { versionsBySubmissionId: new Map(), profileByUserId: new Map() }
 
-  const { data, error } = await supabaseAdminClient
+  let { data, error } = await supabaseAdminClient
     .from('submission_versions')
     .select(VERSION_SELECT)
     .in('submission_id', submissionIds)
     .order('version', { ascending: false })
+
+  if (error && isMissingMigrationError(error)) {
+    const legacyResult = await supabaseAdminClient
+      .from('submission_versions')
+      .select(VERSION_SELECT_LEGACY)
+      .in('submission_id', submissionIds)
+      .order('version', { ascending: false })
+
+    data = legacyResult.data
+    error = legacyResult.error
+  }
 
   if (error) throw new HttpError(400, 'Unable to load submission versions', error.message)
 
@@ -149,6 +192,14 @@ async function loadVersions(submissionIds) {
   }
 
   return { versionsBySubmissionId, profileByUserId }
+}
+
+async function loadVersionsForSubmission(submissionId) {
+  const { versionsBySubmissionId, profileByUserId } = await loadVersions([submissionId])
+  return {
+    profileByUserId,
+    versions: versionsBySubmissionId.get(submissionId) ?? [],
+  }
 }
 
 async function getTaskWithAccess(taskId, userId, role) {
@@ -187,6 +238,25 @@ async function getTaskWithAccess(taskId, userId, role) {
 
   if (membershipError || !membership) throw new HttpError(403, 'You do not have permission to submit this task')
   return data
+}
+
+async function assertCanManageTaskSubmissionVersion(taskId, userId, role) {
+  const task = await getTaskWithAccess(taskId, userId, role)
+  if (role !== 'student') throw new HttpError(403, 'Only students can manage submission versions')
+
+  const { data: assignments, error } = await supabaseAdminClient
+    .from('task_assignments')
+    .select('assignee_id')
+    .eq('task_id', taskId)
+
+  if (error) throw new HttpError(400, 'Unable to verify task owners', error.message)
+
+  const assigneeIds = (assignments ?? []).map((assignment) => assignment.assignee_id)
+  if (assigneeIds.length > 0 && !assigneeIds.includes(userId)) {
+    throw new HttpError(403, 'Only assigned owners can manage submission versions for this task')
+  }
+
+  return task
 }
 
 async function getSubmissionWithAccess(submissionId, userId, role) {
@@ -262,10 +332,26 @@ export async function getSubmission(userId, role, submissionId) {
   return (await normalizeSubmissions([submission]))[0]
 }
 
+async function getSubmissionAfterVersionChange(userId, role, submissionId, fallbackVersionId = null) {
+  const submission = await getSubmissionWithAccess(submissionId, userId, role)
+  const { versions, profileByUserId } = await loadVersionsForSubmission(submission.id)
+  const normalized = normalizeSubmission(submission, versions, profileByUserId)
+
+  if (!normalized.currentVersionId && fallbackVersionId) {
+    normalized.currentVersionId = fallbackVersionId
+    normalized.versions = normalized.versions.map((version) => ({
+      ...version,
+      isFinal: version.id === fallbackVersionId,
+    }))
+  }
+
+  return normalized
+}
+
 export async function createSubmissionVersion(userId, role, payload) {
   if (role !== 'student') throw new HttpError(403, 'Only students can upload submission versions')
 
-  const task = await getTaskWithAccess(payload.taskId, userId, role)
+  const task = await assertCanManageTaskSubmissionVersion(payload.taskId, userId, role)
 
   const { data: existingSubmission, error: existingError } = await supabaseAdminClient
     .from('task_submissions')
@@ -334,7 +420,7 @@ export async function createSubmissionVersion(userId, role, payload) {
       notes: payload.notes,
       checksum: payload.checksum,
     })
-    .select(VERSION_SELECT)
+    .select(VERSION_SELECT_LEGACY)
     .single()
 
   if (versionError) throw new HttpError(400, 'Unable to create submission version', versionError.message)
@@ -346,11 +432,12 @@ export async function createSubmissionVersion(userId, role, payload) {
       .update({ current_version_id: version.id })
       .eq('id', submission.id)
 
-    if (finalError) throw new HttpError(400, 'Unable to select final version', finalError.message)
-    await scoreFinalVersionSelected({ submission, userId, versionId: version.id })
+    if (!finalError) {
+      await scoreFinalVersionSelected({ submission, userId, versionId: version.id })
+    }
   }
 
-  return getSubmission(userId, role, submission.id)
+  return getSubmissionAfterVersionChange(userId, role, submission.id, version.id)
 }
 
 export async function selectFinalVersion(userId, role, submissionId, versionId) {
@@ -362,9 +449,12 @@ export async function selectFinalVersion(userId, role, submissionId, versionId) 
     .select('id')
     .eq('id', versionId)
     .eq('submission_id', submissionId)
+    .is('archived_at', null)
+    .is('deleted_at', null)
     .single()
 
   if (versionError || !version) throw new HttpError(404, 'Submission version not found')
+  await assertCanManageTaskSubmissionVersion(submission.task_id, userId, role)
 
   const { error } = await supabaseAdminClient
     .from('task_submissions')
@@ -374,6 +464,64 @@ export async function selectFinalVersion(userId, role, submissionId, versionId) 
   if (error) throw new HttpError(400, 'Unable to select final version', error.message)
   await scoreFinalVersionSelected({ submission, userId, versionId })
   return getSubmission(userId, role, submissionId)
+}
+
+export async function archiveSubmissionVersion(userId, role, versionId) {
+  const { data: version, error } = await supabaseAdminClient
+    .from('submission_versions')
+    .select(VERSION_SELECT)
+    .eq('id', versionId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error || !version) throw new HttpError(404, 'Submission version not found')
+  const submission = await getSubmissionWithAccess(version.submission_id, userId, role)
+  await assertCanManageTaskSubmissionVersion(submission.task_id, userId, role)
+
+  const { error: archiveError } = await supabaseAdminClient
+    .from('submission_versions')
+    .update({ archived_at: new Date().toISOString(), archived_by: userId })
+    .eq('id', versionId)
+
+  if (archiveError) throw new HttpError(400, 'Unable to archive submission version', archiveError.message)
+
+  if (submission.current_version_id === versionId) {
+    await supabaseAdminClient
+      .from('task_submissions')
+      .update({ current_version_id: null })
+      .eq('id', version.submission_id)
+  }
+
+  return getSubmission(userId, role, version.submission_id)
+}
+
+export async function deleteSubmissionVersion(userId, role, versionId) {
+  const { data: version, error } = await supabaseAdminClient
+    .from('submission_versions')
+    .select(VERSION_SELECT)
+    .eq('id', versionId)
+    .is('deleted_at', null)
+    .single()
+
+  if (error || !version) throw new HttpError(404, 'Submission version not found')
+  const submission = await getSubmissionWithAccess(version.submission_id, userId, role)
+  await assertCanManageTaskSubmissionVersion(submission.task_id, userId, role)
+
+  const { error: deleteError } = await supabaseAdminClient
+    .from('submission_versions')
+    .update({ deleted_at: new Date().toISOString(), deleted_by: userId })
+    .eq('id', versionId)
+
+  if (deleteError) throw new HttpError(400, 'Unable to delete submission version', deleteError.message)
+
+  if (submission.current_version_id === versionId) {
+    await supabaseAdminClient
+      .from('task_submissions')
+      .update({ current_version_id: null })
+      .eq('id', version.submission_id)
+  }
+
+  return getSubmission(userId, role, version.submission_id)
 }
 
 export async function reviewSubmission(userId, role, submissionId, payload) {
@@ -399,6 +547,7 @@ export async function createVersionDownloadUrl(userId, role, versionId) {
     .from('submission_versions')
     .select(VERSION_SELECT)
     .eq('id', versionId)
+    .is('deleted_at', null)
     .single()
 
   if (error || !version) throw new HttpError(404, 'Submission version not found')

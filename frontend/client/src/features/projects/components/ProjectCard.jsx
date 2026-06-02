@@ -14,7 +14,7 @@ function formatClasses(project) {
   return `${classes[0].name} + ${classes.length - 1} more`
 }
 
-export function ProjectCard({ onArchive, onEdit, onReopen, project }) {
+export function ProjectCard({ onArchive, onEdit, onReopen, project, viewGroupPath }) {
   const { role } = useAuth()
   const basePath = role === USER_ROLES.PROFESSOR ? '/professor/projects' : '/student/projects'
 
@@ -48,6 +48,7 @@ export function ProjectCard({ onArchive, onEdit, onReopen, project }) {
       </dl>
       <div className="card-actions">
         <Link className="secondary-link-button" to={`${basePath}/${project.id}`}>Details</Link>
+        {role === USER_ROLES.STUDENT && viewGroupPath ? <Link className="secondary-link-button" to={viewGroupPath}>View group</Link> : null}
         {role === USER_ROLES.PROFESSOR ? (
           <>
             <button className="secondary-button" type="button" onClick={() => onEdit(project)}>Edit</button>

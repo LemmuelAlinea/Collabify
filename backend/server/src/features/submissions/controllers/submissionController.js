@@ -1,6 +1,8 @@
 import {
+  archiveSubmissionVersion,
   createSubmissionVersion,
   createVersionDownloadUrl,
+  deleteSubmissionVersion,
   getSubmission,
   listSubmissions,
   reviewSubmission,
@@ -56,6 +58,24 @@ export async function getVersionDownload(req, res, next) {
   try {
     const url = await createVersionDownloadUrl(req.auth.user.id, req.auth.role, req.params.versionId)
     res.json({ url })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function patchVersionArchive(req, res, next) {
+  try {
+    const submission = await archiveSubmissionVersion(req.auth.user.id, req.auth.role, req.params.versionId)
+    res.json({ submission })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function removeVersion(req, res, next) {
+  try {
+    const submission = await deleteSubmissionVersion(req.auth.user.id, req.auth.role, req.params.versionId)
+    res.json({ submission })
   } catch (error) {
     next(error)
   }

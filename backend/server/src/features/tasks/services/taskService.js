@@ -74,6 +74,77 @@ const COMMENT_SELECT = `
   )
 `
 
+const SUBMISSION_SELECT = `
+  id,
+  task_id,
+  submitted_by,
+  group_id,
+  status,
+  current_version_id,
+  submitted_at,
+  reviewed_by,
+  reviewed_at,
+  feedback,
+  created_at,
+  updated_at
+`
+
+const VERSION_SELECT = `
+  id,
+  submission_id,
+  version,
+  uploaded_by,
+  storage_path,
+  file_name,
+  mime_type,
+  file_size_bytes,
+  notes,
+  checksum,
+  archived_at,
+  archived_by,
+  deleted_at,
+  deleted_by,
+  created_at,
+  users:uploaded_by (
+    email
+  )
+`
+
+const VERSION_SELECT_LEGACY = `
+  id,
+  submission_id,
+  version,
+  uploaded_by,
+  storage_path,
+  file_name,
+  mime_type,
+  file_size_bytes,
+  notes,
+  checksum,
+  created_at,
+  users:uploaded_by (
+    email
+  )
+`
+
+const HISTORY_SELECT = `
+  id,
+  task_id,
+  group_id,
+  changed_by,
+  old_status,
+  new_status,
+  created_at,
+  users:changed_by (
+    email
+  )
+`
+
+function isMissingMigrationError(error) {
+  return ['42703', '42P01'].includes(error?.code)
+    || /column .* does not exist|relation .* does not exist/i.test(error?.message ?? '')
+}
+
 function normalizeAssignment(assignment, profileByUserId = new Map()) {
   const profile = profileByUserId.get(assignment.assignee_id)
   return {
@@ -101,6 +172,67 @@ function normalizeComment(comment, profileByUserId = new Map()) {
     updatedAt: comment.updated_at,
     email: comment.users?.email,
     displayName: profile?.display_name ?? comment.users?.email,
+    avatarUrl: profile?.avatar_url,
+  }
+}
+
+function normalizeVersion(version, currentVersionId, profileByUserId = new Map()) {
+  const profile = profileByUserId.get(version.uploaded_by)
+  return {
+    id: version.id,
+    submissionId: version.submission_id,
+    version: version.version,
+    uploadedBy: version.uploaded_by,
+    storagePath: version.storage_path,
+    fileName: version.file_name,
+    mimeType: version.mime_type,
+    fileSizeBytes: version.file_size_bytes,
+    notes: version.notes,
+    checksum: version.checksum,
+    archivedAt: version.archived_at,
+    archivedBy: version.archived_by,
+    deletedAt: version.deleted_at,
+    deletedBy: version.deleted_by,
+    createdAt: version.created_at,
+    isFinal: version.id === currentVersionId,
+    email: version.users?.email,
+    displayName: profile?.display_name ?? version.users?.email,
+    avatarUrl: profile?.avatar_url,
+  }
+}
+
+function normalizeSubmission(submission, versions = [], profileByUserId = new Map()) {
+  return {
+    id: submission.id,
+    taskId: submission.task_id,
+    submittedBy: submission.submitted_by,
+    groupId: submission.group_id,
+    status: submission.status,
+    currentVersionId: submission.current_version_id,
+    submittedAt: submission.submitted_at,
+    reviewedBy: submission.reviewed_by,
+    reviewedAt: submission.reviewed_at,
+    feedback: submission.feedback,
+    createdAt: submission.created_at,
+    updatedAt: submission.updated_at,
+    versions: versions
+      .filter((version) => !version.archived_at && !version.deleted_at)
+      .map((version) => normalizeVersion(version, submission.current_version_id, profileByUserId)),
+  }
+}
+
+function normalizeHistory(row, profileByUserId = new Map()) {
+  const profile = profileByUserId.get(row.changed_by)
+  return {
+    id: row.id,
+    taskId: row.task_id,
+    groupId: row.group_id,
+    changedBy: row.changed_by,
+    oldStatus: row.old_status,
+    newStatus: row.new_status,
+    createdAt: row.created_at,
+    email: row.users?.email,
+    displayName: profile?.display_name ?? row.users?.email ?? 'Unknown user',
     avatarUrl: profile?.avatar_url,
   }
 }
@@ -442,6 +574,89 @@ async function normalizeRows(rows) {
   ))
 }
 
+async function loadTaskSubmission(taskId, groupId) {
+  const { data: submission, error } = await supabaseAdminClient
+    .from('task_submissions')
+    .select(SUBMISSION_SELECT)
+    .eq('task_id', taskId)
+    .eq('group_id', groupId)
+    .maybeSingle()
+
+  if (error) throw new HttpError(400, 'Unable to load task submission', error.message)
+  if (!submission) return null
+
+  let { data: versions, error: versionError } = await supabaseAdminClient
+    .from('submission_versions')
+    .select(VERSION_SELECT)
+    .eq('submission_id', submission.id)
+    .is('deleted_at', null)
+    .order('version', { ascending: false })
+
+  if (versionError && isMissingMigrationError(versionError)) {
+    const legacyResult = await supabaseAdminClient
+      .from('submission_versions')
+      .select(VERSION_SELECT_LEGACY)
+      .eq('submission_id', submission.id)
+      .order('version', { ascending: false })
+
+    versions = legacyResult.data
+    versionError = legacyResult.error
+  }
+
+  if (versionError) throw new HttpError(400, 'Unable to load task versions', versionError.message)
+
+  const profileByUserId = await getProfiles((versions ?? []).map((version) => version.uploaded_by))
+  return normalizeSubmission(submission, versions ?? [], profileByUserId)
+}
+
+async function loadTaskHistory(taskId) {
+  const { data, error } = await supabaseAdminClient
+    .from('task_status_history')
+    .select(HISTORY_SELECT)
+    .eq('task_id', taskId)
+    .order('created_at', { ascending: false })
+
+  if (error && isMissingMigrationError(error)) return []
+  if (error) throw new HttpError(400, 'Unable to load task history', error.message)
+
+  const profileByUserId = await getProfiles((data ?? []).map((row) => row.changed_by).filter(Boolean))
+  return (data ?? []).map((row) => normalizeHistory(row, profileByUserId))
+}
+
+async function logTaskStatusHistory(taskId, groupId, changedBy, oldStatus, newStatus) {
+  if (!newStatus || oldStatus === newStatus) return
+
+  const { error } = await supabaseAdminClient
+    .from('task_status_history')
+    .insert({
+      task_id: taskId,
+      group_id: groupId,
+      changed_by: changedBy,
+      old_status: oldStatus,
+      new_status: newStatus,
+    })
+
+  if (error && isMissingMigrationError(error)) return
+  if (error) throw new HttpError(400, 'Unable to save task status history', error.message)
+}
+
+export async function getTaskDetails(userId, role, taskId) {
+  const row = await getTaskRow(taskId)
+  await assertCanUseGroup(userId, role, row.group_id)
+
+  const [task] = await normalizeRows([row])
+  const [submission, history] = await Promise.all([
+    loadTaskSubmission(task.id, task.groupId),
+    loadTaskHistory(task.id),
+  ])
+
+  return {
+    task,
+    submission,
+    history,
+  }
+}
+
 async function upsertTaskProgress(taskId, groupId, status, progress, userId) {
   const { error } = await supabaseAdminClient
     .from('task_progress')
@@ -633,6 +848,9 @@ export async function updateTask(userId, role, taskId, payload) {
   if (!isProfessor) await syncAssignments(taskId, existing.group_id, payload.assigneeIds, userId)
 
   const updatedTask = await getTaskRow(taskId)
+  if (!isProfessor && payload.status && existing.status !== updatedTask.status) {
+    await logTaskStatusHistory(taskId, existing.group_id, userId, existing.status, updatedTask.status)
+  }
   await scoreTaskEdited({ actorId: userId, task: updatedTask })
   if (existing.status !== 'done' && updatedTask.status === 'done') {
     await scoreTaskCompleted({ actorId: userId, task: updatedTask })

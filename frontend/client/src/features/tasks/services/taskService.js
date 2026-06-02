@@ -14,6 +14,10 @@ export async function getTasks(filters) {
   return data.tasks
 }
 
+export async function getTaskDetails(id) {
+  return apiRequest(`/tasks/${id}/details`)
+}
+
 export async function createTask(payload) {
   const data = await apiRequest('/tasks', {
     method: 'POST',

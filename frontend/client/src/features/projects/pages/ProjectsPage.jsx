@@ -5,6 +5,7 @@ import { useClasses } from '../../classes/hooks/useClasses'
 import { ProjectCard } from '../components/ProjectCard'
 import { ProjectForm } from '../components/ProjectForm'
 import { useProjects } from '../hooks/useProjects'
+import { useGroups } from '../../groups/hooks/useGroups'
 
 export function ProjectsPage() {
   const { role } = useAuth()
@@ -18,10 +19,12 @@ export function ProjectsPage() {
     reopen,
     saveProject,
   } = useProjects()
+  const { groups } = useGroups()
   const [mode, setMode] = useState('list')
   const [selectedProject, setSelectedProject] = useState(null)
   const [notice, setNotice] = useState('')
   const isProfessor = role === USER_ROLES.PROFESSOR
+  const groupByProjectId = new Map(groups.map((group) => [group.projectId, group]))
 
   function startCreate() {
     setSelectedProject(null)
@@ -81,6 +84,7 @@ export function ProjectsPage() {
               onArchive={archive}
               onEdit={startEdit}
               onReopen={reopen}
+              viewGroupPath={!isProfessor && groupByProjectId.has(project.id) ? `/student/groups/${groupByProjectId.get(project.id).id}` : ''}
             />
           ))}
           {projects.length === 0 ? <div className="empty-state"><h3>No projects yet</h3><p>{isProfessor ? 'Create your first class project.' : 'Visible projects will appear here.'}</p></div> : null}

@@ -30,6 +30,20 @@ export async function selectFinalVersion(id, versionId) {
   return data.submission
 }
 
+export async function archiveSubmissionVersion(versionId) {
+  const data = await apiRequest(`/submissions/versions/${versionId}/archive`, {
+    method: 'PATCH',
+  })
+  return data.submission
+}
+
+export async function deleteSubmissionVersion(versionId) {
+  const data = await apiRequest(`/submissions/versions/${versionId}`, {
+    method: 'DELETE',
+  })
+  return data.submission
+}
+
 export async function reviewSubmission(id, payload) {
   const data = await apiRequest(`/submissions/${id}/review`, {
     method: 'PATCH',

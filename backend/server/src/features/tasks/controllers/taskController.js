@@ -2,6 +2,7 @@ import {
   addTaskComment,
   createTask,
   deleteTask,
+  getTaskDetails,
   listTasks,
   updateTask,
 } from '../services/taskService.js'
@@ -10,6 +11,15 @@ export async function getTasks(req, res, next) {
   try {
     const tasks = await listTasks(req.auth.user.id, req.auth.role, req.query)
     res.json({ tasks })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getTaskById(req, res, next) {
+  try {
+    const details = await getTaskDetails(req.auth.user.id, req.auth.role, req.params.id)
+    res.json(details)
   } catch (error) {
     next(error)
   }

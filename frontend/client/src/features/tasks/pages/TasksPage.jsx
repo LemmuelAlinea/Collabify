@@ -36,6 +36,7 @@ export function TasksPage() {
   const { add, comment, error, isLoading, remove, save, tasks } = useTasks(filters)
   const isProfessor = role === USER_ROLES.PROFESSOR
   const aiPath = isProfessor ? '/professor/tasks/ai-planner' : '/student/tasks/ai-planner'
+  const taskDetailsPath = isProfessor ? '/professor/tasks' : '/student/tasks'
   const selectableMembers = useMemo(() => {
     if (isProfessor) return []
     const visibleGroups = groups.filter((group) => !groupId || group.id === groupId)
@@ -117,6 +118,7 @@ export function TasksPage() {
             role={role}
             onComment={comment}
             onDelete={remove}
+            onOpen={(id) => navigate(`${taskDetailsPath}/${id}`)}
             onUpdate={save}
           />
         ))}

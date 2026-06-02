@@ -13,6 +13,7 @@ import { RoleRedirectPage } from '../../features/auth/pages/RoleRedirectPage'
 import { LandingPage } from '../../features/marketing/pages/LandingPage'
 import { USER_ROLES } from '../../features/auth/constants/roles'
 import { GroupsPage } from '../../features/groups/pages/GroupsPage'
+import { StudentGroupDetailsPage } from '../../features/groups/pages/StudentGroupDetailsPage'
 import { ContributionsPage } from '../../features/contributions/pages/ContributionsPage'
 import { MessagesPage } from '../../features/messages/pages/MessagesPage'
 import { NotificationCenterPage } from '../../features/notifications/pages/NotificationCenterPage'
@@ -25,9 +26,9 @@ import { ProjectValidationPage } from '../../features/validations/pages/ProjectV
 import { ProjectsPage } from '../../features/projects/pages/ProjectsPage'
 import { ReassignmentsPage } from '../../features/reassignments/pages/ReassignmentsPage'
 import { StudentDashboardPage } from '../../features/profiles/pages/StudentDashboardPage'
-import { SubmissionsPage } from '../../features/submissions/pages/SubmissionsPage'
 import { SyllabusManagementPage } from '../../features/syllabus/pages/SyllabusManagementPage'
 import { TasksPage } from '../../features/tasks/pages/TasksPage'
+import { TaskDetailsPage } from '../../features/tasks/pages/TaskDetailsPage'
 import { TaskGenerationPage } from '../../features/planning/pages/TaskGenerationPage'
 
 export function AppRouter() {
@@ -51,9 +52,11 @@ export function AppRouter() {
             <Route path="/student/projects" element={<ProjectsPage />} />
             <Route path="/student/projects/:id" element={<ProjectDetailsPage />} />
             <Route path="/student/groups" element={<GroupsPage />} />
+            <Route path="/student/groups/:groupId" element={<StudentGroupDetailsPage />} />
             <Route path="/student/tasks" element={<TasksPage />} />
             <Route path="/student/tasks/ai-planner" element={<TaskGenerationPage />} />
-            <Route path="/student/submissions" element={<SubmissionsPage />} />
+            <Route path="/student/tasks/:taskId" element={<TaskDetailsPage />} />
+            <Route path="/student/submissions" element={<Navigate to="/student/tasks" replace />} />
             <Route path="/student/progress" element={<ProgressDashboardPage />} />
             <Route path="/student/health" element={<ProjectHealthDashboardPage />} />
             <Route path="/student/contributions" element={<ContributionsPage />} />
@@ -76,7 +79,8 @@ export function AppRouter() {
             <Route path="/professor/groups" element={<GroupsPage />} />
             <Route path="/professor/tasks" element={<TasksPage />} />
             <Route path="/professor/tasks/ai-planner" element={<TaskGenerationPage />} />
-            <Route path="/professor/submissions" element={<SubmissionsPage />} />
+            <Route path="/professor/tasks/:taskId" element={<TaskDetailsPage />} />
+            <Route path="/professor/submissions" element={<Navigate to="/professor/tasks" replace />} />
             <Route path="/professor/progress" element={<ProgressDashboardPage />} />
             <Route path="/professor/health" element={<ProjectHealthDashboardPage />} />
             <Route path="/professor/contributions" element={<ContributionsPage />} />
