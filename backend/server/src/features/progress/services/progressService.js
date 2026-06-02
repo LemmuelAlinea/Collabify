@@ -217,7 +217,9 @@ function buildDashboard(data, scope) {
     const groupContributions = contributionsByGroup.get(group.id) ?? []
 
     return {
+      classId: group.class_id,
       className: group.classes?.title,
+      section: group.classes?.section,
       contributionPoints: groupContributions.reduce((sum, log) => sum + Number(log.points ?? 0), 0),
       id: group.id,
       memberCount: members.length,

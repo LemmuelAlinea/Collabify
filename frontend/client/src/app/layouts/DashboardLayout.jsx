@@ -14,7 +14,7 @@ import {
   MessageSquare,
   ShieldAlert,
   Users,
-  UserCircle2,
+  CircleUserRound,
   Repeat2,
   FileCheck2,
   ChevronLeft,
@@ -39,7 +39,7 @@ const navIcons = {
   Analytics: BarChart3,
   Contributions: LineChart,
   'Project Health': ShieldAlert,
-  Profile: UserCircle2,
+  Profile: CircleUserRound,
 }
 
 const navSections = {
@@ -156,8 +156,8 @@ export function DashboardLayout() {
         </div>
         <div className="topbar-actions">
           <NotificationBell />
-          <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profile">
-            <UserCircle2 size={16} aria-hidden="true" />
+          <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
+            <CircleUserRound size={18} aria-hidden="true" />
           </NavLink>
         </div>
       </header>
@@ -199,8 +199,8 @@ export function DashboardLayout() {
         <header className="desktop-app-bar">
           <div className="topbar-actions">
             <NotificationBell />
-            <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profile">
-              <UserCircle2 size={16} aria-hidden="true" />
+            <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
+              <CircleUserRound size={18} aria-hidden="true" />
             </NavLink>
           </div>
         </header>

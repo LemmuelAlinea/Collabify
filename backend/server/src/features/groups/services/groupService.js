@@ -127,6 +127,31 @@ async function loadMembersByGroupIds(groupIds) {
   return { membersByGroupId, profileByUserId }
 }
 
+async function ensureGroupChats(groups, fallbackUserId) {
+  const missingChats = groups.filter((group) => !group.group_chats?.[0])
+  if (missingChats.length === 0) return groups
+
+  const { error } = await supabaseAdminClient
+    .from('group_chats')
+    .upsert(
+      missingChats.map((group) => ({
+        group_id: group.id,
+        created_by: group.created_by ?? fallbackUserId,
+      })),
+      { onConflict: 'group_id' },
+    )
+
+  if (error) throw new HttpError(400, 'Unable to prepare group chats', error.message)
+
+  const { data, error: reloadError } = await supabaseAdminClient
+    .from('groups')
+    .select(GROUP_SELECT)
+    .in('id', groups.map((group) => group.id))
+
+  if (reloadError) throw new HttpError(400, 'Unable to reload group chats', reloadError.message)
+  return data ?? groups
+}
+
 async function getProjectForStudent(projectId, studentId, requiredClassId) {
   const { data: project, error } = await supabaseAdminClient
     .from('projects')
@@ -197,8 +222,9 @@ async function getGroup(groupId) {
 
 async function getGroupWithMembers(groupId) {
   const group = await getGroup(groupId)
+  const [groupWithChat] = await ensureGroupChats([group], group.created_by)
   const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds([groupId])
-  return normalizeGroup(group, membersByGroupId.get(groupId) ?? [], profileByUserId)
+  return normalizeGroup(groupWithChat ?? group, membersByGroupId.get(groupId) ?? [], profileByUserId)
 }
 
 async function assertGroupManager(group, userId, role) {
@@ -256,8 +282,9 @@ export async function listGroups(userId, role, projectId) {
   const { data, error } = await query
   if (error) throw new HttpError(400, 'Unable to load groups', error.message)
 
-  const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds(data.map((group) => group.id))
-  return data.map((group) => normalizeGroup(group, membersByGroupId.get(group.id) ?? [], profileByUserId))
+  const groupsWithChats = await ensureGroupChats(data ?? [], userId)
+  const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds(groupsWithChats.map((group) => group.id))
+  return groupsWithChats.map((group) => normalizeGroup(group, membersByGroupId.get(group.id) ?? [], profileByUserId))
 }
 
 export async function getGroupDetails(userId, role, groupId) {

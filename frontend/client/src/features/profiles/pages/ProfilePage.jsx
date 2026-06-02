@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useAuth } from '../../auth/hooks/useAuth'
 import { ProfileAvatar } from '../components/ProfileAvatar'
 import { ProfileDetails } from '../components/ProfileDetails'
 import { ProfileForm } from '../components/ProfileForm'
 import { useProfile } from '../hooks/useProfile'
 
 export function ProfilePage() {
+  const { signOut } = useAuth()
   const { error, isLoading, profile, saveProfile } = useProfile()
   const [isEditing, setIsEditing] = useState(false)
   const [success, setSuccess] = useState('')
@@ -53,7 +55,12 @@ export function ProfilePage() {
           onSave={handleSave}
         />
       ) : (
-        <ProfileDetails profile={profile} />
+        <>
+          <ProfileDetails profile={profile} />
+          <button className="profile-logout-button" type="button" onClick={signOut}>
+            Logout
+          </button>
+        </>
       )}
     </section>
   )

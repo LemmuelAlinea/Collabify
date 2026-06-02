@@ -9,16 +9,38 @@ import { useContributions } from '../hooks/useContributions'
 export function ContributionsPage() {
   const { role, user } = useAuth()
   const { contributions, error, isLoading } = useContributions()
+  const [classId, setClassId] = useState('')
   const [groupId, setGroupId] = useState('')
   const isProfessor = role === USER_ROLES.PROFESSOR
   const groups = contributions?.groups ?? []
   const members = contributions?.members ?? []
   const tasks = contributions?.tasks ?? []
-  const selectedGroupId = groupId || groups[0]?.id || ''
+  const classOptions = useMemo(() => {
+    const seen = new Map()
+    groups.forEach((group) => {
+      if (group.classId && !seen.has(group.classId)) {
+        seen.set(group.classId, group.className || 'Class')
+      }
+    })
+    return [...seen].map(([id, name]) => ({ id, name }))
+  }, [groups])
+  const groupOptions = useMemo(
+    () => groups.filter((group) => !classId || group.classId === classId),
+    [classId, groups],
+  )
+  const selectedGroupId = groupId && groupOptions.some((group) => group.id === groupId)
+    ? groupId
+    : groupOptions[0]?.id || ''
   const visibleGroups = groups.filter((group) => !selectedGroupId || group.id === selectedGroupId)
   const visibleMembers = members.filter((member) => !selectedGroupId || member.groupId === selectedGroupId)
   const visibleTasks = tasks.filter((task) => !selectedGroupId || task.groupId === selectedGroupId)
-  const myContribution = members.find((member) => member.userId === user?.id)
+  const myContribution = visibleMembers.find((member) => member.userId === user?.id)
+  const visibleSummary = useMemo(() => ({
+    totalEarnedPoints: Math.round(visibleMembers.reduce((sum, member) => sum + member.earnedPoints, 0) * 100) / 100,
+    totalMembers: visibleMembers.length,
+    totalPotentialPoints: Math.round(visibleMembers.reduce((sum, member) => sum + member.potentialPoints, 0) * 100) / 100,
+    totalTasks: visibleTasks.length,
+  }), [visibleMembers, visibleTasks])
   const myTasks = useMemo(
     () => visibleTasks.filter((task) => task.owners.some((owner) => owner.userId === user?.id)),
     [user?.id, visibleTasks],
@@ -41,10 +63,26 @@ export function ContributionsPage() {
       </div>
 
       <div className="task-filter-row">
+        <label className="form-field" htmlFor="contributionClassFilter">
+          <span>Class</span>
+          <select
+            id="contributionClassFilter"
+            value={classId}
+            onChange={(event) => {
+              setClassId(event.target.value)
+              setGroupId('')
+            }}
+          >
+            <option value="">All classes</option>
+            {classOptions.map((classItem) => (
+              <option key={classItem.id} value={classItem.id}>{classItem.name}</option>
+            ))}
+          </select>
+        </label>
         <label className="form-field" htmlFor="contributionGroupFilter">
           <span>Group</span>
           <select id="contributionGroupFilter" value={selectedGroupId} onChange={(event) => setGroupId(event.target.value)}>
-            {contributions.groups.map((group) => (
+            {groupOptions.map((group) => (
               <option key={group.id} value={group.id}>{group.name} - {group.projectTitle || 'Project'}</option>
             ))}
           </select>
@@ -52,10 +90,10 @@ export function ContributionsPage() {
       </div>
 
       <div className="progress-metric-grid">
-        <ProgressMetric label="Earned points" value={contributions.summary.totalEarnedPoints} hint="from completed assigned tasks" />
-        <ProgressMetric label="Potential points" value={contributions.summary.totalPotentialPoints} hint="assigned task ownership total" />
-        <ProgressMetric label="Members" value={contributions.summary.totalMembers} hint="active group members" />
-        <ProgressMetric label="Scored tasks" value={contributions.summary.totalTasks} hint="leaf tasks only" />
+        <ProgressMetric label="Earned points" value={visibleSummary.totalEarnedPoints} hint="from completed assigned tasks" />
+        <ProgressMetric label="Potential points" value={visibleSummary.totalPotentialPoints} hint="assigned task ownership total" />
+        <ProgressMetric label="Members" value={visibleSummary.totalMembers} hint="active group members" />
+        <ProgressMetric label="Scored tasks" value={visibleSummary.totalTasks} hint="leaf tasks only" />
       </div>
 
       {!isProfessor && myContribution ? (

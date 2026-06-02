@@ -111,5 +111,15 @@ export async function updateProfile(userId, payload, role) {
     throw new HttpError(400, 'Unable to update profile', error.message)
   }
 
+  if (payload.newPassword) {
+    const { error: passwordError } = await supabaseAdminClient.auth.admin.updateUserById(userId, {
+      password: payload.newPassword,
+    })
+
+    if (passwordError) {
+      throw new HttpError(400, 'Unable to update password', passwordError.message)
+    }
+  }
+
   return getProfileByUserId(userId)
 }

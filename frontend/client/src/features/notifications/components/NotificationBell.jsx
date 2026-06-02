@@ -14,7 +14,7 @@ export function NotificationBell() {
 
   return (
     <div className="notification-bell-wrap">
-      <button className="notification-bell" type="button" onClick={() => setIsOpen((current) => !current)}>
+      <button className="notification-bell" type="button" aria-label="Notifications" title="Notifications" onClick={() => setIsOpen((current) => !current)}>
         <Bell aria-hidden="true" />
         <span>Notifications</span>
         {unreadCount > 0 ? <strong>{unreadCount}</strong> : null}

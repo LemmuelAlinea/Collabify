@@ -8,9 +8,7 @@ import {
   ChevronRight,
   ClipboardList,
   FolderKanban,
-  LineChart,
   MessageSquare,
-  ShieldAlert,
   Users,
 } from 'lucide-react'
 import { useActivity } from '../../activity/hooks/useActivity'
@@ -254,10 +252,8 @@ export function StudentDashboardPage() {
     { icon: ClipboardList, label: 'My Tasks', value: pendingTasks, hint: 'Pending', to: '/student/tasks' },
     { icon: Users, label: 'My Group', value: groups.length, hint: 'Visible', to: '/student/groups' },
     { icon: MessageSquare, label: 'Messages', value: unreadCount, hint: 'Unread', to: '/student/messages' },
-    { icon: LineChart, label: 'Analytics', value: progress?.overview?.averageProjectProgress ?? 0, hint: 'Avg %', to: '/student/analytics' },
     { icon: CalendarClock, label: 'Deadlines', value: dueTodayCount, hint: 'Today', to: '/student/tasks' },
-    { icon: ShieldAlert, label: 'Project Health', value: projectRows.filter((project) => project.health === 'At Risk').length, hint: 'At risk', to: '/student/project-health' },
-  ]), [activeProjects.length, classes.length, dueTodayCount, groups.length, pendingTasks, progress?.overview?.averageProjectProgress, projectRows, unreadCount])
+  ]), [activeProjects.length, classes.length, dueTodayCount, groups.length, pendingTasks, unreadCount])
 
   const greetingName = fullNameFromProfile(profile, user)
   const isLoading = isLoadingClasses || isLoadingProjects || isLoadingGroups || isLoadingTasks

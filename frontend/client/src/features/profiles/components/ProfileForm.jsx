@@ -13,6 +13,8 @@ function toFormState(profile) {
     yearLevel: profile.yearLevel ?? '',
     section: profile.section ?? '',
     subjectSpecialization: profile.subjectSpecialization ?? '',
+    newPassword: '',
+    confirmPassword: '',
   }
 }
 
@@ -21,6 +23,7 @@ export function ProfileForm({ profile, onCancel, onSave }) {
   const [form, setForm] = useState(initialForm)
   const [photoFile, setPhotoFile] = useState(null)
   const [error, setError] = useState('')
+  const [isConfirming, setIsConfirming] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   function updateField(event) {
@@ -33,7 +36,24 @@ export function ProfileForm({ profile, onCancel, onSave }) {
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
+
+    if (form.newPassword || form.confirmPassword) {
+      if (form.newPassword !== form.confirmPassword) {
+        setError('New password and re-entered password must match.')
+        return
+      }
+      if (form.newPassword.length < 8) {
+        setError('New password must be at least 8 characters.')
+        return
+      }
+    }
+
+    setIsConfirming(true)
+  }
+
+  async function confirmSave() {
     setIsSubmitting(true)
+    setIsConfirming(false)
 
     try {
       let avatarUrl = form.avatarUrl
@@ -45,6 +65,8 @@ export function ProfileForm({ profile, onCancel, onSave }) {
       await onSave({
         ...form,
         avatarUrl,
+        newPassword: form.newPassword || undefined,
+        confirmPassword: undefined,
         yearLevel: form.yearLevel || null,
       })
     } catch (profileError) {
@@ -78,6 +100,11 @@ export function ProfileForm({ profile, onCancel, onSave }) {
         <textarea id="bio" name="bio" rows="5" maxLength="500" value={form.bio} onChange={updateField} />
       </label>
 
+      <div className="form-grid">
+        <AuthFormField id="newPassword" label="New password" name="newPassword" type="password" minLength="8" autoComplete="new-password" value={form.newPassword} onChange={updateField} />
+        <AuthFormField id="confirmPassword" label="Re-enter password" name="confirmPassword" type="password" minLength="8" autoComplete="new-password" value={form.confirmPassword} onChange={updateField} />
+      </div>
+
       <label className="form-field" htmlFor="photo">
         <span>Profile photo</span>
         <input
@@ -99,6 +126,24 @@ export function ProfileForm({ profile, onCancel, onSave }) {
           Cancel
         </button>
       </div>
+
+      {isConfirming ? (
+        <div className="modal-backdrop">
+          <div className="modal-panel confirm-panel" role="dialog" aria-modal="true" aria-labelledby="profileConfirmTitle">
+            <p className="eyebrow">Confirm changes</p>
+            <h3 id="profileConfirmTitle">Save profile updates?</h3>
+            <p>{form.newPassword ? 'Your profile and password will be updated.' : 'Your profile information will be updated.'}</p>
+            <div className="button-row">
+              <button className="primary-button" type="button" onClick={confirmSave} disabled={isSubmitting}>
+                Confirm save
+              </button>
+              <button className="secondary-button" type="button" onClick={() => setIsConfirming(false)} disabled={isSubmitting}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </form>
   )
 }

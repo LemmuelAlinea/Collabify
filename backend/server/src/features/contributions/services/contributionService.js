@@ -33,6 +33,10 @@ function groupBy(items, keyFn) {
   return map
 }
 
+function memberScoreKey(groupId, userId) {
+  return `${groupId}:${userId}`
+}
+
 function normalizeGroupWeights(tasks) {
   const byGroup = groupBy(tasks, (task) => task.group_id)
   const weightsByTaskId = new Map()
@@ -155,7 +159,7 @@ export async function getContributionDashboard(userId, role) {
   const [{ data: groups, error: groupError }, { data: tasksRaw, error: taskError }] = await Promise.all([
     supabaseAdminClient
       .from('groups')
-      .select('id, name, class_id, project_id, projects:project_id (title)')
+      .select('id, name, class_id, project_id, projects:project_id (title), classes:class_id (id, title, section)')
       .in('id', scope.groupIds),
     supabaseAdminClient
       .from('tasks')
@@ -224,8 +228,9 @@ export async function getContributionDashboard(userId, role) {
     ownership.forEach(([ownerId, share]) => {
       const potential = groupWeight * share
       const earned = task.status === 'done' ? potential : 0
-      const current = memberScores.get(ownerId) ?? { earnedPoints: 0, potentialPoints: 0, assignedTasks: 0, completedTasks: 0 }
-      memberScores.set(ownerId, {
+      const scoreKey = memberScoreKey(task.group_id, ownerId)
+      const current = memberScores.get(scoreKey) ?? { earnedPoints: 0, potentialPoints: 0, assignedTasks: 0, completedTasks: 0 }
+      memberScores.set(scoreKey, {
         earnedPoints: current.earnedPoints + earned,
         potentialPoints: current.potentialPoints + potential,
         assignedTasks: current.assignedTasks + 1,
@@ -261,7 +266,7 @@ export async function getContributionDashboard(userId, role) {
   })
 
   const membersList = (members ?? []).map((member) => {
-    const score = memberScores.get(member.user_id) ?? { earnedPoints: 0, potentialPoints: 0, assignedTasks: 0, completedTasks: 0 }
+    const score = memberScores.get(memberScoreKey(member.group_id, member.user_id)) ?? { earnedPoints: 0, potentialPoints: 0, assignedTasks: 0, completedTasks: 0 }
     const progressPercent = score.potentialPoints > 0 ? Math.round((score.earnedPoints / score.potentialPoints) * 100) : 0
     return {
       userId: member.user_id,
@@ -282,7 +287,10 @@ export async function getContributionDashboard(userId, role) {
     const progressPercent = score.potentialPoints > 0 ? Math.round((score.earnedPoints / score.potentialPoints) * 100) : 0
     return {
       id: group.id,
+      classId: group.class_id,
+      className: group.classes?.title,
       name: group.name,
+      section: group.classes?.section,
       projectTitle: group.projects?.title,
       earnedPoints: Math.round(score.earnedPoints * 100) / 100,
       potentialPoints: Math.round(score.potentialPoints * 100) / 100,
@@ -324,4 +332,3 @@ export async function getContributionDashboard(userId, role) {
     events,
   }
 }
-

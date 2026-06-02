@@ -335,6 +335,37 @@ a {
   outline: none;
 }
 
+.password-field-control {
+  position: relative;
+  display: block;
+}
+
+.password-field-control input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+.password-visibility-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: #8ecbff;
+  background: transparent;
+  border: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.password-visibility-button:hover,
+.password-visibility-button:focus-visible {
+  color: #23e66e;
+  outline: none;
+}
+
 .form-field textarea {
   width: 100%;
   padding: 10px 12px;
@@ -735,6 +766,25 @@ a {
 .profile-form {
   display: grid;
   gap: 16px;
+}
+
+.profile-logout-button {
+  justify-self: start;
+  min-width: 140px;
+  padding: 11px 18px;
+  color: #ff4d4f;
+  background: transparent;
+  border: 1px solid #ff4d4f;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.profile-logout-button:hover,
+.profile-logout-button:focus-visible {
+  color: #ff6b6d;
+  background: rgba(255, 77, 79, 0.08);
+  outline: none;
 }
 
 .module-page {
@@ -1429,6 +1479,26 @@ a {
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
 }
 
+.confirm-panel {
+  display: grid;
+  gap: 12px;
+  color: #e5edf8;
+  background:
+    linear-gradient(135deg, rgba(0, 191, 255, 0.1), transparent 34%),
+    linear-gradient(315deg, rgba(35, 230, 110, 0.08), transparent 30%),
+    #0b1220 !important;
+  border: 1px solid rgba(40, 215, 255, 0.28);
+}
+
+.confirm-panel h3,
+.confirm-panel p {
+  margin: 0;
+}
+
+.confirm-panel p {
+  color: #b8c7df;
+}
+
 .task-board,
 .task-children {
   display: grid;
@@ -1901,6 +1971,7 @@ a {
 }
 
 .topbar-profile-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1948,9 +2019,20 @@ body:has(.dashboard-shell) .topbar-actions .notification-bell strong {
 
 body:has(.dashboard-shell) .topbar-actions .topbar-profile-button {
   width: 44px !important;
+  min-width: 44px !important;
   height: 44px !important;
+  min-height: 44px !important;
   border-radius: 999px !important;
   flex: 0 0 auto !important;
+  color: #8be9ff !important;
+  background: #111111 !important;
+  border: 1px solid #0ea5e9 !important;
+  box-shadow: none !important;
+}
+
+body:has(.dashboard-shell) .topbar-actions .topbar-profile-button:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0b3daf, #00bfff) !important;
 }
 
 .notification-bell {

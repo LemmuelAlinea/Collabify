@@ -26,4 +26,9 @@ export const updateProfileSchema = z.object({
     .pipe(z.number().int().min(1).max(5).nullable()),
   section: optionalText(40),
   subjectSpecialization: optionalText(160),
+  newPassword: z
+    .string()
+    .min(8, 'Password must be at least 8 characters.')
+    .max(128)
+    .optional(),
 })
