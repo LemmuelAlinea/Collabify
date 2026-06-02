@@ -5,7 +5,6 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { getClassDetails } from '../../classes/services/classService'
 import { useGroups } from '../../groups/hooks/useGroups'
-import { getGroup } from '../../groups/services/groupService'
 import { ChatComposer } from '../components/ChatComposer'
 import { MessageList } from '../components/MessageList'
 import { useMessages } from '../hooks/useMessages'
@@ -18,9 +17,8 @@ export function MessagesPage() {
   const [scope, setScope] = useState(searchParams.get('scope') === 'group' ? 'group' : 'class')
   const [targetId, setTargetId] = useState('')
   const [classChatId, setClassChatId] = useState('')
-  const [groupChatId, setGroupChatId] = useState('')
   const [showPinned, setShowPinned] = useState(false)
-  const chatId = scope === 'class' ? classChatId : groupChatId
+  const chatId = scope === 'class' ? classChatId : targetId
   const { error, isLoading, messages, pin, remove, send } = useMessages(scope, chatId)
   const pinnedMessages = messages.filter((message) => message.isPinned)
 
@@ -58,23 +56,15 @@ export function MessagesPage() {
 
     async function loadSelectedChat() {
       setClassChatId('')
-      setGroupChatId('')
-      if (!targetId) return
+      if (scope !== 'class' || !targetId) return
 
-      if (scope === 'class') {
-        const details = await getClassDetails(targetId)
-        if (isMounted) setClassChatId(details.classChat?.id ?? '')
-        return
-      }
-
-      const group = await getGroup(targetId)
-      if (isMounted) setGroupChatId(group.groupChat?.id ?? '')
+      const details = await getClassDetails(targetId)
+      if (isMounted) setClassChatId(details.classChat?.id ?? '')
     }
 
     loadSelectedChat().catch(() => {
       if (!isMounted) return
       setClassChatId('')
-      setGroupChatId('')
     })
 
     return () => {

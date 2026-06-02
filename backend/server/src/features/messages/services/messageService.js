@@ -65,24 +65,60 @@ async function assertClassChatAccess(chatId, userId, role) {
 }
 
 async function assertGroupChatAccess(chatId, userId) {
-  const { data, error } = await supabaseAdminClient
+  const { data: chatById, error: chatByIdError } = await supabaseAdminClient
     .from('group_chats')
     .select('id, group_id')
     .eq('id', chatId)
-    .single()
+    .maybeSingle()
 
-  if (error || !data) throw new HttpError(404, 'Group chat not found')
+  if (chatByIdError) throw new HttpError(400, 'Unable to load group chat', chatByIdError.message)
+
+  let chat = chatById
+
+  if (!chat) {
+    const { data: group, error: groupError } = await supabaseAdminClient
+      .from('groups')
+      .select('id, created_by')
+      .eq('id', chatId)
+      .maybeSingle()
+
+    if (groupError) throw new HttpError(400, 'Unable to load group', groupError.message)
+    if (!group) throw new HttpError(404, 'Group chat not found')
+
+    const { data: chatByGroup, error: chatByGroupError } = await supabaseAdminClient
+      .from('group_chats')
+      .select('id, group_id')
+      .eq('group_id', group.id)
+      .maybeSingle()
+
+    if (chatByGroupError) throw new HttpError(400, 'Unable to load group chat', chatByGroupError.message)
+    chat = chatByGroup
+
+    if (!chat) {
+      const { data: createdChat, error: createError } = await supabaseAdminClient
+        .from('group_chats')
+        .insert({
+          group_id: group.id,
+          created_by: group.created_by ?? userId,
+        })
+        .select('id, group_id')
+        .single()
+
+      if (createError) throw new HttpError(400, 'Unable to create group chat', createError.message)
+      chat = createdChat
+    }
+  }
 
   const { data: member } = await supabaseAdminClient
     .from('group_members')
     .select('id')
-    .eq('group_id', data.group_id)
+    .eq('group_id', chat.group_id)
     .eq('user_id', userId)
     .eq('status', 'active')
     .maybeSingle()
 
   if (!member) throw new HttpError(403, 'Only active group members can use this chat')
-  return data
+  return chat
 }
 
 async function assertChatAccess(scope, chatId, userId, role) {
@@ -178,13 +214,13 @@ async function normalizeMessages(rows, viewerId) {
 }
 
 export async function listMessages(userId, role, payload) {
-  await assertChatAccess(payload.scope, payload.chatId, userId, role)
+  const chat = await assertChatAccess(payload.scope, payload.chatId, userId, role)
 
   const column = payload.scope === 'class' ? 'class_chat_id' : 'group_chat_id'
   const { data, error } = await supabaseAdminClient
     .from('messages')
     .select(MESSAGE_SELECT)
-    .eq(column, payload.chatId)
+    .eq(column, chat.id)
     .order('created_at', { ascending: true })
     .limit(200)
 
@@ -193,12 +229,12 @@ export async function listMessages(userId, role, payload) {
 }
 
 export async function createMessage(userId, role, payload) {
-  await assertChatAccess(payload.scope, payload.chatId, userId, role)
+  const chat = await assertChatAccess(payload.scope, payload.chatId, userId, role)
 
   const insertPayload = {
     scope: payload.scope,
-    class_chat_id: payload.scope === 'class' ? payload.chatId : null,
-    group_chat_id: payload.scope === 'group' ? payload.chatId : null,
+    class_chat_id: payload.scope === 'class' ? chat.id : null,
+    group_chat_id: payload.scope === 'group' ? chat.id : null,
     sender_id: userId,
     body: payload.body,
     reply_to_message_id: payload.replyToMessageId,

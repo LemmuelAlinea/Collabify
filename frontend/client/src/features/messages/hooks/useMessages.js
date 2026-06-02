@@ -46,15 +46,16 @@ export function useMessages(scope, chatId) {
   useEffect(() => {
     if (!scope || !chatId) return undefined
 
-    const chatColumn = scope === 'class' ? 'class_chat_id' : 'group_chat_id'
+    const messageListener = {
+      event: '*',
+      schema: 'public',
+      table: 'messages',
+    }
+    if (scope === 'class') messageListener.filter = `class_chat_id=eq.${chatId}`
+
     const channel = supabase
       .channel(`chat:${scope}:${chatId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'messages',
-        filter: `${chatColumn}=eq.${chatId}`,
-      }, loadMessages)
+      .on('postgres_changes', messageListener, loadMessages)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
