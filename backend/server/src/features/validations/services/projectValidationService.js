@@ -1,6 +1,8 @@
 import { HttpError } from '../../../core/errors/httpError.js'
+import { env } from '../../../config/env.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
+import { extractAttachmentText } from '../../../core/utils/attachmentText.js'
 import { runProjectValidationAi } from './projectValidationAiService.js'
 
 const VALIDATION_SELECT = `
@@ -118,14 +120,14 @@ async function getProjectContext(projectId, professorId) {
     project.classes.syllabus_id
       ? supabaseAdminClient
         .from('syllabi')
-        .select('id, class_id, title, description, file_name, mime_type, file_size_bytes, version, is_active, effective_from, effective_to, created_at, updated_at')
+        .select('id, class_id, title, description, storage_path, file_name, mime_type, file_size_bytes, version, is_active, effective_from, effective_to, created_at, updated_at')
         .eq('id', project.classes.syllabus_id)
         .maybeSingle()
       : Promise.resolve({ data: null }),
     project.classes.curriculum_id
       ? supabaseAdminClient
         .from('curricula')
-        .select('id, professor_id, title, description, program_objectives, program_outcomes, curriculum_components, academic_year, file_name, mime_type, file_size_bytes, is_active, created_at, updated_at')
+        .select('id, professor_id, title, description, program_objectives, program_outcomes, curriculum_components, academic_year, storage_path, file_name, mime_type, file_size_bytes, is_active, created_at, updated_at')
         .eq('id', project.classes.curriculum_id)
         .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -138,7 +140,7 @@ async function getProjectContext(projectId, professorId) {
       : Promise.resolve({ data: [] }),
     supabaseAdminClient
       .from('syllabi')
-      .select('id, class_id, title, description, file_name, mime_type, file_size_bytes, version, is_active, effective_from, effective_to, created_at, updated_at')
+      .select('id, class_id, title, description, storage_path, file_name, mime_type, file_size_bytes, version, is_active, effective_from, effective_to, created_at, updated_at')
       .eq('class_id', project.class_id)
       .order('is_active', { ascending: false })
       .order('created_at', { ascending: false }),
@@ -169,7 +171,32 @@ async function getProjectContext(projectId, professorId) {
     }
   }
 
-  const resolvedSyllabus = Array.from(syllabusById.values())
+  const resolvedSyllabus = await Promise.all(Array.from(syllabusById.values()).map(async (syllabus) => ({
+    ...syllabus,
+    fileText: syllabus.storage_path
+      ? await extractAttachmentText({
+        bucket: env.syllabiBucket,
+        storagePath: syllabus.storage_path,
+        mimeType: syllabus.mime_type,
+        fileName: syllabus.file_name,
+      })
+      : null,
+  })))
+
+  const resolvedCurriculum = assignedCurriculum
+    ? {
+      ...assignedCurriculum,
+      fileText: assignedCurriculum.storage_path
+        ? await extractAttachmentText({
+          bucket: env.curriculaBucket,
+          storagePath: assignedCurriculum.storage_path,
+          mimeType: assignedCurriculum.mime_type,
+          fileName: assignedCurriculum.file_name,
+        })
+        : null,
+      programStudies: curriculumStudies ?? [],
+    }
+    : null
 
   return {
     project: {
@@ -194,13 +221,8 @@ async function getProjectContext(projectId, professorId) {
       syllabusId: project.classes.syllabus_id ?? null,
       curriculumId: project.classes.curriculum_id ?? null,
     },
-    curriculum: assignedCurriculum
-      ? {
-        ...assignedCurriculum,
-        programStudies: curriculumStudies ?? [],
-      }
-      : null,
-    curriculumSource: assignedCurriculum ? 'assigned_class_curriculum' : 'none',
+    curriculum: resolvedCurriculum,
+    curriculumSource: resolvedCurriculum ? 'assigned_class_curriculum' : 'none',
     syllabus: resolvedSyllabus,
     syllabusSource: assignedSyllabus
       ? 'assigned_class_syllabus'

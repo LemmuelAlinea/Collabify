@@ -31,6 +31,8 @@ export const env = {
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   supabaseUrl: process.env.SUPABASE_URL,
+  syllabiBucket: process.env.SUPABASE_STORAGE_BUCKET_SYLLABI ?? 'syllabi',
+  curriculaBucket: process.env.SUPABASE_STORAGE_BUCKET_CURRICULA ?? 'curricula',
   announcementAttachmentsBucket: process.env.SUPABASE_ANNOUNCEMENT_ATTACHMENTS_BUCKET ?? 'announcement-attachments',
   submissionsBucket: process.env.SUPABASE_SUBMISSIONS_BUCKET ?? 'submissions',
 }

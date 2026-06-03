@@ -117,6 +117,7 @@ export function enforceAcademicValidationRules(input, validation) {
     || Boolean(item?.title?.trim?.())
     || Boolean(item?.description?.trim?.())
     || Boolean(item?.file_name?.trim?.())
+    || Boolean(item?.fileText?.trim?.())
   ))
   const hasCurriculum = Boolean(input.curriculum?.id)
     || Boolean(input.curriculum?.title?.trim?.())
@@ -124,6 +125,7 @@ export function enforceAcademicValidationRules(input, validation) {
     || Boolean(input.curriculum?.program_objectives?.trim?.())
     || Boolean(input.curriculum?.program_outcomes?.trim?.())
     || Boolean(input.curriculum?.curriculum_components?.trim?.())
+    || Boolean(input.curriculum?.fileText?.trim?.())
     || (Array.isArray(input.curriculum?.programStudies) && input.curriculum.programStudies.some((item) => Boolean(item?.content?.trim?.())))
   const scores = Array.isArray(validation.scores) ? [...validation.scores] : []
   const risks = Array.isArray(validation.risks) ? [...validation.risks] : []
@@ -145,6 +147,7 @@ export function enforceAcademicValidationRules(input, validation) {
       input.curriculum.program_outcomes,
       input.curriculum.curriculum_components,
       input.curriculum.academic_year,
+      input.curriculum.fileText,
       ...(input.curriculum.programStudies ?? []).map((item) => item?.content),
     ].filter(Boolean).join(' ')
     : ''
@@ -346,14 +349,16 @@ export function buildFallbackValidation(input) {
   const timelineScore = Math.max(30, Math.min(95, days * teamSize * 4 - featureLoad * 2))
   const teamScore = project.workMode === 'individual' ? (featureLoad > 10 ? 55 : 85) : Math.min(95, 60 + teamSize * 6)
   const rubricScore = project.rubrics ? 82 : 45
-  const curriculumScore = input.curriculum?.id ? 78 : 20
-  const syllabusScore = input.syllabus?.length ? 78 : 20
+  const curriculumHasFileText = Boolean(input.curriculum?.fileText?.trim?.())
+  const syllabusHasFileText = Array.isArray(input.syllabus) && input.syllabus.some((item) => Boolean(item?.fileText?.trim?.()))
+  const curriculumScore = (input.curriculum?.id || curriculumHasFileText) ? 78 : 20
+  const syllabusScore = (input.syllabus?.length || syllabusHasFileText) ? 78 : 20
   const learningScore = Math.round((curriculumScore + syllabusScore + scopeScore + rubricScore) / 4)
   const readinessScore = Math.round((curriculumScore + syllabusScore + scopeScore + timelineScore + teamScore + rubricScore + learningScore) / 7)
 
   const scores = [
-    ['curriculum_alignment', curriculumScore, input.curriculum?.id ? 'Curriculum evidence was available.' : 'No assigned curriculum evidence was available.'],
-    ['syllabus_alignment', syllabusScore, input.syllabus?.length ? 'Syllabus evidence was available.' : 'No assigned syllabus evidence was available.'],
+    ['curriculum_alignment', curriculumScore, (input.curriculum?.id || curriculumHasFileText) ? 'Curriculum evidence was available.' : 'No assigned curriculum evidence was available.'],
+    ['syllabus_alignment', syllabusScore, (input.syllabus?.length || syllabusHasFileText) ? 'Syllabus evidence was available.' : 'No assigned syllabus evidence was available.'],
     ['year_level_appropriateness', Math.min(95, 55 + Number(project.yearLevel ?? 1) * 9), 'Complexity was compared against the declared year level.'],
     ['scope_realism', scopeScore, 'Scope was estimated from deliverables, description, and guidelines.'],
     ['timeline_feasibility', timelineScore, 'Timeline was estimated from duration, feature load, and team size.'],
@@ -366,8 +371,8 @@ export function buildFallbackValidation(input) {
   ].map(([category, score, explanation]) => ({ category, score, label: scoreLabel(score), explanation }))
 
   const risks = []
-  if (!input.curriculum?.id) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No curriculum is assigned, so program alignment cannot be verified.', mitigation: 'Assign a curriculum before releasing the project.' })
-  if (!input.syllabus?.length) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No syllabus is assigned, so course alignment cannot be verified.', mitigation: 'Assign a syllabus before releasing the project.' })
+  if (!(input.curriculum?.id || curriculumHasFileText)) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No curriculum is assigned or readable, so program alignment cannot be verified.', mitigation: 'Assign a curriculum before releasing the project.' })
+  if (!(input.syllabus?.length || syllabusHasFileText)) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No syllabus is assigned or readable, so course alignment cannot be verified.', mitigation: 'Assign a syllabus before releasing the project.' })
   if (timelineScore < 60) risks.push({ riskType: 'timeline', severity: 'high', probability: 78, reason: 'Allocated duration appears short for the expected workload.', mitigation: 'Reduce scope or extend the deadline.' })
   if (scopeScore < 60) risks.push({ riskType: 'scope', severity: 'high', probability: 72, reason: 'Feature count may exceed realistic classroom project scope.', mitigation: 'Prioritize core features and move extras to optional milestones.' })
   if (rubricScore < 60) risks.push({ riskType: 'assessment', severity: 'medium', probability: 65, reason: 'Rubric criteria are missing or too vague.', mitigation: 'Add measurable grading criteria.' })
@@ -391,7 +396,7 @@ export function buildFallbackValidation(input) {
     skillCoverage: ['Programming', 'Database Design', 'Documentation', 'Testing', 'Problem Solving', 'Team Collaboration'],
     coveredOutcomes: [
       ...(input.curriculum?.programStudies ?? []).slice(0, 2).map((item) => item.content),
-      ...(input.syllabus?.slice(0, 2).map((item) => item.title ?? item.file_name ?? 'Course outcome') ?? []),
+      ...(input.syllabus?.slice(0, 2).flatMap((item) => [item.title, item.fileText].filter(Boolean)) ?? []),
     ],
     missingOutcomes: ['Explicit software testing practice', 'Deployment reflection'],
     comparisonReport: input.historicalData?.length ? 'Historical analytics were considered.' : 'No strong historical comparison data was available.',

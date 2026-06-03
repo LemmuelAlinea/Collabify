@@ -7,7 +7,7 @@ Rules:
 - The professor makes the final decision.
 - Return JSON only.
 - Scores must be 0-100.
-- Analyze using only the provided project, class, assigned curriculum, assigned syllabus, rubric, and historical data.
+- Analyze using only the provided project, class, assigned curriculum, assigned syllabus, their uploaded file text when available, rubric, and historical data.
 - curriculum_alignment must be based on the assigned class curriculum only.
 - syllabus_alignment must be based on the assigned/class syllabus only.
 - If curriculum is empty, curriculum_alignment must be 0-30, readinessScore must not exceed 65, and risks must include missing curriculum alignment.
