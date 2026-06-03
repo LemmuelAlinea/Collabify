@@ -3,9 +3,15 @@ const requiredEnv = {
   supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
 }
 
+function normalizeApiBaseUrl(value) {
+  const fallback = 'http://localhost:3000/api/v1'
+  const base = String(value ?? fallback).trim().replace(/\/+$/, '')
+  return base.endsWith('/api/v1') ? base : `${base}/api/v1`
+}
+
 export const env = {
   appName: import.meta.env.VITE_APP_NAME ?? 'Collabify',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1',
+  apiBaseUrl: normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
   profileAssetsBucket: import.meta.env.VITE_SUPABASE_PROFILE_ASSETS_BUCKET ?? 'profile-assets',
   syllabiBucket: import.meta.env.VITE_SUPABASE_SYLLABI_BUCKET ?? 'syllabi',
   curriculaBucket: import.meta.env.VITE_SUPABASE_CURRICULA_BUCKET ?? 'curricula',
