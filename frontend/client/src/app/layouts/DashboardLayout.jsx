@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   Users,
   CircleUserRound,
+  UserRound,
   Repeat2,
   ScrollText,
   ChevronLeft,
@@ -161,7 +162,7 @@ export function DashboardLayout() {
         <div className="topbar-actions">
           <NotificationBell />
           <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
-            <CircleUserRound size={18} aria-hidden="true" />
+            <UserRound size={18} aria-hidden="true" />
           </NavLink>
         </div>
       </header>
@@ -201,13 +202,13 @@ export function DashboardLayout() {
       </aside>
       <main className="dashboard-content">
         <header className="desktop-app-bar">
-          <div className="topbar-actions">
-            <NotificationBell />
-            <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
-              <CircleUserRound size={18} aria-hidden="true" />
-            </NavLink>
-          </div>
-        </header>
+        <div className="topbar-actions">
+          <NotificationBell />
+          <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
+            <UserRound size={18} aria-hidden="true" />
+          </NavLink>
+        </div>
+      </header>
         <Outlet />
       </main>
     </div>
