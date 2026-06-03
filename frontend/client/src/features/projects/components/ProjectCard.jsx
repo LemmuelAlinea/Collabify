@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { MoreHorizontal } from 'lucide-react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { formatProjectType } from '../constants/projectTypes'
@@ -46,21 +47,28 @@ export function ProjectCard({ onArchive, onEdit, onReopen, project, viewGroupPat
           <dd>{project.workMode} / {project.memberCount ?? 1}</dd>
         </div>
       </dl>
-      <div className="card-actions">
-        <Link className="secondary-link-button" to={`${basePath}/${project.id}`}>Details</Link>
-        {role === USER_ROLES.STUDENT && viewGroupPath ? <Link className="secondary-link-button" to={viewGroupPath}>View group</Link> : null}
-        {role === USER_ROLES.PROFESSOR ? (
-          <>
-            <button className="secondary-button" type="button" onClick={() => onEdit(project)}>Edit</button>
-            <Link className="secondary-link-button" to={`${basePath}/${project.id}/validation`}>Analyze</Link>
+      {role === USER_ROLES.STUDENT ? (
+        <div className="card-actions">
+          <Link className="secondary-link-button" to={`${basePath}/${project.id}`}>Details</Link>
+          {viewGroupPath ? <Link className="secondary-link-button" to={viewGroupPath}>View group</Link> : null}
+        </div>
+      ) : null}
+      {role === USER_ROLES.PROFESSOR ? (
+        <details className="card-menu">
+          <summary aria-label="Project actions"><MoreHorizontal size={18} aria-hidden="true" /></summary>
+          <div className="card-menu-panel">
+            <Link to={`${basePath}/${project.id}`}>Details</Link>
+            <button type="button" onClick={() => onEdit(project)}>Edit</button>
+            <Link to={`${basePath}/${project.id}/validation`}>Analyze</Link>
+            <Link to={`/professor/groups?projectId=${project.id}`}>View groups</Link>
             {project.status === 'archived' ? (
-              <button className="secondary-button" type="button" onClick={() => onReopen(project.id)}>Reopen</button>
+              <button type="button" onClick={() => onReopen(project.id)}>Reopen</button>
             ) : (
-              <button className="danger-button" type="button" onClick={() => onArchive(project.id)}>Archive</button>
+              <button className="danger-menu-item" type="button" onClick={() => onArchive(project.id)}>Archive</button>
             )}
-          </>
-        ) : null}
-      </div>
+          </div>
+        </details>
+      ) : null}
     </article>
   )
 }

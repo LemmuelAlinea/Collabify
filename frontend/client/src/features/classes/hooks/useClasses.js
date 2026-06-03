@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { supabase } from '../../../lib/supabase/client'
 import {
   archiveClass,
   createClass,
@@ -27,6 +28,26 @@ export function useClasses() {
 
   useEffect(() => {
     loadClasses()
+  }, [loadClasses])
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('classes:mine')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'classes',
+      }, loadClasses)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'class_members',
+      }, loadClasses)
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [loadClasses])
 
   const saveNewClass = useCallback(async (payload) => {

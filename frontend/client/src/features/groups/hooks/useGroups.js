@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  addGroupMember,
   createGroup,
+  getEligibleGroupMembers,
   getGroups,
   joinGroup,
   updateGroup,
@@ -56,13 +58,23 @@ export function useGroups(projectId) {
     return group
   }, [])
 
+  const loadEligibleMembers = useCallback((groupId) => getEligibleGroupMembers(groupId), [])
+
+  const addMember = useCallback(async (groupId, userId) => {
+    const group = await addGroupMember(groupId, userId)
+    setGroups((current) => current.map((item) => item.id === group.id ? group : item))
+    return group
+  }, [])
+
   return {
+    addMember,
     addGroup,
     error,
     groups,
     isLoading,
     join,
     loadGroups,
+    loadEligibleMembers,
     saveGroup,
     saveMember,
   }

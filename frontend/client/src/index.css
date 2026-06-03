@@ -1269,12 +1269,75 @@ a {
 }
 
 .project-card {
+  position: relative;
   display: grid;
   gap: 14px;
+  align-content: start;
   padding: 16px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+}
+
+.card-menu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+}
+
+.card-menu summary {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  color: #dbeafe;
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.card-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.card-menu-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  min-width: 160px;
+  padding: 6px;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.card-menu-panel a,
+.card-menu-panel button {
+  width: 100%;
+  padding: 9px 10px;
+  color: #e5e7eb;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.card-menu-panel a:hover,
+.card-menu-panel button:hover {
+  color: #ffffff;
+  background: rgba(14, 165, 233, 0.16);
+}
+
+.card-menu-panel .danger-menu-item {
+  color: #fb7185;
 }
 
 .project-card.is-archived {
@@ -1344,14 +1407,17 @@ a {
 
 .group-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: stretch;
+  gap: 12px;
 }
 
 .group-card {
+  position: relative;
   display: grid;
   gap: 8px;
   align-content: start;
+  min-height: 292px;
   padding: 10px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1447,7 +1513,7 @@ a {
 
 .group-filter-bar {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   padding: 12px;
   background: #ffffff;
@@ -3953,6 +4019,9 @@ body:has(.dashboard-shell) .timeline-event,
 body:has(.dashboard-shell) .contribution-type-row,
 body:has(.dashboard-shell) .empty-state,
 body:has(.dashboard-shell) .ui-card,
+body:has(.dashboard-shell) .modal-panel,
+body:has(.dashboard-shell) .group-filter-bar,
+body:has(.dashboard-shell) .card-menu-panel,
 body:has(.dashboard-shell) .ui-dialog-content,
 body:has(.dashboard-shell) .ui-sheet-content,
 body:has(.dashboard-shell) .ui-dropdown-content {
@@ -4047,6 +4116,26 @@ body:has(.dashboard-shell) .pinned-strip button {
   color: #d9d6ff !important;
   background: #111111 !important;
   border-color: #3a3a3a !important;
+}
+
+body:has(.dashboard-shell) .card-menu summary {
+  color: #28d7ff !important;
+  background: #111111 !important;
+  border-color: rgba(40, 215, 255, 0.55) !important;
+}
+
+body:has(.dashboard-shell) .card-menu-panel a,
+body:has(.dashboard-shell) .card-menu-panel button {
+  color: #e5edf8 !important;
+}
+
+body:has(.dashboard-shell) .card-menu-panel a:hover,
+body:has(.dashboard-shell) .card-menu-panel button:hover {
+  background: rgba(40, 215, 255, 0.14) !important;
+}
+
+body:has(.dashboard-shell) .card-menu-panel .danger-menu-item {
+  color: #fb7185 !important;
 }
 
 body:has(.dashboard-shell) .segmented-control {

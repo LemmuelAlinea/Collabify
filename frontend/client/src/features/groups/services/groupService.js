@@ -24,6 +24,19 @@ export async function joinGroup(id) {
   return data.group
 }
 
+export async function getEligibleGroupMembers(id) {
+  const data = await apiRequest(`/groups/${id}/eligible-members`)
+  return data.members
+}
+
+export async function addGroupMember(id, userId) {
+  const data = await apiRequest(`/groups/${id}/members`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  })
+  return data.group
+}
+
 export async function updateGroup(id, payload) {
   const data = await apiRequest(`/groups/${id}`, {
     method: 'PATCH',

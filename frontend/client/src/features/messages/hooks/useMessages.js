@@ -52,6 +52,7 @@ export function useMessages(scope, chatId) {
       table: 'messages',
     }
     if (scope === 'class') messageListener.filter = `class_chat_id=eq.${chatId}`
+    if (scope === 'group') messageListener.filter = `group_chat_id=eq.${chatId}`
 
     const channel = supabase
       .channel(`chat:${scope}:${chatId}`)

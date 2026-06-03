@@ -245,6 +245,97 @@ async function assertGroupManager(group, userId, role) {
   if (error || !data) throw new HttpError(403, 'Only group leaders can manage members')
 }
 
+async function assertProfessorCanManageGroup(group, professorId, role) {
+  if (role !== 'professor') throw new HttpError(403, 'Only professors can manage this group')
+  await assertProfessorOwnsClass(group.class_id, professorId)
+}
+
+async function countActiveGroupMembers(groupId) {
+  const { count, error } = await supabaseAdminClient
+    .from('group_members')
+    .select('id', { count: 'exact', head: true })
+    .eq('group_id', groupId)
+    .eq('status', 'active')
+
+  if (error) throw new HttpError(400, 'Unable to check group size', error.message)
+  return count ?? 0
+}
+
+async function getUsersAlreadyGroupedForProject(projectId) {
+  const { data, error } = await supabaseAdminClient
+    .from('group_members')
+    .select('user_id, groups!inner(project_id)')
+    .eq('status', 'active')
+    .eq('groups.project_id', projectId)
+
+  if (error) throw new HttpError(400, 'Unable to check project memberships', error.message)
+  return new Set((data ?? []).map((row) => row.user_id))
+}
+
+function normalizeEligibleMember(member, profileByUserId = new Map()) {
+  const profile = profileByUserId.get(member.user_id)
+  return {
+    id: member.id,
+    userId: member.user_id,
+    email: member.users?.email,
+    displayName: profile?.display_name ?? member.users?.email,
+    avatarUrl: profile?.avatar_url,
+  }
+}
+
+export async function getEligibleGroupMembers(userId, role, groupId) {
+  const group = await getGroup(groupId)
+  await assertProfessorCanManageGroup(group, userId, role)
+
+  const alreadyGrouped = await getUsersAlreadyGroupedForProject(group.project_id)
+  const { data, error } = await supabaseAdminClient
+    .from('class_members')
+    .select('id, user_id, status, users:user_id (email)')
+    .eq('class_id', group.class_id)
+    .eq('status', 'active')
+
+  if (error) throw new HttpError(400, 'Unable to load class members', error.message)
+
+  const eligible = (data ?? []).filter((member) => !alreadyGrouped.has(member.user_id))
+  const profileByUserId = await getProfiles(eligible.map((member) => member.user_id))
+  return eligible.map((member) => normalizeEligibleMember(member, profileByUserId))
+}
+
+export async function addGroupMember(userId, role, groupId, memberUserId) {
+  const group = await getGroup(groupId)
+  await assertProfessorCanManageGroup(group, userId, role)
+
+  const activeCount = await countActiveGroupMembers(groupId)
+  if (activeCount >= (group.projects?.member_count ?? 1)) throw new HttpError(409, 'This group is full')
+
+  const { data: classMember, error: classMemberError } = await supabaseAdminClient
+    .from('class_members')
+    .select('id')
+    .eq('class_id', group.class_id)
+    .eq('user_id', memberUserId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (classMemberError) throw new HttpError(400, 'Unable to verify class member', classMemberError.message)
+  if (!classMember) throw new HttpError(422, 'Member must belong to the project class')
+
+  const alreadyGrouped = await getUsersAlreadyGroupedForProject(group.project_id)
+  if (alreadyGrouped.has(memberUserId)) throw new HttpError(409, 'Member already belongs to a group for this project')
+
+  const { error } = await supabaseAdminClient
+    .from('group_members')
+    .upsert({
+      group_id: groupId,
+      user_id: memberUserId,
+      is_leader: false,
+      status: 'active',
+      removed_at: null,
+    }, { onConflict: 'group_id,user_id' })
+
+  if (error) throw new HttpError(400, 'Unable to add group member', error.message)
+  return getGroupWithMembers(groupId)
+}
+
 export async function listGroups(userId, role, projectId) {
   let query
 

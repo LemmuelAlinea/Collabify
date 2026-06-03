@@ -1,18 +1,18 @@
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { Link } from 'react-router-dom'
+import { MoreHorizontal } from 'lucide-react'
 
 function activeMembers(group) {
   return group.members.filter((member) => member.status === 'active')
 }
 
-export function GroupCard({ group, onLock, onMemberUpdate }) {
+export function GroupCard({ group, onAddMember, onLock, onManage }) {
   const { role, user } = useAuth()
   const members = activeMembers(group)
   const isProfessor = role === USER_ROLES.PROFESSOR
   const isLeader = members.some((member) => member.userId === user?.id && member.isLeader)
   const canManage = isProfessor || isLeader
-  const showInlineManagement = isProfessor
 
   return (
     <article className="group-card">
@@ -46,12 +46,17 @@ export function GroupCard({ group, onLock, onMemberUpdate }) {
           </div>
         ))}
       </div>
-      {showInlineManagement && canManage ? (
-        <div className="card-actions">
-          <button className="secondary-button" type="button" onClick={() => onLock(group.id, !group.isLocked)}>
-            {group.isLocked ? 'Unlock group' : 'Lock group'}
-          </button>
-        </div>
+      {isProfessor && canManage ? (
+        <details className="card-menu">
+          <summary aria-label="Group actions"><MoreHorizontal size={18} aria-hidden="true" /></summary>
+          <div className="card-menu-panel">
+            <button type="button" onClick={() => onManage(group)}>Manage group</button>
+            <button type="button" onClick={() => onAddMember(group)}>Add member</button>
+            <button type="button" onClick={() => onLock(group.id, !group.isLocked)}>
+              {group.isLocked ? 'Unlock group' : 'Lock group'}
+            </button>
+          </div>
+        </details>
       ) : null}
       {role === USER_ROLES.STUDENT ? (
         <div className="card-actions">

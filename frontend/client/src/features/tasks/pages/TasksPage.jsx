@@ -23,6 +23,30 @@ function filterTasksByAssignee(tasks, memberFilter) {
     .filter(Boolean)
 }
 
+function taskMatchesSearch(task, query) {
+  if (!query) return true
+  return [
+    task.title,
+    task.description,
+    ...(task.assignments ?? []).map((assignment) => assignment.displayName),
+  ].some((value) => value?.toLowerCase().includes(query))
+}
+
+function filterTasksBySearch(tasks, search) {
+  const query = search.trim().toLowerCase()
+  if (!query) return tasks
+
+  return tasks
+    .map((task) => {
+      const filteredChildren = filterTasksBySearch(task.children ?? [], search)
+      const keepTask = taskMatchesSearch(task, query) || filteredChildren.length > 0
+
+      if (!keepTask) return null
+      return { ...task, children: filteredChildren }
+    })
+    .filter(Boolean)
+}
+
 export function TasksPage() {
   const navigate = useNavigate()
   const { role, user } = useAuth()
@@ -31,6 +55,7 @@ export function TasksPage() {
   const [groupId, setGroupId] = useState('')
   const [projectId, setProjectId] = useState('')
   const [memberFilter, setMemberFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const filters = useMemo(() => ({ groupId, projectId }), [groupId, projectId])
   const { add, comment, error, isLoading, remove, save, tasks } = useTasks(filters)
@@ -53,8 +78,11 @@ export function TasksPage() {
     return [...byId.entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name))
   }, [groupId, groups, isProfessor])
   const displayedTasks = useMemo(
-    () => (isProfessor ? tasks : filterTasksByAssignee(tasks, memberFilter === 'mine' ? user?.id : memberFilter)),
-    [isProfessor, memberFilter, tasks, user?.id],
+    () => {
+      const filtered = isProfessor ? tasks : filterTasksByAssignee(tasks, memberFilter === 'mine' ? user?.id : memberFilter)
+      return isProfessor ? filterTasksBySearch(filtered, search) : filtered
+    },
+    [isProfessor, memberFilter, search, tasks, user?.id],
   )
 
   if (isLoading || isLoadingGroups || isLoadingProjects) return <div className="route-state">Loading tasks...</div>
@@ -104,6 +132,12 @@ export function TasksPage() {
                 <option key={member.id} value={member.id}>{member.name}</option>
               ))}
             </select>
+          </label>
+        ) : null}
+        {isProfessor ? (
+          <label className="form-field" htmlFor="taskSearch">
+            <span>Search</span>
+            <input id="taskSearch" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Task or member" />
           </label>
         ) : null}
       </div>

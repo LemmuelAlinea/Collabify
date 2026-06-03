@@ -1,5 +1,7 @@
 import {
+  addGroupMember,
   createGroup,
+  getEligibleGroupMembers,
   getGroupDetails,
   joinGroup,
   listGroups,
@@ -11,6 +13,15 @@ export async function getGroups(req, res, next) {
   try {
     const groups = await listGroups(req.auth.user.id, req.auth.role, req.query.projectId)
     res.json({ groups })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getEligibleMembers(req, res, next) {
+  try {
+    const members = await getEligibleGroupMembers(req.auth.user.id, req.auth.role, req.params.id)
+    res.json({ members })
   } catch (error) {
     next(error)
   }
@@ -38,6 +49,15 @@ export async function postJoinGroup(req, res, next) {
   try {
     const group = await joinGroup(req.auth.user.id, req.params.id)
     res.json({ group })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postGroupMember(req, res, next) {
+  try {
+    const group = await addGroupMember(req.auth.user.id, req.auth.role, req.params.id, req.body.userId)
+    res.status(201).json({ group })
   } catch (error) {
     next(error)
   }

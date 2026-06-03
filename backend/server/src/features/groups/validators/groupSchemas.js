@@ -29,3 +29,7 @@ export const updateMemberSchema = z.object({
 }).refine((payload) => Object.keys(payload).length > 0, {
   message: 'At least one field is required',
 })
+
+export const addMemberSchema = z.object({
+  userId: uuid,
+})
