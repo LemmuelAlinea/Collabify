@@ -117,7 +117,6 @@ export function enforceAcademicValidationRules(input, validation) {
     || Boolean(item?.title?.trim?.())
     || Boolean(item?.description?.trim?.())
     || Boolean(item?.file_name?.trim?.())
-    || Boolean(item?.fileText?.trim?.())
   ))
   const hasCurriculum = Boolean(input.curriculum?.id)
     || Boolean(input.curriculum?.title?.trim?.())
@@ -349,9 +348,9 @@ export function buildFallbackValidation(input) {
   const timelineScore = Math.max(30, Math.min(95, days * teamSize * 4 - featureLoad * 2))
   const teamScore = project.workMode === 'individual' ? (featureLoad > 10 ? 55 : 85) : Math.min(95, 60 + teamSize * 6)
   const rubricScore = project.rubrics ? 82 : 45
+  const curriculumScore = input.curriculum?.id ? 78 : 20
   const curriculumHasFileText = Boolean(input.curriculum?.fileText?.trim?.())
   const syllabusHasFileText = Array.isArray(input.syllabus) && input.syllabus.some((item) => Boolean(item?.fileText?.trim?.()))
-  const curriculumScore = (input.curriculum?.id || curriculumHasFileText) ? 78 : 20
   const syllabusScore = (input.syllabus?.length || syllabusHasFileText) ? 78 : 20
   const learningScore = Math.round((curriculumScore + syllabusScore + scopeScore + rubricScore) / 4)
   const readinessScore = Math.round((curriculumScore + syllabusScore + scopeScore + timelineScore + teamScore + rubricScore + learningScore) / 7)

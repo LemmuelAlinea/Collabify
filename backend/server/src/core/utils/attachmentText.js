@@ -1,5 +1,4 @@
 import mammoth from 'mammoth'
-import { PDFParse } from 'pdf-parse'
 
 import { supabaseAdminClient } from '../../integrations/supabase/client.js'
 
@@ -22,6 +21,26 @@ function isDocx({ mimeType, fileName }) {
   return String(mimeType ?? '').includes('wordprocessingml') || lower.endsWith('.docx')
 }
 
+function ensurePdfPolyfills() {
+  if (typeof globalThis.DOMMatrix === 'undefined') {
+    globalThis.DOMMatrix = class DOMMatrix {}
+  }
+
+  if (typeof globalThis.ImageData === 'undefined') {
+    globalThis.ImageData = class ImageData {}
+  }
+
+  if (typeof globalThis.Path2D === 'undefined') {
+    globalThis.Path2D = class Path2D {}
+  }
+}
+
+async function loadPdfParser() {
+  ensurePdfPolyfills()
+  const mod = await import('pdf-parse')
+  return mod.PDFParse ?? mod.default?.PDFParse ?? mod.default ?? mod
+}
+
 async function readBytesFromStorage(bucket, storagePath) {
   const { data, error } = await supabaseAdminClient.storage
     .from(bucket)
@@ -36,6 +55,7 @@ async function readBytesFromStorage(bucket, storagePath) {
 }
 
 async function extractPdfText(buffer) {
+  const PDFParse = await loadPdfParser()
   const parser = new PDFParse({ data: buffer })
   try {
     const result = await parser.getText()
