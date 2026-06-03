@@ -16,6 +16,7 @@ export const createClassSchema = z.object({
   schoolYear: z.string().trim().min(1, 'School year is required').max(40),
   description: optionalText(),
   syllabusId: z.string().uuid().optional().nullable(),
+  curriculumId: z.string().uuid().optional().nullable(),
 })
 
 export const updateClassSchema = createClassSchema.partial().refine(

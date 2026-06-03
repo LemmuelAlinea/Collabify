@@ -15,6 +15,8 @@ import { USER_ROLES } from '../../features/auth/constants/roles'
 import { GroupsPage } from '../../features/groups/pages/GroupsPage'
 import { StudentGroupDetailsPage } from '../../features/groups/pages/StudentGroupDetailsPage'
 import { ContributionsPage } from '../../features/contributions/pages/ContributionsPage'
+import { CurriculumDetailsPage } from '../../features/curriculum/pages/CurriculumDetailsPage'
+import { CurriculumManagementPage } from '../../features/curriculum/pages/CurriculumManagementPage'
 import { MessagesPage } from '../../features/messages/pages/MessagesPage'
 import { NotificationCenterPage } from '../../features/notifications/pages/NotificationCenterPage'
 import { ProjectHealthDashboardPage } from '../../features/health/pages/ProjectHealthDashboardPage'
@@ -86,6 +88,8 @@ export function AppRouter() {
             <Route path="/professor/contributions" element={<ContributionsPage />} />
             <Route path="/professor/reassignments" element={<ReassignmentsPage />} />
             <Route path="/professor/messages" element={<MessagesPage />} />
+            <Route path="/professor/curriculum" element={<CurriculumManagementPage />} />
+            <Route path="/professor/curriculum/:id" element={<CurriculumDetailsPage />} />
             <Route path="/professor/syllabi" element={<SyllabusManagementPage />} />
             <Route path="/professor/analytics" element={<AnalyticsDashboardPage />} />
           </Route>

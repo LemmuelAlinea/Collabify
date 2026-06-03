@@ -4,6 +4,7 @@ import { analyticsRoutes } from './features/analytics/routes/analyticsRoutes.js'
 import { authRoutes } from './features/auth/routes/authRoutes.js'
 import { classRoutes } from './features/classes/routes/classRoutes.js'
 import { contributionRoutes } from './features/contributions/routes/contributionRoutes.js'
+import { curriculumRoutes } from './features/curriculum/routes/curriculumRoutes.js'
 import { groupRoutes } from './features/groups/routes/groupRoutes.js'
 import { messageRoutes } from './features/messages/routes/messageRoutes.js'
 import { notificationRoutes } from './features/notifications/routes/notificationRoutes.js'
@@ -29,6 +30,7 @@ routes.use('/announcements', announcementRoutes)
 routes.use('/analytics', analyticsRoutes)
 routes.use('/classes', classRoutes)
 routes.use('/contributions', contributionRoutes)
+routes.use('/curricula', curriculumRoutes)
 routes.use('/groups', groupRoutes)
 routes.use('/messages', messageRoutes)
 routes.use('/notifications', notificationRoutes)

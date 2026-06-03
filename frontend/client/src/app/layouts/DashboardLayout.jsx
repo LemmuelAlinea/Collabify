@@ -16,6 +16,7 @@ import {
   Users,
   CircleUserRound,
   Repeat2,
+  ScrollText,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
@@ -25,6 +26,7 @@ import { NotificationBell } from '../../features/notifications/components/Notifi
 
 const navIcons = {
   Dashboard: LayoutDashboard,
+  Curriculum: ScrollText,
   Syllabi: BookOpen,
   Classes: GraduationCap,
   Projects: FolderKanban,
@@ -68,7 +70,6 @@ const navSections = {
     {
       title: 'Workspace',
       items: [
-        { to: '/professor/syllabi', label: 'Syllabi' },
         { to: '/professor/classes', label: 'Classes' },
         { to: '/professor/projects', label: 'Projects' },
         { to: '/professor/groups', label: 'Groups' },
@@ -76,6 +77,13 @@ const navSections = {
         { to: '/professor/tasks/ai-planner', label: 'AI Planner', isChild: true },
         { to: '/professor/reassignments', label: 'Reassignments' },
         { to: '/professor/messages', label: 'Messages' },
+      ],
+    },
+    {
+      title: 'Course Alignment',
+      items: [
+        { to: '/professor/curriculum', label: 'Curriculum' },
+        { to: '/professor/syllabi', label: 'Syllabi' },
       ],
     },
     {

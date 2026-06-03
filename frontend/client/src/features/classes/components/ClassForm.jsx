@@ -10,11 +10,12 @@ function toFormState(classItem) {
     semester: classItem?.semester ?? '',
     schoolYear: classItem?.schoolYear ?? '',
     description: classItem?.description ?? '',
-    syllabusId: '',
+    syllabusId: classItem?.syllabusId ?? '',
+    curriculumId: classItem?.curriculumId ?? '',
   }
 }
 
-export function ClassForm({ classItem, onCancel, onSave, syllabi = [] }) {
+export function ClassForm({ classItem, curricula = [], onCancel, onSave, syllabi = [] }) {
   const initialForm = useMemo(() => toFormState(classItem), [classItem])
   const [form, setForm] = useState(initialForm)
   const [error, setError] = useState('')
@@ -38,6 +39,7 @@ export function ClassForm({ classItem, onCancel, onSave, syllabi = [] }) {
         yearLevel: Number(form.yearLevel),
         description: form.description || null,
         syllabusId: form.syllabusId || null,
+        curriculumId: form.curriculumId || null,
       })
     } catch (saveError) {
       setError(saveError.message)
@@ -89,6 +91,15 @@ export function ClassForm({ classItem, onCancel, onSave, syllabi = [] }) {
           <option value="">No syllabus selected</option>
           {syllabi.map((syllabus) => (
             <option key={syllabus.id} value={syllabus.id}>{syllabus.title}</option>
+          ))}
+        </select>
+      </label>
+      <label className="form-field" htmlFor="curriculumId">
+        <span>Assign curriculum</span>
+        <select id="curriculumId" name="curriculumId" value={form.curriculumId} onChange={updateField}>
+          <option value="">No curriculum selected</option>
+          {curricula.filter((curriculum) => curriculum.isActive).map((curriculum) => (
+            <option key={curriculum.id} value={curriculum.id}>{curriculum.title}</option>
           ))}
         </select>
       </label>

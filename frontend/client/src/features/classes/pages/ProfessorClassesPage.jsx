@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { ClassCard } from '../components/ClassCard'
 import { ClassForm } from '../components/ClassForm'
 import { useClasses } from '../hooks/useClasses'
+import { useCurricula } from '../../curriculum/hooks/useCurricula'
 import { useSyllabi } from '../../syllabus/hooks/useSyllabi'
-import { assignClassSyllabus } from '../services/classService'
 
 export function ProfessorClassesPage() {
   const { classes, error, isLoading, removeClass, saveClass, saveNewClass } = useClasses()
+  const { curricula } = useCurricula()
   const { syllabi } = useSyllabi()
   const [mode, setMode] = useState('list')
   const [selectedClass, setSelectedClass] = useState(null)
@@ -25,31 +26,22 @@ export function ProfessorClassesPage() {
   }
 
   async function handleSave(payload) {
-    const { syllabusId, ...classPayload } = payload
-
     if (selectedClass) {
       const patchPayload = Object.fromEntries(
-        Object.entries(classPayload).filter(([key, value]) => value !== selectedClass[key]),
+        Object.entries(payload).filter(([key, value]) => value !== selectedClass[key]),
       )
 
       if (Object.keys(patchPayload).length > 0) {
         await saveClass(selectedClass.id, patchPayload)
       }
 
-      if (syllabusId) {
-        await assignClassSyllabus(selectedClass.id, syllabusId)
-      }
-
       setNotice(
-        Object.keys(patchPayload).length > 0 || syllabusId
+        Object.keys(patchPayload).length > 0
           ? 'Class updated.'
           : 'No changes to save.',
       )
     } else {
-      const createdClass = await saveNewClass(classPayload)
-      if (syllabusId) {
-        await assignClassSyllabus(createdClass.id, syllabusId)
-      }
+      await saveNewClass(payload)
       setNotice('Class created.')
     }
 
@@ -79,6 +71,7 @@ export function ProfessorClassesPage() {
       {mode === 'form' ? (
         <ClassForm
           classItem={selectedClass}
+          curricula={curricula}
           syllabi={syllabi}
           onCancel={() => {
             setSelectedClass(null)

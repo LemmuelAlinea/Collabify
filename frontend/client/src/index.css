@@ -821,6 +821,47 @@ a {
   gap: 10px;
 }
 
+.program-study-panel {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.52);
+  padding: 16px;
+}
+
+.program-study-list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding-left: 20px;
+}
+
+.program-study-list li {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.32);
+  padding: 12px;
+}
+
+.program-study-list li > span {
+  display: block;
+  color: #e5eefb;
+  line-height: 1.5;
+}
+
+.compact-actions {
+  margin-top: 8px;
+}
+
+.compact-dialog {
+  width: min(520px, calc(100vw - 24px));
+}
+
+.danger-text {
+  color: #ff4d55;
+}
+
+.muted-text {
+  color: #8fa3bf;
+}
+
 .syllabus-item {
   position: relative;
   display: grid;

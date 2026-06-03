@@ -99,6 +99,7 @@ async function getProjectContext(projectId, professorId) {
       classes:class_id (
       id,
       syllabus_id,
+      curriculum_id,
       title,
       subject,
         year_level,
@@ -113,7 +114,7 @@ async function getProjectContext(projectId, professorId) {
   if (error || !project) throw new HttpError(404, 'Project not found')
   await assertProfessorOwnsClass(project.class_id, professorId)
 
-  const [{ data: assignedSyllabus }, { data: classSyllabi }, { data: analytics }, { data: similarProjects }] = await Promise.all([
+  const [{ data: assignedSyllabus }, { data: assignedCurriculum }, { data: curriculumStudies }, { data: classSyllabi }, { data: analytics }, { data: similarProjects }] = await Promise.all([
     project.classes.syllabus_id
       ? supabaseAdminClient
         .from('syllabi')
@@ -121,6 +122,20 @@ async function getProjectContext(projectId, professorId) {
         .eq('id', project.classes.syllabus_id)
         .maybeSingle()
       : Promise.resolve({ data: null }),
+    project.classes.curriculum_id
+      ? supabaseAdminClient
+        .from('curricula')
+        .select('id, professor_id, title, description, program_objectives, program_outcomes, curriculum_components, academic_year, file_name, mime_type, file_size_bytes, is_active, created_at, updated_at')
+        .eq('id', project.classes.curriculum_id)
+        .maybeSingle()
+      : Promise.resolve({ data: null }),
+    project.classes.curriculum_id
+      ? supabaseAdminClient
+        .from('curriculum_program_studies')
+        .select('id, curriculum_id, content, sort_order')
+        .eq('curriculum_id', project.classes.curriculum_id)
+        .order('sort_order', { ascending: true })
+      : Promise.resolve({ data: [] }),
     supabaseAdminClient
       .from('syllabi')
       .select('id, class_id, title, description, file_name, mime_type, file_size_bytes, version, is_active, effective_from, effective_to, created_at, updated_at')
@@ -177,7 +192,15 @@ async function getProjectContext(projectId, professorId) {
       yearLevel: project.classes.year_level,
       semester: project.classes.semester ?? project.classes.term,
       syllabusId: project.classes.syllabus_id ?? null,
+      curriculumId: project.classes.curriculum_id ?? null,
     },
+    curriculum: assignedCurriculum
+      ? {
+        ...assignedCurriculum,
+        programStudies: curriculumStudies ?? [],
+      }
+      : null,
+    curriculumSource: assignedCurriculum ? 'assigned_class_curriculum' : 'none',
     syllabus: resolvedSyllabus,
     syllabusSource: assignedSyllabus
       ? 'assigned_class_syllabus'

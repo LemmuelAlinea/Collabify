@@ -3,6 +3,7 @@ import { buildProjectValidationPrompt } from './projectValidationPrompt.js'
 
 const REQUIRED_SCORE_CATEGORIES = [
   'curriculum_alignment',
+  'syllabus_alignment',
   'year_level_appropriateness',
   'scope_realism',
   'timeline_feasibility',
@@ -117,6 +118,13 @@ export function enforceAcademicValidationRules(input, validation) {
     || Boolean(item?.description?.trim?.())
     || Boolean(item?.file_name?.trim?.())
   ))
+  const hasCurriculum = Boolean(input.curriculum?.id)
+    || Boolean(input.curriculum?.title?.trim?.())
+    || Boolean(input.curriculum?.description?.trim?.())
+    || Boolean(input.curriculum?.program_objectives?.trim?.())
+    || Boolean(input.curriculum?.program_outcomes?.trim?.())
+    || Boolean(input.curriculum?.curriculum_components?.trim?.())
+    || (Array.isArray(input.curriculum?.programStudies) && input.curriculum.programStudies.some((item) => Boolean(item?.content?.trim?.())))
   const scores = Array.isArray(validation.scores) ? [...validation.scores] : []
   const risks = Array.isArray(validation.risks) ? [...validation.risks] : []
   const recommendations = Array.isArray(validation.recommendations) ? [...validation.recommendations] : []
@@ -129,17 +137,73 @@ export function enforceAcademicValidationRules(input, validation) {
   const syllabusNarrative = (Array.isArray(input.syllabus) ? input.syllabus : [])
     .map((item) => [item?.title, item?.description, item?.file_name].filter(Boolean).join(' '))
     .join(' ')
+  const curriculumNarrative = input.curriculum
+    ? [
+      input.curriculum.title,
+      input.curriculum.description,
+      input.curriculum.program_objectives,
+      input.curriculum.program_outcomes,
+      input.curriculum.curriculum_components,
+      input.curriculum.academic_year,
+      ...(input.curriculum.programStudies ?? []).map((item) => item?.content),
+    ].filter(Boolean).join(' ')
+    : ''
   const projectTokens = tokenize(projectNarrative)
   const syllabusTokens = tokenize(syllabusNarrative)
+  const curriculumTokens = tokenize(curriculumNarrative)
   const projectEvidenceWeak = looksPlaceholder(project.title) || looksPlaceholder(project.description) || uniqueCount(projectTokens) < 12
   const syllabusEvidenceWeak = !hasSyllabus || uniqueCount(syllabusTokens) < 8
-  const alignmentEvidence = overlapRatio(projectTokens, syllabusTokens)
+  const curriculumEvidenceWeak = !hasCurriculum || uniqueCount(curriculumTokens) < 8
+  const syllabusAlignmentEvidence = overlapRatio(projectTokens, syllabusTokens)
+  const curriculumAlignmentEvidence = overlapRatio(projectTokens, curriculumTokens)
 
-  if (!hasSyllabus) {
+  if (!hasCurriculum) {
     upsertScore(scores, 'curriculum_alignment', {
       score: 20,
+      label: 'Missing Curriculum',
+      explanation: 'No curriculum is assigned to this class, so program-level alignment cannot be verified.',
+    })
+    addRisk(risks, {
+      riskType: 'learning',
+      severity: 'high',
+      probability: 90,
+      reason: 'The class has no assigned curriculum, so the project cannot be verified against program objectives, outcomes, and program of study.',
+      mitigation: 'Assign the correct curriculum to the class before relying on this analysis.',
+    })
+    addRecommendation(recommendations, {
+      priority: 'high',
+      title: 'Assign curriculum before release',
+      description: 'Attach the official curriculum so project scope can be validated against program objectives and outcomes.',
+      actionType: 'other',
+    })
+  }
+
+  if (hasCurriculum && (curriculumEvidenceWeak || curriculumAlignmentEvidence < 0.08)) {
+    upsertScore(scores, 'curriculum_alignment', {
+      score: Math.min(35, scores.find((score) => score.category === 'curriculum_alignment')?.score ?? 35),
+      label: 'Weak Curriculum Evidence',
+      explanation: 'Project details and curriculum outcomes/components have weak keyword overlap; alignment evidence is insufficient.',
+    })
+    addRisk(risks, {
+      riskType: 'learning',
+      severity: 'high',
+      probability: 78,
+      reason: 'The analysis found weak evidence linking project scope to curriculum outcomes and program study content.',
+      mitigation: 'Map project objectives and deliverables to specific curriculum outcomes and program components.',
+    })
+    addRecommendation(recommendations, {
+      priority: 'high',
+      title: 'Map project to curriculum outcomes',
+      description: 'Rewrite project details to explicitly reference curriculum objectives, outcomes, and program of study topics.',
+      actionType: 'other',
+    })
+  }
+
+  if (!hasSyllabus) {
+    upsertScore(scores, 'syllabus_alignment', {
+      score: 20,
       label: 'Missing Syllabus',
-      explanation: 'No syllabus is assigned to this class, so curriculum alignment cannot be verified.',
+      explanation: 'No syllabus is assigned to this class, so course-level alignment cannot be verified.',
     })
     addRisk(risks, {
       riskType: 'learning',
@@ -156,9 +220,9 @@ export function enforceAcademicValidationRules(input, validation) {
     })
   }
 
-  if (hasSyllabus && (syllabusEvidenceWeak || alignmentEvidence < 0.08)) {
-    upsertScore(scores, 'curriculum_alignment', {
-      score: Math.min(35, scores.find((score) => score.category === 'curriculum_alignment')?.score ?? 35),
+  if (hasSyllabus && (syllabusEvidenceWeak || syllabusAlignmentEvidence < 0.08)) {
+    upsertScore(scores, 'syllabus_alignment', {
+      score: Math.min(35, scores.find((score) => score.category === 'syllabus_alignment')?.score ?? 35),
       label: 'Weak Syllabus Evidence',
       explanation: 'Project details and syllabus outcomes have weak keyword overlap; alignment evidence is insufficient.',
     })
@@ -247,16 +311,18 @@ export function enforceAcademicValidationRules(input, validation) {
 
   const averageScore = scores.length ? Math.round(scores.reduce((sum, score) => sum + clampScore(score.score), 0) / scores.length) : 0
   const readinessCap = Math.min(
-    hasSyllabus ? 100 : 60,
+    hasCurriculum ? 100 : 65,
+    hasSyllabus ? 100 : 65,
     yearMismatch ? 65 : 100,
     timelineTooShort ? 70 : 100,
     projectEvidenceWeak ? 55 : 100,
-    (hasSyllabus && (syllabusEvidenceWeak || alignmentEvidence < 0.08)) ? 60 : 100,
+    (hasCurriculum && (curriculumEvidenceWeak || curriculumAlignmentEvidence < 0.08)) ? 60 : 100,
+    (hasSyllabus && (syllabusEvidenceWeak || syllabusAlignmentEvidence < 0.08)) ? 60 : 100,
   )
   const readinessScore = Math.min(readinessCap, clampScore(validation.readinessScore ?? averageScore))
   const executiveSummary = projectEvidenceWeak
     ? `Validation confidence is low because project details are too minimal or placeholder-like. Provide richer description, guidelines, and rubric before relying on scores.`
-    : (validation.executiveSummary || `${project.title} has been analyzed against syllabus, year level, timeline, team size, scope, and rubric readiness.`)
+    : (validation.executiveSummary || `${project.title} has been analyzed against curriculum, syllabus, year level, timeline, team size, scope, and rubric readiness.`)
 
   return {
     ...validation,
@@ -280,12 +346,14 @@ export function buildFallbackValidation(input) {
   const timelineScore = Math.max(30, Math.min(95, days * teamSize * 4 - featureLoad * 2))
   const teamScore = project.workMode === 'individual' ? (featureLoad > 10 ? 55 : 85) : Math.min(95, 60 + teamSize * 6)
   const rubricScore = project.rubrics ? 82 : 45
-  const alignmentScore = input.syllabus?.length ? 78 : 20
-  const learningScore = Math.round((alignmentScore + scopeScore + rubricScore) / 3)
-  const readinessScore = Math.round((alignmentScore + scopeScore + timelineScore + teamScore + rubricScore + learningScore) / 6)
+  const curriculumScore = input.curriculum?.id ? 78 : 20
+  const syllabusScore = input.syllabus?.length ? 78 : 20
+  const learningScore = Math.round((curriculumScore + syllabusScore + scopeScore + rubricScore) / 4)
+  const readinessScore = Math.round((curriculumScore + syllabusScore + scopeScore + timelineScore + teamScore + rubricScore + learningScore) / 7)
 
   const scores = [
-    ['curriculum_alignment', alignmentScore, input.syllabus?.length ? 'Syllabus evidence was available.' : 'Limited syllabus evidence was available.'],
+    ['curriculum_alignment', curriculumScore, input.curriculum?.id ? 'Curriculum evidence was available.' : 'No assigned curriculum evidence was available.'],
+    ['syllabus_alignment', syllabusScore, input.syllabus?.length ? 'Syllabus evidence was available.' : 'No assigned syllabus evidence was available.'],
     ['year_level_appropriateness', Math.min(95, 55 + Number(project.yearLevel ?? 1) * 9), 'Complexity was compared against the declared year level.'],
     ['scope_realism', scopeScore, 'Scope was estimated from deliverables, description, and guidelines.'],
     ['timeline_feasibility', timelineScore, 'Timeline was estimated from duration, feature load, and team size.'],
@@ -298,7 +366,8 @@ export function buildFallbackValidation(input) {
   ].map(([category, score, explanation]) => ({ category, score, label: scoreLabel(score), explanation }))
 
   const risks = []
-  if (!input.syllabus?.length) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No syllabus is assigned, so curriculum alignment cannot be verified.', mitigation: 'Assign a syllabus before releasing the project.' })
+  if (!input.curriculum?.id) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No curriculum is assigned, so program alignment cannot be verified.', mitigation: 'Assign a curriculum before releasing the project.' })
+  if (!input.syllabus?.length) risks.push({ riskType: 'learning', severity: 'high', probability: 90, reason: 'No syllabus is assigned, so course alignment cannot be verified.', mitigation: 'Assign a syllabus before releasing the project.' })
   if (timelineScore < 60) risks.push({ riskType: 'timeline', severity: 'high', probability: 78, reason: 'Allocated duration appears short for the expected workload.', mitigation: 'Reduce scope or extend the deadline.' })
   if (scopeScore < 60) risks.push({ riskType: 'scope', severity: 'high', probability: 72, reason: 'Feature count may exceed realistic classroom project scope.', mitigation: 'Prioritize core features and move extras to optional milestones.' })
   if (rubricScore < 60) risks.push({ riskType: 'assessment', severity: 'medium', probability: 65, reason: 'Rubric criteria are missing or too vague.', mitigation: 'Add measurable grading criteria.' })
@@ -320,11 +389,15 @@ export function buildFallbackValidation(input) {
     risks,
     recommendations,
     skillCoverage: ['Programming', 'Database Design', 'Documentation', 'Testing', 'Problem Solving', 'Team Collaboration'],
-    coveredOutcomes: input.syllabus?.slice(0, 4).map((item) => item.title ?? item.file_name ?? 'Course outcome') ?? [],
+    coveredOutcomes: [
+      ...(input.curriculum?.programStudies ?? []).slice(0, 2).map((item) => item.content),
+      ...(input.syllabus?.slice(0, 2).map((item) => item.title ?? item.file_name ?? 'Course outcome') ?? []),
+    ],
     missingOutcomes: ['Explicit software testing practice', 'Deployment reflection'],
     comparisonReport: input.historicalData?.length ? 'Historical analytics were considered.' : 'No strong historical comparison data was available.',
     validationReport: {
-      curriculumAlignment: 'The project should be mapped explicitly to syllabus outcomes.',
+      curriculumAlignment: 'The project should be mapped explicitly to curriculum outcomes.',
+      syllabusAlignment: 'The project should be mapped explicitly to syllabus outcomes.',
       yearLevelSuitability: 'Complexity should match expected BSIT competencies.',
       scopeAnalysis: 'Scope should prioritize required deliverables over optional features.',
       timelineAnalysis: 'Timeline should include design, implementation, testing, documentation, and revision.',

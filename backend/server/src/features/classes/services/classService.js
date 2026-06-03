@@ -1,11 +1,13 @@
 import { randomBytes } from 'node:crypto'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { HttpError } from '../../../core/errors/httpError.js'
+import { assertProfessorOwnsCurriculum } from '../../curriculum/services/curriculumService.js'
 
 const CLASS_SELECT = `
   id,
   professor_id,
   syllabus_id,
+  curriculum_id,
   code,
   title,
   description,
@@ -27,6 +29,7 @@ function normalizeClass(classItem) {
     id: classItem.id,
     professorId: classItem.professor_id,
     syllabusId: classItem.syllabus_id,
+    curriculumId: classItem.curriculum_id,
     code: classItem.code,
     classCode: classItem.join_code,
     name: classItem.title,
@@ -190,6 +193,7 @@ export async function assertProfessorOwnsClass(classId, professorId) {
 
 export async function createClass(professorId, payload) {
   await assertProfessorOwnsSyllabus(payload.syllabusId, professorId)
+  await assertProfessorOwnsCurriculum(payload.curriculumId, professorId)
   const classCode = await generateUniqueClassCode()
   const subjectCode = payload.subject.replace(/[^a-z0-9]/gi, '').slice(0, 10).toUpperCase()
 
@@ -209,6 +213,7 @@ export async function createClass(professorId, payload) {
       section: payload.section,
       join_code: classCode,
       syllabus_id: payload.syllabusId ?? null,
+      curriculum_id: payload.curriculumId ?? null,
     })
     .select(CLASS_SELECT)
     .single()
@@ -235,6 +240,7 @@ export async function createClass(professorId, payload) {
 export async function updateClass(professorId, classId, payload) {
   await assertProfessorOwnsClass(classId, professorId)
   await assertProfessorOwnsSyllabus(payload.syllabusId, professorId)
+  await assertProfessorOwnsCurriculum(payload.curriculumId, professorId)
 
   const updatePayload = {
     title: payload.name,
@@ -247,6 +253,7 @@ export async function updateClass(professorId, classId, payload) {
     school_year: payload.schoolYear,
     section: payload.section,
     syllabus_id: payload.syllabusId,
+    curriculum_id: payload.curriculumId,
   }
 
   Object.keys(updatePayload).forEach((key) => {
@@ -421,6 +428,13 @@ export async function getClassDetails(userId, role, classId) {
       .eq('id', classItem.syllabus_id)
       .maybeSingle()
     : { data: null }
+  const assignedCurriculum = classItem.curriculum_id
+    ? await supabaseAdminClient
+      .from('curricula')
+      .select('id, title, academic_year, file_name, is_active, created_at')
+      .eq('id', classItem.curriculum_id)
+      .maybeSingle()
+    : { data: null }
 
   const syllabiList = [...(syllabi ?? [])]
   if (assignedSyllabus?.data && !syllabiList.some((item) => item.id === assignedSyllabus.data.id)) {
@@ -462,6 +476,7 @@ export async function getClassDetails(userId, role, classId) {
         release_at: release.release_at,
       })),
     syllabi: syllabiList,
+    curriculum: assignedCurriculum?.data ?? null,
     classChat: classChat ?? null,
   }
 }
