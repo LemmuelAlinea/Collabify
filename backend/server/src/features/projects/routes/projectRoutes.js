@@ -4,6 +4,7 @@ import { requireRole } from '../../../core/middleware/requireRole.js'
 import { validateBody } from '../../../core/middleware/validateRequest.js'
 import {
   deleteProject,
+  getProjectDownload,
   getProjectById,
   getProjects,
   getProjectsByClass,
@@ -18,6 +19,7 @@ export const projectRoutes = Router()
 
 projectRoutes.get('/', authenticate, getProjects)
 projectRoutes.get('/class/:classId', authenticate, getProjectsByClass)
+projectRoutes.get('/:id/download', authenticate, getProjectDownload)
 projectRoutes.get('/:id', authenticate, getProjectById)
 projectRoutes.post('/', authenticate, requireRole('professor'), validateBody(createProjectSchema), postProject)
 projectRoutes.patch('/:id', authenticate, requireRole('professor'), validateBody(updateProjectSchema), patchProject)

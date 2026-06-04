@@ -1,6 +1,7 @@
 import {
   archiveProject,
   createProject,
+  getProjectDownloadUrl,
   getProject,
   listClassProjects,
   listProjects,
@@ -31,6 +32,15 @@ export async function getProjectById(req, res, next) {
   try {
     const project = await getProject(req.auth.user.id, req.auth.role, req.params.id)
     res.json({ project })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getProjectDownload(req, res, next) {
+  try {
+    const url = await getProjectDownloadUrl(req.auth.user.id, req.auth.role, req.params.id)
+    res.json({ url })
   } catch (error) {
     next(error)
   }

@@ -7,7 +7,11 @@ Rules:
 - The professor makes the final decision.
 - Return JSON only.
 - Scores must be 0-100.
-- Analyze using only the provided project, class, assigned curriculum, assigned syllabus, rubric, and historical data.
+- Analyze using only the provided project fields, uploaded project document text, class, assigned curriculum, assigned syllabus, rubric, and historical data.
+- If project typed fields are minimal but uploaded project document text is readable, use the uploaded project document text as the primary project evidence.
+- Treat uploaded project document text, syllabus file text, and curriculum file text as first-class evidence, not as optional hints.
+- If the uploaded project document cannot be read, state that limitation and rely only on typed project fields.
+- If the uploaded project document clearly indicates capstone/research/system-development work, the difficulty score should generally be high (usually 70+), not low.
 - curriculum_alignment must be based on the assigned class curriculum only.
 - syllabus_alignment must be based on the assigned/class syllabus only.
 - If curriculum is empty, curriculum_alignment must be 0-30, readinessScore must not exceed 65, and risks must include missing curriculum alignment.
@@ -22,6 +26,7 @@ Rules:
 - If curriculum exists but there is weak overlap between curriculum outcomes/components/program studies and project content, reduce curriculum_alignment and add a learning risk.
 - If syllabus exists but there is weak overlap between syllabus content and project content, reduce syllabus_alignment and add a learning risk.
 - Do not output optimistic high scores when project details are minimal.
+- Do not let the executive summary mention a readiness score that disagrees with the final JSON readinessScore.
 - Do not reuse previous reports.
 - Generate a fresh academic adviser report for this exact input.
 

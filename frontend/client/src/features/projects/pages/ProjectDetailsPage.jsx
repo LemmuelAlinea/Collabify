@@ -4,7 +4,7 @@ import { USER_ROLES } from '../../auth/constants/roles'
 import { DeadlineForm } from '../components/DeadlineForm'
 import { formatProjectType } from '../constants/projectTypes'
 import { useProjectDetails } from '../hooks/useProjectDetails'
-import { archiveProject, reopenProject, rescheduleProjectDeadline } from '../services/projectService'
+import { archiveProject, getProjectDownloadUrl, reopenProject, rescheduleProjectDeadline } from '../services/projectService'
 
 function formatDate(value) {
   return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Not set'
@@ -41,6 +41,15 @@ export function ProjectDetailsPage() {
     setProject(await rescheduleProjectDeadline(id, deadlineAt))
   }
 
+  async function handleDownload() {
+    try {
+      const url = await getProjectDownloadUrl(id)
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   if (isLoading) return <div className="route-state">Loading project...</div>
   if (error || !project) return <section className="content-section"><h2>Project unavailable</h2><p>{error || 'Unable to load project.'}</p></section>
 
@@ -73,6 +82,11 @@ export function ProjectDetailsPage() {
           ) : (
             <button className="danger-button" type="button" onClick={handleArchive}>Archive project</button>
           )}
+          {project.fileName ? (
+            <button className="secondary-button" type="button" onClick={handleDownload}>
+              Download file
+            </button>
+          ) : null}
           <Link className="secondary-link-button" to={`/professor/projects/${id}/validation`}>Analyze Project</Link>
           <DeadlineForm currentDeadline={project.deadlineAt} onSave={handleDeadline} />
         </div>

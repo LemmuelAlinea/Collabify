@@ -10,6 +10,11 @@ export async function getProject(id) {
   return data.project
 }
 
+export async function getProjectDownloadUrl(id) {
+  const data = await apiRequest(`/projects/${id}/download`)
+  return data.url
+}
+
 export async function createProject(payload) {
   const data = await apiRequest('/projects', {
     method: 'POST',

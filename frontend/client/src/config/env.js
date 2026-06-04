@@ -15,6 +15,7 @@ export const env = {
   profileAssetsBucket: import.meta.env.VITE_SUPABASE_PROFILE_ASSETS_BUCKET ?? 'profile-assets',
   syllabiBucket: import.meta.env.VITE_SUPABASE_SYLLABI_BUCKET ?? 'syllabi',
   curriculaBucket: import.meta.env.VITE_SUPABASE_CURRICULA_BUCKET ?? 'curricula',
+  projectFilesBucket: import.meta.env.VITE_SUPABASE_PROJECT_FILES_BUCKET ?? 'project-files',
   submissionsBucket: import.meta.env.VITE_SUPABASE_SUBMISSIONS_BUCKET ?? 'submissions',
   messageAttachmentsBucket: import.meta.env.VITE_SUPABASE_MESSAGE_ATTACHMENTS_BUCKET ?? 'message-attachments',
   announcementAttachmentsBucket: import.meta.env.VITE_SUPABASE_ANNOUNCEMENT_ATTACHMENTS_BUCKET ?? 'announcement-attachments',

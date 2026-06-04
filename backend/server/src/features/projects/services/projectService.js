@@ -1,3 +1,4 @@
+import { env } from '../../../config/env.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { HttpError } from '../../../core/errors/httpError.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
@@ -17,6 +18,12 @@ const PROJECT_SELECT = `
   deadline_at,
   visibility_at,
   rubric,
+  file_storage_path,
+  file_name,
+  mime_type,
+  file_size_bytes,
+  file_text_extracted_at,
+  file_text_error,
   status,
   due_at,
   archived_at,
@@ -103,6 +110,12 @@ function normalizeProject(project) {
     releaseAt: visibleAt,
     isVisible: project.status !== 'archived' && (!visibleAt || new Date(visibleAt) <= new Date()),
     rubrics: project.rubric,
+    fileStoragePath: project.file_storage_path,
+    fileName: project.file_name,
+    mimeType: project.mime_type,
+    fileSizeBytes: project.file_size_bytes,
+    fileTextExtractedAt: project.file_text_extracted_at,
+    fileTextError: project.file_text_error,
     status: project.status,
     archivedAt: project.archived_at,
     reopenedAt: project.reopened_at,
@@ -123,6 +136,20 @@ function normalizeProject(project) {
         subject: project.classes.subject,
         section: project.classes.section,
       }] : [],
+  }
+}
+
+function buildProjectFilePayload(payload) {
+  if (!payload.fileStoragePath) return {}
+
+  return {
+    file_storage_path: payload.fileStoragePath,
+    file_name: payload.fileName,
+    mime_type: payload.mimeType,
+    file_size_bytes: payload.fileSizeBytes,
+    file_text: null,
+    file_text_extracted_at: null,
+    file_text_error: null,
   }
 }
 
@@ -414,6 +441,7 @@ export async function createProject(professorId, payload) {
       due_at: payload.deadlineAt,
       visibility_at: releaseAt,
       rubric: parseRubrics(payload.rubrics),
+      ...buildProjectFilePayload(payload),
       status: 'open',
     })
     .select(PROJECT_SELECT)
@@ -449,6 +477,7 @@ export async function updateProject(professorId, projectId, payload) {
     due_at: payload.deadlineAt,
     visibility_at: releaseAt,
     rubric: payload.rubrics === undefined ? undefined : parseRubrics(payload.rubrics),
+    ...buildProjectFilePayload(payload),
   }
 
   Object.keys(updatePayload).forEach((key) => {
@@ -555,4 +584,22 @@ export async function rescheduleDeadline(professorId, projectId, deadlineAt) {
   if (releaseError) throw new HttpError(400, 'Unable to reschedule project releases', releaseError.message)
 
   return normalizeProject((await attachReleases([data]))[0])
+}
+
+export async function getProjectDownloadUrl(userId, role, projectId) {
+  const project = await getProject(userId, role, projectId)
+
+  if (!project.fileStoragePath) {
+    throw new HttpError(404, 'Project file not found')
+  }
+
+  const { data, error } = await supabaseAdminClient.storage
+    .from(env.projectFilesBucket)
+    .createSignedUrl(project.fileStoragePath, 60 * 10)
+
+  if (error || !data?.signedUrl) {
+    throw new HttpError(400, 'Unable to create project download link', error?.message)
+  }
+
+  return data.signedUrl
 }

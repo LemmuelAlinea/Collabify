@@ -43,7 +43,7 @@ function getDurationDays(project) {
 }
 
 function getFeatureLoad(project) {
-  return `${project.title ?? ''} ${project.description ?? ''} ${project.guidelines ?? ''} ${project.rubrics ?? ''}`
+  return `${project.title ?? ''} ${project.description ?? ''} ${project.guidelines ?? ''} ${project.rubrics ?? ''} ${project.fileText ?? ''}`
     .split(/[,\n.;:]/)
     .map((item) => item.trim())
     .filter(Boolean)
@@ -62,6 +62,18 @@ function tokenize(text) {
     .split(/\s+/)
     .map((token) => token.trim())
     .filter((token) => token.length >= 3 && !STOP_WORDS.has(token))
+}
+
+function replacePercentages(text, score) {
+  return String(text ?? '')
+    .replace(/\b\d{1,3}\s*%/g, `${score}%`)
+    .trim()
+}
+
+function hasAdvancedProjectSignals(...values) {
+  return /(capstone|research|thesis|proposal|system development|system_development|information system|enterprise system|management system|web application|mobile application|android|ios|prototype|implementation project|software development|software engineering)/i.test(
+    values.filter(Boolean).join(' '),
+  )
 }
 
 function uniqueCount(tokens) {
@@ -129,14 +141,14 @@ export function enforceAcademicValidationRules(input, validation) {
   const scores = Array.isArray(validation.scores) ? [...validation.scores] : []
   const risks = Array.isArray(validation.risks) ? [...validation.risks] : []
   const recommendations = Array.isArray(validation.recommendations) ? [...validation.recommendations] : []
-  const difficultyScore = clampScore(validation.difficultyScore ?? featureLoad * 5 + projectYearLevel * 12)
-  const isAdvancedProject = difficultyScore >= 70 || /capstone|system|mobile|web|ai|database|management/i.test(`${project.projectType ?? ''} ${project.title ?? ''}`)
-  const workloadDaysNeeded = Math.ceil((featureLoad * 1.6 + difficultyScore / 5) / teamSize)
+  const difficultyBase = clampScore(validation.difficultyScore ?? featureLoad * 5 + projectYearLevel * 12)
+  const isAdvancedProject = difficultyBase >= 70 || /capstone|system|mobile|web|ai|database|management/i.test(`${project.projectType ?? ''} ${project.title ?? ''}`)
+  const workloadDaysNeeded = Math.ceil((featureLoad * 1.6 + difficultyBase / 5) / teamSize)
   const timelineTooShort = durationDays < Math.max(14, workloadDaysNeeded)
   const yearMismatch = classYearLevel <= 2 && isAdvancedProject
-  const projectNarrative = [project.title, project.description, project.guidelines, project.rubrics].filter(Boolean).join(' ')
+  const projectNarrative = [project.title, project.description, project.guidelines, project.rubrics, project.fileText].filter(Boolean).join(' ')
   const syllabusNarrative = (Array.isArray(input.syllabus) ? input.syllabus : [])
-    .map((item) => [item?.title, item?.description, item?.file_name].filter(Boolean).join(' '))
+    .map((item) => [item?.title, item?.description, item?.file_name, item?.fileText].filter(Boolean).join(' '))
     .join(' ')
   const curriculumNarrative = input.curriculum
     ? [
@@ -153,7 +165,10 @@ export function enforceAcademicValidationRules(input, validation) {
   const projectTokens = tokenize(projectNarrative)
   const syllabusTokens = tokenize(syllabusNarrative)
   const curriculumTokens = tokenize(curriculumNarrative)
-  const projectEvidenceWeak = looksPlaceholder(project.title) || looksPlaceholder(project.description) || uniqueCount(projectTokens) < 12
+  const projectFileTokens = tokenize(project.fileText)
+  const hasReadableProjectFile = uniqueCount(projectFileTokens) >= 12
+  const hasAdvancedProjectEvidence = hasAdvancedProjectSignals(project.projectType, project.title, project.description, project.guidelines, project.fileText)
+  const projectEvidenceWeak = !hasReadableProjectFile && (looksPlaceholder(project.title) || looksPlaceholder(project.description) || uniqueCount(projectTokens) < 12)
   const syllabusEvidenceWeak = !hasSyllabus || uniqueCount(syllabusTokens) < 8
   const curriculumEvidenceWeak = !hasCurriculum || uniqueCount(curriculumTokens) < 8
   const syllabusAlignmentEvidence = overlapRatio(projectTokens, syllabusTokens)
@@ -275,6 +290,38 @@ export function enforceAcademicValidationRules(input, validation) {
     })
   }
 
+  if (project.fileName && project.fileTextError && !project.fileText) {
+    addRisk(risks, {
+      riskType: 'scope',
+      severity: 'medium',
+      probability: 60,
+      reason: `The attached project file "${project.fileName}" could not be read, so analysis relied on the typed project fields only.`,
+      mitigation: 'Replace the project file with a readable PDF or DOCX, or add complete project details in the form fields.',
+    })
+    addRecommendation(recommendations, {
+      priority: 'medium',
+      title: 'Replace unreadable project file',
+      description: 'Upload a readable PDF or DOCX so project scope and requirements can be included in validation.',
+      actionType: 'other',
+    })
+  }
+
+  if (hasSyllabus && hasReadableProjectFile && hasAdvancedProjectEvidence) {
+    upsertScore(scores, 'syllabus_alignment', {
+      score: Math.max(clampScore(scores.find((score) => score.category === 'syllabus_alignment')?.score ?? 0), 55),
+      label: 'Evidence Supported',
+      explanation: 'The uploaded project document and class syllabus both show capstone-level evidence, so alignment should not be treated as weak.',
+    })
+  }
+
+  if (hasCurriculum && hasReadableProjectFile && hasAdvancedProjectEvidence) {
+    upsertScore(scores, 'curriculum_alignment', {
+      score: Math.max(clampScore(scores.find((score) => score.category === 'curriculum_alignment')?.score ?? 0), 55),
+      label: 'Evidence Supported',
+      explanation: 'The uploaded project document and curriculum both show capstone-level evidence, so alignment should not be treated as weak.',
+    })
+  }
+
   if (yearMismatch) {
     upsertScore(scores, 'year_level_appropriateness', {
       score: Math.min(45, scores.find((score) => score.category === 'year_level_appropriateness')?.score ?? 45),
@@ -312,6 +359,13 @@ export function enforceAcademicValidationRules(input, validation) {
   }
 
   const averageScore = scores.length ? Math.round(scores.reduce((sum, score) => sum + clampScore(score.score), 0) / scores.length) : 0
+  const finalDifficultyBase = clampScore(validation.difficultyScore ?? featureLoad * 5 + projectYearLevel * 12)
+  const difficultyFloor = hasAdvancedProjectEvidence
+    ? Math.max(70, projectYearLevel >= 4 ? 75 : 70)
+    : Number(projectYearLevel) >= 4
+      ? 60
+      : 0
+  const difficultyScore = Math.max(finalDifficultyBase, difficultyFloor)
   const readinessCap = Math.min(
     hasCurriculum ? 100 : 65,
     hasSyllabus ? 100 : 65,
@@ -323,8 +377,11 @@ export function enforceAcademicValidationRules(input, validation) {
   )
   const readinessScore = Math.min(readinessCap, clampScore(validation.readinessScore ?? averageScore))
   const executiveSummary = projectEvidenceWeak
-    ? `Validation confidence is low because project details are too minimal or placeholder-like. Provide richer description, guidelines, and rubric before relying on scores.`
-    : (validation.executiveSummary || `${project.title} has been analyzed against curriculum, syllabus, year level, timeline, team size, scope, and rubric readiness.`)
+    ? `Validation confidence is low because project details are too minimal or placeholder-like. Provide richer description, guidelines, rubric, or a readable project file before relying on scores.`
+    : replacePercentages(
+      validation.executiveSummary || `${project.title} has a readiness score of ${readinessScore}%. The professor should review curriculum alignment, syllabus alignment, scope, timeline, assessment clarity, and team fit before release.`,
+      readinessScore,
+    )
 
   return {
     ...validation,
@@ -332,7 +389,7 @@ export function enforceAcademicValidationRules(input, validation) {
     readinessScore,
     readinessLabel: readinessScore >= 90 ? 'Ready for Release' : readinessScore >= 75 ? 'Ready with Minor Improvements' : readinessScore >= 60 ? 'Needs Revision' : 'High Risk Project',
     difficultyScore,
-    difficultyLabel: validation.difficultyLabel ?? (difficultyScore >= 85 ? 'Capstone-Level' : difficultyScore >= 70 ? 'Advanced' : difficultyScore >= 40 ? 'Intermediate' : 'Beginner'),
+    difficultyLabel: difficultyScore >= 85 || hasAdvancedProjectEvidence ? 'Capstone-Level' : difficultyScore >= 70 ? 'Advanced' : difficultyScore >= 40 ? 'Intermediate' : 'Beginner',
     scores,
     risks,
     recommendations,
@@ -343,6 +400,7 @@ export function buildFallbackValidation(input) {
   const project = input.project
   const days = Math.max(1, (new Date(project.deadlineAt).getTime() - new Date(project.startAt).getTime()) / 86400000)
   const featureLoad = `${project.description ?? ''} ${project.guidelines ?? ''}`.split(/[,\n.]/).filter(Boolean).length
+  const hasAdvancedProjectEvidence = hasAdvancedProjectSignals(project.projectType, project.title, project.description, project.guidelines, project.fileText)
   const teamSize = project.workMode === 'individual' ? 1 : Number(project.memberCount ?? 1)
   const scopeScore = Math.max(35, Math.min(95, 100 - Math.max(0, featureLoad - 10) * 4))
   const timelineScore = Math.max(30, Math.min(95, days * teamSize * 4 - featureLoad * 2))
@@ -366,7 +424,7 @@ export function buildFallbackValidation(input) {
     ['skill_coverage', learningScore, 'Skill coverage was inferred from project type and outputs.'],
     ['learning_outcome_prediction', learningScore, 'Learning impact was estimated from alignment and assessment design.'],
     ['rubric_quality', rubricScore, project.rubrics ? 'Rubrics are present.' : 'Rubrics need clearer measurable criteria.'],
-    ['project_type_fit', 80, `Project was evaluated as ${project.projectType}.`],
+    ['project_type_fit', hasAdvancedProjectEvidence ? 92 : 80, `Project was evaluated as ${project.projectType}.`],
   ].map(([category, score, explanation]) => ({ category, score, label: scoreLabel(score), explanation }))
 
   const risks = []
@@ -387,8 +445,8 @@ export function buildFallbackValidation(input) {
     executiveSummary: `${project.title} has a readiness score of ${readinessScore}%. The professor should review scope, timeline, assessment clarity, and team fit before release.`,
     readinessScore,
     readinessLabel: fallbackLabel(readinessScore),
-    difficultyScore: Math.min(100, Math.round(featureLoad * 5 + Number(project.yearLevel ?? 1) * 12)),
-    difficultyLabel: readinessScore < 60 ? 'Advanced' : Number(project.yearLevel ?? 1) >= 4 ? 'Capstone-Level' : 'Intermediate',
+    difficultyScore: Math.max(Math.min(100, Math.round(featureLoad * 5 + Number(project.yearLevel ?? 1) * 12)), hasAdvancedProjectEvidence ? 70 : 0),
+    difficultyLabel: hasAdvancedProjectEvidence ? 'Capstone-Level' : readinessScore < 60 ? 'Advanced' : Number(project.yearLevel ?? 1) >= 4 ? 'Capstone-Level' : 'Intermediate',
     scores,
     risks,
     recommendations,

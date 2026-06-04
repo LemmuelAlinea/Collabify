@@ -80,6 +80,36 @@ function normalizeRisk(row) {
   }
 }
 
+async function resolveProjectFileText(project) {
+  if (!project.file_storage_path) {
+    return { text: null, error: null }
+  }
+
+  if (project.file_text && project.file_text_extracted_at) {
+    return { text: project.file_text, error: project.file_text_error ?? null }
+  }
+
+  const text = await extractAttachmentText({
+    bucket: env.projectFilesBucket,
+    storagePath: project.file_storage_path,
+    mimeType: project.mime_type,
+    fileName: project.file_name,
+  })
+
+  const error = text ? null : 'Unable to read the attached project file.'
+
+  await supabaseAdminClient
+    .from('projects')
+    .update({
+      file_text: text,
+      file_text_extracted_at: new Date().toISOString(),
+      file_text_error: error,
+    })
+    .eq('id', project.id)
+
+  return { text, error }
+}
+
 async function getProjectContext(projectId, professorId) {
   const { data: project, error } = await supabaseAdminClient
     .from('projects')
@@ -98,6 +128,13 @@ async function getProjectContext(projectId, professorId) {
       deadline_at,
       visibility_at,
       rubric,
+      file_storage_path,
+      file_name,
+      mime_type,
+      file_size_bytes,
+      file_text,
+      file_text_extracted_at,
+      file_text_error,
       classes:class_id (
       id,
       syllabus_id,
@@ -115,6 +152,8 @@ async function getProjectContext(projectId, professorId) {
 
   if (error || !project) throw new HttpError(404, 'Project not found')
   await assertProfessorOwnsClass(project.class_id, professorId)
+
+  const projectFileText = await resolveProjectFileText(project)
 
   const [{ data: assignedSyllabus }, { data: assignedCurriculum }, { data: curriculumStudies }, { data: classSyllabi }, { data: analytics }, { data: similarProjects }] = await Promise.all([
     project.classes.syllabus_id
@@ -212,6 +251,10 @@ async function getProjectContext(projectId, professorId) {
       deadlineAt: project.deadline_at,
       visibilityAt: project.visibility_at,
       yearLevel: project.year_level,
+      fileName: project.file_name,
+      fileSizeBytes: project.file_size_bytes,
+      fileText: projectFileText.text,
+      fileTextError: projectFileText.error,
     },
     class: {
       id: project.classes.id,

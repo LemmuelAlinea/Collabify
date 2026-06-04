@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { AuthFormField } from '../../auth/components/AuthFormField'
+import { useAuth } from '../../auth/hooks/useAuth'
 import { PROJECT_TYPES } from '../constants/projectTypes'
+import { uploadProjectFile, validateProjectFile } from '../services/projectUploadService'
 
 function toLocalInput(value) {
   if (!value) return ''
@@ -50,8 +52,10 @@ function toFormState(project) {
 }
 
 export function ProjectForm({ classes, onCancel, onSave, project }) {
+  const { user } = useAuth()
   const initialForm = useMemo(() => toFormState(project), [project])
   const [form, setForm] = useState(initialForm)
+  const [file, setFile] = useState(null)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -71,6 +75,17 @@ export function ProjectForm({ classes, onCancel, onSave, project }) {
     }))
   }
 
+  function updateFile(event) {
+    const nextFile = event.target.files?.[0] ?? null
+    setFile(nextFile)
+    setError('')
+    try {
+      validateProjectFile(nextFile)
+    } catch (validationError) {
+      setError(validationError.message)
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setError('')
@@ -78,8 +93,11 @@ export function ProjectForm({ classes, onCancel, onSave, project }) {
 
     try {
       const releaseAt = toIso(`${form.releaseDate}T${form.releaseTime}`)
+      const filePayload = file ? await uploadProjectFile(user.id, file) : {}
       await onSave({
         ...form,
+        ...filePayload,
+        description: form.description || null,
         classId: form.classIds[0],
         classIds: form.classIds,
         yearLevel: Number(form.yearLevel),
@@ -108,9 +126,15 @@ export function ProjectForm({ classes, onCancel, onSave, project }) {
         </select>
       </label>
       <AuthFormField id="title" label="Title" name="title" required value={form.title} onChange={updateField} />
-      <label className="form-field" htmlFor="description"><span>Description</span><textarea id="description" name="description" rows="4" required value={form.description} onChange={updateField} /></label>
+      <label className="form-field" htmlFor="description"><span>Description</span><textarea id="description" name="description" rows="4" required={!file && !project?.fileName} value={form.description} onChange={updateField} /></label>
       <label className="form-field" htmlFor="guidelines"><span>Guidelines</span><textarea id="guidelines" name="guidelines" rows="5" value={form.guidelines} onChange={updateField} /></label>
       <label className="form-field" htmlFor="rubrics"><span>Rubrics</span><textarea id="rubrics" name="rubrics" rows="5" value={form.rubrics} onChange={updateField} /></label>
+      <label className="form-field" htmlFor="projectFile">
+        <span>{project ? 'Replace project file' : 'Project file (optional)'}</span>
+        <input id="projectFile" name="projectFile" type="file" accept="application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.docx" onChange={updateFile} />
+        {project?.fileName && !file ? <small>Current file: {project.fileName}</small> : null}
+        {file ? <small>Selected file: {file.name}</small> : null}
+      </label>
       <div className="form-grid">
         <label className="form-field" htmlFor="projectType"><span>Project type</span><select id="projectType" name="projectType" required value={form.projectType} onChange={updateField}>{PROJECT_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}</select></label>
         <AuthFormField id="yearLevel" label="Year level" name="yearLevel" type="number" min="1" max="5" required value={form.yearLevel} onChange={updateField} />

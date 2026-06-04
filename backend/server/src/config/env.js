@@ -33,6 +33,7 @@ export const env = {
   supabaseUrl: process.env.SUPABASE_URL,
   syllabiBucket: process.env.SUPABASE_STORAGE_BUCKET_SYLLABI ?? 'syllabi',
   curriculaBucket: process.env.SUPABASE_STORAGE_BUCKET_CURRICULA ?? 'curricula',
+  projectFilesBucket: process.env.SUPABASE_PROJECT_FILES_BUCKET ?? 'project-files',
   announcementAttachmentsBucket: process.env.SUPABASE_ANNOUNCEMENT_ATTACHMENTS_BUCKET ?? 'announcement-attachments',
   submissionsBucket: process.env.SUPABASE_SUBMISSIONS_BUCKET ?? 'submissions',
 }
