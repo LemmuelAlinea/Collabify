@@ -3,6 +3,21 @@ import { AuthFormField } from '../../auth/components/AuthFormField'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { uploadCurriculumFile, validateCurriculumFile } from '../services/curriculumUploadService'
 
+function normalizeStudy(item, index) {
+  if (typeof item === 'string') {
+    return {
+      title: item.slice(0, 120) || `Program of Study ${index + 1}`,
+      content: item,
+    }
+  }
+
+  return {
+    id: item?.id,
+    title: item?.title || item?.content?.slice(0, 120) || `Program of Study ${index + 1}`,
+    content: item?.content ?? '',
+  }
+}
+
 function toFormState(curriculum) {
   return {
     title: curriculum?.title ?? '',
@@ -11,7 +26,7 @@ function toFormState(curriculum) {
     programOutcomes: curriculum?.programOutcomes ?? '',
     curriculumComponents: curriculum?.curriculumComponents ?? '',
     academicYear: curriculum?.academicYear ?? '',
-    programStudies: curriculum?.programStudies?.map((item) => item.content) ?? [],
+    programStudies: curriculum?.programStudies?.map(normalizeStudy) ?? [],
   }
 }
 
@@ -22,7 +37,7 @@ export function CurriculumForm({ curriculum, onCancel, onSave }) {
   const [file, setFile] = useState(null)
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [studyModal, setStudyModal] = useState({ isOpen: false, value: '', index: null })
+  const [studyModal, setStudyModal] = useState({ isOpen: false, title: '', content: '', index: null })
   const isEditing = Boolean(curriculum)
 
   function updateField(event) {
@@ -43,15 +58,17 @@ export function CurriculumForm({ curriculum, onCancel, onSave }) {
   }
 
   function saveStudy() {
-    const value = studyModal.value.trim()
-    if (!value) return
+    const title = studyModal.title.trim()
+    const content = studyModal.content.trim()
+    if (!title || !content) return
     setForm((current) => {
       const programStudies = [...current.programStudies]
-      if (studyModal.index === null) programStudies.push(value)
-      else programStudies[studyModal.index] = value
+      const nextStudy = { ...programStudies[studyModal.index], title, content }
+      if (studyModal.index === null) programStudies.push(nextStudy)
+      else programStudies[studyModal.index] = nextStudy
       return { ...current, programStudies }
     })
-    setStudyModal({ isOpen: false, value: '', index: null })
+    setStudyModal({ isOpen: false, title: '', content: '', index: null })
   }
 
   function moveStudy(index, direction) {
@@ -120,24 +137,36 @@ export function CurriculumForm({ curriculum, onCancel, onSave }) {
       <div className="program-study-panel">
         <div className="syllabus-title-row">
           <h3>Program of study</h3>
-          <button className="secondary-button" type="button" onClick={() => setStudyModal({ isOpen: true, value: '', index: null })}>
+          <button className="secondary-button" type="button" onClick={() => setStudyModal({ isOpen: true, title: '', content: '', index: null })}>
             Add Program of Study
           </button>
         </div>
         {form.programStudies.length ? (
-          <ol className="program-study-list">
+          <div className="program-study-table-wrap">
+            <table className="program-study-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
             {form.programStudies.map((item, index) => (
-              <li key={`${item}-${index}`}>
-                <span>{item}</span>
-                <div className="button-row compact-actions">
-                  <button type="button" className="inline-button" onClick={() => moveStudy(index, -1)}>Up</button>
-                  <button type="button" className="inline-button" onClick={() => moveStudy(index, 1)}>Down</button>
-                  <button type="button" className="inline-button" onClick={() => setStudyModal({ isOpen: true, value: item, index })}>Edit</button>
-                  <button type="button" className="inline-button danger-text" onClick={() => setForm((current) => ({ ...current, programStudies: current.programStudies.filter((_, itemIndex) => itemIndex !== index) }))}>Remove</button>
-                </div>
-              </li>
+              <tr key={`${item.title}-${index}`}>
+                <td>{item.title}</td>
+                <td>
+                  <div className="button-row compact-actions">
+                    <button type="button" className="inline-button" onClick={() => moveStudy(index, -1)}>Up</button>
+                    <button type="button" className="inline-button" onClick={() => moveStudy(index, 1)}>Down</button>
+                    <button type="button" className="inline-button" onClick={() => setStudyModal({ isOpen: true, title: item.title, content: item.content, index })}>Edit</button>
+                    <button type="button" className="inline-button danger-text" onClick={() => setForm((current) => ({ ...current, programStudies: current.programStudies.filter((_, itemIndex) => itemIndex !== index) }))}>Remove</button>
+                  </div>
+                </td>
+              </tr>
             ))}
-          </ol>
+              </tbody>
+            </table>
+          </div>
         ) : <p className="muted-text">No program of study items yet.</p>}
       </div>
 
@@ -160,11 +189,18 @@ export function CurriculumForm({ curriculum, onCancel, onSave }) {
           <div className="dialog-card compact-dialog">
             <div className="syllabus-title-row">
               <h3>{studyModal.index === null ? 'Add Program of Study' : 'Edit Program of Study'}</h3>
-              <button className="secondary-button" type="button" onClick={() => setStudyModal({ isOpen: false, value: '', index: null })}>Close</button>
+              <button className="secondary-button" type="button" onClick={() => setStudyModal({ isOpen: false, title: '', content: '', index: null })}>Close</button>
             </div>
+            <AuthFormField
+              id="programStudyTitle"
+              label="Program of study title"
+              required
+              value={studyModal.title}
+              onChange={(event) => setStudyModal((current) => ({ ...current, title: event.target.value }))}
+            />
             <label className="form-field" htmlFor="programStudyValue">
-              <span>Program of study</span>
-              <textarea id="programStudyValue" rows="4" value={studyModal.value} onChange={(event) => setStudyModal((current) => ({ ...current, value: event.target.value }))} />
+              <span>Content</span>
+              <textarea id="programStudyValue" rows="6" value={studyModal.content} onChange={(event) => setStudyModal((current) => ({ ...current, content: event.target.value }))} />
             </label>
             <button className="primary-button" type="button" onClick={saveStudy}>Save</button>
           </div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useGroups } from '../../groups/hooks/useGroups'
@@ -16,10 +16,18 @@ export function ReassignmentsPage() {
     error,
     isLoading,
     reassignments,
+    archive,
     request,
     review,
   } = useReassignments()
   const isStudent = role === USER_ROLES.STUDENT
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
+
+  async function submitRequest(payload) {
+    const result = await request(payload)
+    setIsRequestModalOpen(false)
+    return result
+  }
 
   if (isLoading || isLoadingTasks || isLoadingGroups) return <div className="route-state">Loading reassignments...</div>
 
@@ -33,8 +41,30 @@ export function ReassignmentsPage() {
         </div>
       </div>
       {error || taskError || groupError ? <p className="form-error">{error || taskError || groupError}</p> : null}
-      {isStudent ? <ReassignmentRequestForm groups={groups} tasks={tasks} onSubmit={request} /> : null}
-      <ReassignmentList reassignments={reassignments} onReview={review} />
+      {isStudent ? (
+        <>
+          <div className="page-actions">
+            <button className="primary-button" type="button" onClick={() => setIsRequestModalOpen(true)}>
+              Request reassignment
+            </button>
+          </div>
+          {isRequestModalOpen ? (
+            <div className="modal-backdrop" role="presentation" onMouseDown={() => setIsRequestModalOpen(false)}>
+              <div className="modal-panel reassignment-request-modal" role="dialog" aria-modal="true" aria-label="Request reassignment" onMouseDown={(event) => event.stopPropagation()}>
+                <div className="section-heading-row">
+                  <div>
+                    <p className="eyebrow">Task reassignment</p>
+                    <h3>Request reassignment</h3>
+                  </div>
+                  <button className="ghost-button" type="button" onClick={() => setIsRequestModalOpen(false)}>Close</button>
+                </div>
+                <ReassignmentRequestForm groups={groups} tasks={tasks} onSubmit={submitRequest} />
+              </div>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+      <ReassignmentList reassignments={reassignments} onArchive={archive} onReview={review} />
     </section>
   )
 }

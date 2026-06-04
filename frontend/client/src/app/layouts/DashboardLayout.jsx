@@ -24,6 +24,7 @@ import {
 import { USER_ROLES } from '../../features/auth/constants/roles'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { NotificationBell } from '../../features/notifications/components/NotificationBell'
+import { ThemeToggle } from '../providers/ThemeProvider'
 
 const navIcons = {
   Dashboard: LayoutDashboard,
@@ -161,6 +162,7 @@ export function DashboardLayout() {
         </div>
         <div className="topbar-actions">
           <NotificationBell />
+          <ThemeToggle />
           <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
             <UserRound size={18} aria-hidden="true" />
           </NavLink>
@@ -202,13 +204,14 @@ export function DashboardLayout() {
       </aside>
       <main className="dashboard-content">
         <header className="desktop-app-bar">
-        <div className="topbar-actions">
-          <NotificationBell />
-          <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
-            <UserRound size={18} aria-hidden="true" />
-          </NavLink>
-        </div>
-      </header>
+          <div className="topbar-actions">
+            <NotificationBell />
+            <ThemeToggle />
+            <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
+              <UserRound size={18} aria-hidden="true" />
+            </NavLink>
+          </div>
+        </header>
         <Outlet />
       </main>
     </div>

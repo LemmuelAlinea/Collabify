@@ -18,6 +18,8 @@ const REQUEST_SELECT = `
   reviewed_by,
   reviewed_at,
   review_notes,
+  archived_at,
+  archived_by,
   created_at,
   updated_at,
   tasks:task_id (id, title, group_id, project_id),
@@ -42,6 +44,8 @@ function normalizeRequest(row, profileByUserId = new Map()) {
     reviewedBy: row.reviewed_by,
     reviewedAt: row.reviewed_at,
     reviewNotes: row.review_notes,
+    archivedAt: row.archived_at,
+    archivedBy: row.archived_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     task: row.tasks ? { id: row.tasks.id, title: row.tasks.title } : null,
@@ -204,6 +208,7 @@ export async function listReassignmentRequests(userId, role) {
     .select(role === 'professor'
       ? REQUEST_SELECT.replace('classes:class_id', 'classes:class_id!inner')
       : REQUEST_SELECT)
+    .is('archived_at', null)
     .order('created_at', { ascending: false })
 
   if (role === 'professor') {
@@ -260,6 +265,28 @@ export async function createReassignmentRequest(userId, role, payload) {
     .single()
 
   if (error) throw new HttpError(400, 'Unable to create reassignment request', error.message)
+  return (await normalizeRows([data]))[0]
+}
+
+export async function archiveReassignmentRequest(userId, role, requestId) {
+  const request = await getRequest(requestId)
+  if (role === 'professor') {
+    await assertProfessorOwnsClass(request.class_id, userId)
+  } else if (request.requested_by !== userId) {
+    throw new HttpError(403, 'You can only archive your own reassignment requests')
+  }
+
+  const { data, error } = await supabaseAdminClient
+    .from('reassignment_requests')
+    .update({
+      archived_at: new Date().toISOString(),
+      archived_by: userId,
+    })
+    .eq('id', requestId)
+    .select(REQUEST_SELECT)
+    .single()
+
+  if (error) throw new HttpError(400, 'Unable to archive reassignment request', error.message)
   return (await normalizeRows([data]))[0]
 }
 

@@ -147,7 +147,7 @@ export function enforceAcademicValidationRules(input, validation) {
       input.curriculum.curriculum_components,
       input.curriculum.academic_year,
       input.curriculum.fileText,
-      ...(input.curriculum.programStudies ?? []).map((item) => item?.content),
+      ...(input.curriculum.programStudies ?? []).flatMap((item) => [item?.title, item?.content]),
     ].filter(Boolean).join(' ')
     : ''
   const projectTokens = tokenize(projectNarrative)
@@ -394,7 +394,7 @@ export function buildFallbackValidation(input) {
     recommendations,
     skillCoverage: ['Programming', 'Database Design', 'Documentation', 'Testing', 'Problem Solving', 'Team Collaboration'],
     coveredOutcomes: [
-      ...(input.curriculum?.programStudies ?? []).slice(0, 2).map((item) => item.content),
+      ...(input.curriculum?.programStudies ?? []).slice(0, 2).flatMap((item) => [item.title, item.content]),
       ...(input.syllabus?.slice(0, 2).flatMap((item) => [item.title, item.fileText].filter(Boolean)) ?? []),
     ],
     missingOutcomes: ['Explicit software testing practice', 'Deployment reflection'],

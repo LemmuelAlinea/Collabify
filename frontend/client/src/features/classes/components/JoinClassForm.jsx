@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export function JoinClassForm({ onJoin }) {
+export function JoinClassForm({ onJoin, onJoined }) {
   const [classCode, setClassCode] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -13,6 +13,7 @@ export function JoinClassForm({ onJoin }) {
     try {
       await onJoin(classCode)
       setClassCode('')
+      onJoined?.()
     } catch (joinError) {
       setError(joinError.message)
     } finally {

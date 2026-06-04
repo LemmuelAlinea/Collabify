@@ -846,6 +846,95 @@ a {
   line-height: 1.5;
 }
 
+.program-study-table-wrap {
+  margin-top: 12px;
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.program-study-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.program-study-table th,
+.program-study-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.program-study-table th {
+  color: #9fb3ca;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.program-study-table td {
+  color: #e5eefb;
+}
+
+.program-study-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.program-study-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.program-study-actions .icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+}
+
+.program-study-actions .danger-icon {
+  color: #ff6b72;
+  border-color: rgba(255, 77, 85, 0.4);
+}
+
+.program-study-detail {
+  display: grid;
+  gap: 12px;
+}
+
+.program-study-detail h4,
+.program-study-detail p {
+  margin: 0;
+}
+
+.program-study-detail p {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.program-study-modal-backdrop {
+  background: rgba(2, 6, 23, 0.62);
+}
+
+.program-study-modal-card {
+  display: grid;
+  gap: 16px;
+  width: min(760px, calc(100vw - 28px));
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 22px;
+  background: #0b1220;
+  color: #e5eefb;
+  border: 1px solid #0ea5e9;
+  border-radius: 14px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
 .compact-actions {
   margin-top: 8px;
 }
@@ -1138,6 +1227,23 @@ a {
   border-radius: 8px;
 }
 
+.join-class-modal {
+  display: grid;
+  gap: 16px;
+  width: min(680px, calc(100vw - 28px));
+  color: #e5edf8;
+  background: #111111;
+  border: 1px solid #333333;
+  border-radius: 14px;
+}
+
+.join-class-modal .join-class-form {
+  grid-template-columns: 1fr;
+  padding: 0;
+  background: transparent !important;
+  border: 0 !important;
+}
+
 .class-code-box {
   display: grid;
   gap: 4px;
@@ -1395,6 +1501,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  padding-right: 44px;
 }
 
 .project-card-heading span {
@@ -1404,6 +1511,7 @@ a {
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .project-form,
@@ -1883,6 +1991,105 @@ a {
   border-top: 1px solid #e2e8f0;
 }
 
+.reassignment-reviewed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.reassignment-reviewed-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.reassignment-approved-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: #111111;
+  border: 1px solid #333333;
+  border-radius: 12px;
+}
+
+.reassignment-search-input {
+  width: min(360px, 100%);
+  min-height: 40px;
+  padding: 0 12px;
+  color: #e5edf8;
+  background: #0b0b0b;
+  border: 1px solid #333333;
+  border-radius: 10px;
+}
+
+.reassignment-table-wrap {
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.reassignment-approved-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.reassignment-approved-table th,
+.reassignment-approved-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.reassignment-approved-table th {
+  color: #9fb3ca;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.reassignment-approved-table td {
+  color: #e5eefb;
+}
+
+.reassignment-approved-table tbody tr {
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.reassignment-approved-table tbody tr:hover {
+  background: rgba(20, 184, 166, 0.12);
+}
+
+.reassignment-approved-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.reassignment-request-modal {
+  width: min(820px, calc(100vw - 28px));
+  color: #e5edf8;
+  background: #111111;
+  border: 1px solid #333333;
+  border-radius: 14px;
+}
+
+.reassignment-request-modal .reassignment-form {
+  margin-top: 14px;
+}
+
+@media (max-width: 1180px) {
+  .reassignment-reviewed-grid--three {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .reassignment-reviewed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .chat-selector,
 .chat-composer-actions,
 .chat-message-actions {
@@ -2077,6 +2284,13 @@ a {
   margin-left: auto;
 }
 
+.auth-panel-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .topbar-profile-button {
   position: relative;
   display: inline-flex;
@@ -2089,6 +2303,38 @@ a {
   border: 1px solid #0ea5e9;
   border-radius: 999px;
   text-decoration: none;
+}
+
+.theme-toggle-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #8be9ff;
+  background: #111111;
+  border: 1px solid #0ea5e9;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.theme-toggle-button:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b3daf, #00bfff);
+  transform: translateY(-1px);
+}
+
+.theme-toggle-button svg,
+.topbar-profile-button svg {
+  width: 18px;
+  height: 18px;
 }
 
 body:has(.dashboard-shell) .topbar-actions {
@@ -8098,4 +8344,2371 @@ tbody tr:hover,
   .dashboard-shell .project-details-rubric {
     grid-column: auto;
   }
+}
+
+/* Theme modes */
+html[data-theme="light"] {
+  color-scheme: light;
+  --color-text: #0f172a;
+  --color-text-secondary: #475569;
+  --color-muted: #64748b;
+  --color-border: #dbe3ee;
+  --color-hover: #f8fafc;
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 18px 45px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] body {
+  color: #0f172a;
+  background: #f5f7fb;
+}
+
+html[data-theme="dark"] body {
+  color: #e5edf8;
+  background: #111111;
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #edf2f7;
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  border-color: #edf2f7;
+}
+
+html[data-theme="light"] {
+  scrollbar-color: #28d7ff #edf2f7;
+}
+
+html[data-theme="light"] .landing-shell {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(40, 215, 255, 0.16), transparent 24%),
+    radial-gradient(circle at 84% 76%, rgba(35, 230, 110, 0.1), transparent 24%),
+    linear-gradient(135deg, #f8fbff 0%, #eef7ff 48%, #e7f6ff 100%);
+}
+
+html[data-theme="light"] .landing-shell p,
+html[data-theme="light"] .collabify-hero p {
+  color: #334155;
+}
+
+html[data-theme="light"] .marketing-nav .ui-btn {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .marketing-nav .ui-btn-default {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b3daf, #00bfff);
+}
+
+html[data-theme="light"] .collabify-hero-grid {
+  opacity: 0.28;
+}
+
+html[data-theme="light"] .collabify-hero-glow {
+  background:
+    radial-gradient(circle at 20% 35%, rgba(40, 215, 255, 0.2), transparent 34%),
+    radial-gradient(circle at 82% 46%, rgba(35, 230, 110, 0.16), transparent 31%);
+}
+
+html[data-theme="light"] .auth-shell {
+  background: #f5f7fb;
+}
+
+html[data-theme="light"] .auth-panel {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+html[data-theme="light"] .auth-panel-topbar {
+  align-items: center;
+}
+
+html[data-theme="light"] .auth-aside {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(40, 215, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 58% 58%, rgba(35, 230, 110, 0.12), transparent 31%),
+    linear-gradient(135deg, #ffffff 0%, #f3f8ff 48%, #edf7ff 100%);
+}
+
+html[data-theme="light"] .auth-aside::before {
+  opacity: 0.55;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+}
+
+html[data-theme="light"] .auth-aside::after {
+  background: rgba(40, 215, 255, 0.12);
+}
+
+html[data-theme="light"] .auth-aside p {
+  color: #475569;
+}
+
+html[data-theme="light"] .auth-aside-logo {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .theme-toggle-button,
+html[data-theme="light"] .topbar-profile-button,
+html[data-theme="light"] .notification-bell {
+  color: #072b87;
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .theme-toggle-button:hover,
+html[data-theme="light"] .topbar-profile-button:hover,
+html[data-theme="light"] .notification-bell:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b3daf, #00bfff);
+}
+
+html[data-theme="light"] .mobile-menu-button {
+  color: #0b3daf;
+}
+
+html[data-theme="light"] .mobile-menu-button span {
+  background: linear-gradient(135deg, #0b3daf 0%, #28d7ff 52%, #23e66e 100%);
+}
+
+html[data-theme="light"] .dashboard-shell,
+html[data-theme="light"] .dashboard-content {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(40, 215, 255, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 82%, rgba(35, 230, 110, 0.06), transparent 26%),
+    linear-gradient(135deg, #f5f7fb 0%, #f8fbff 38%, #eef6ff 100%) !important;
+}
+
+html[data-theme="light"] .sidebar,
+html[data-theme="light"] .mobile-sidebar,
+html[data-theme="light"] .desktop-app-bar,
+html[data-theme="light"] .dashboard-content > .desktop-app-bar,
+html[data-theme="light"] .mobile-app-bar {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] .brand-link,
+html[data-theme="light"] .mobile-app-brand strong {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .sidebar-section > p,
+html[data-theme="light"] .sidebar-role,
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .compact-details dt,
+html[data-theme="light"] .project-card-heading span,
+html[data-theme="light"] .validation-scorebar span,
+html[data-theme="light"] .validation-card span,
+html[data-theme="light"] .metric-card span,
+html[data-theme="light"] .task-assignees .eyebrow,
+html[data-theme="light"] .task-comments .eyebrow {
+  color: #64748b;
+}
+
+html[data-theme="light"] .sidebar a,
+html[data-theme="light"] .mobile-sidebar a,
+html[data-theme="light"] .sidebar-logout {
+  color: #1f2937;
+}
+
+html[data-theme="light"] .sidebar a span,
+html[data-theme="light"] .mobile-sidebar a span,
+html[data-theme="light"] .sidebar-logout span {
+  color: #0b3daf;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.08), rgba(40, 215, 255, 0.1));
+}
+
+html[data-theme="light"] .sidebar a:hover,
+html[data-theme="light"] .mobile-sidebar a:hover {
+  color: #0b3daf;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.08), rgba(40, 215, 255, 0.12));
+  border-color: rgba(40, 215, 255, 0.22);
+}
+
+html[data-theme="light"] .sidebar a.active,
+html[data-theme="light"] .mobile-sidebar a.active {
+  color: #072b87;
+  background:
+    linear-gradient(135deg, rgba(11, 61, 175, 0.1), rgba(40, 215, 255, 0.14)),
+    #f8fbff;
+  border-color: rgba(40, 215, 255, 0.34);
+  box-shadow: 0 10px 24px rgba(11, 61, 175, 0.08);
+}
+
+html[data-theme="light"] .sidebar-logout {
+  color: #0f766e;
+  background: linear-gradient(135deg, rgba(40, 215, 255, 0.08), rgba(35, 230, 110, 0.08));
+  border-color: rgba(40, 215, 255, 0.22);
+}
+
+html[data-theme="light"] .sidebar-logout:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b3daf, #00bfff);
+}
+
+html[data-theme="light"] .sidebar-logout:hover span {
+  color: #0b3daf;
+  background: #ffffff;
+}
+
+html[data-theme="light"] .dashboard-shell :is(
+    .module-header,
+    .ui-page-header,
+    .content-section,
+    .profile-header,
+    .project-card,
+    .class-card,
+    .syllabus-item,
+    .group-card,
+    .task-card,
+    .metric-card,
+    .analytics-panel,
+    .analytics-row,
+    .health-card,
+    .generated-task,
+    .validation-card,
+    .notification-item,
+    .announcement-item,
+    .leaderboard-row,
+    .timeline-event,
+    .contribution-type-row,
+    .empty-state,
+    .ui-card,
+    .modal,
+    .dialog,
+    [role="dialog"]
+  ) {
+  color: #0f172a;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card);
+}
+
+html[data-theme="light"] .dashboard-shell :is(
+    .module-header h2,
+    .ui-page-header h2,
+    .main-task-heading h2,
+    .project-card h3,
+    .class-card h3,
+    .syllabus-item h3,
+    .group-card h3,
+    .task-card h3,
+    .metric-card strong,
+    .validation-scorebar strong,
+    .validation-card strong,
+    .ui-card-title
+  ) {
+  color: #0f172a;
+}
+
+html[data-theme="light"] .dashboard-shell :is(
+    .module-header p,
+    .ui-page-header p,
+    .main-task-heading p,
+    .project-card p,
+    .class-card p,
+    .syllabus-item p,
+    .group-card p,
+    .task-card p,
+    .analytics-panel p,
+    .metric-card p,
+    .validation-card p,
+    .ui-card-description,
+    .compact-details dd
+  ) {
+  color: #475569;
+}
+
+html[data-theme="light"] .dashboard-shell input,
+html[data-theme="light"] .dashboard-shell select,
+html[data-theme="light"] .dashboard-shell textarea,
+html[data-theme="light"] .dashboard-shell option,
+html[data-theme="light"] .dashboard-shell .ui-input,
+html[data-theme="light"] .dashboard-shell .ui-select,
+html[data-theme="light"] .dashboard-shell .ui-textarea {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .dashboard-shell input::placeholder,
+html[data-theme="light"] .dashboard-shell textarea::placeholder {
+  color: #94a3b8;
+}
+
+html[data-theme="light"] .dashboard-shell .notification-dropdown,
+html[data-theme="light"] .dashboard-shell .ui-dropdown-content,
+html[data-theme="light"] .dashboard-shell .ui-dialog-content,
+html[data-theme="light"] .dashboard-shell .ui-sheet-content {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: #dbe3ee;
+}
+
+html[data-theme="light"] .dashboard-shell .notification-preview,
+html[data-theme="light"] .dashboard-shell .notification-card {
+  color: #0f172a;
+  background: #f8fafc;
+  border-color: #dbe3ee;
+}
+
+html[data-theme="light"] .dashboard-shell .notification-preview p,
+html[data-theme="light"] .dashboard-shell .notification-card p,
+html[data-theme="light"] .dashboard-shell .activity-event p {
+  color: #475569;
+}
+
+html[data-theme="light"] .dashboard-shell .notification-preview.is-unread,
+html[data-theme="light"] .dashboard-shell .notification-card.is-unread {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+html[data-theme="light"] .dashboard-shell .notification-preview span,
+html[data-theme="light"] .dashboard-shell .notification-card span {
+  color: #075985;
+  background: #e0f2fe;
+  border-color: transparent;
+}
+
+html[data-theme="light"] .dashboard-shell .route-state {
+  color: transparent;
+  border-color: #dbe3ee;
+}
+
+html[data-theme="light"] .dashboard-shell .route-state::before {
+  background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.12), transparent);
+}
+
+html[data-theme="light"] .dashboard-shell .route-state::after {
+  background:
+    linear-gradient(#dbe3ee 0 0) 0 0 / 28% 20px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 36px / 52% 14px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 62px / 46% 14px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 98px / 100% 1px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 122px / 100% 12px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 146px / 88% 12px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 170px / 92% 12px no-repeat,
+    linear-gradient(#dbe3ee 0 0) 0 194px / 80% 12px no-repeat;
+}
+
+html[data-theme="light"] .dashboard-shell .form-success {
+  color: #166534;
+}
+
+html[data-theme="light"] .dashboard-shell .form-error,
+html[data-theme="light"] .dashboard-shell .field-error {
+  color: #b91c1c;
+}
+
+html[data-theme="light"] .dashboard-shell button:not(.primary-button):not(.danger-button):not(.success-button):not(.sidebar-toggle):not(.mobile-menu-button):not(.notification-bell):not(.theme-toggle-button):not(.ui-btn-default):not(.ui-btn-destructive):not(.ui-btn-success),
+html[data-theme="light"] .dashboard-shell .card-actions button:not(.danger-button),
+html[data-theme="light"] .dashboard-shell .task-comment-form button {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .dashboard-shell .primary-button,
+html[data-theme="light"] .dashboard-shell .ui-btn-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0b3daf, #00bfff);
+  border-color: transparent;
+}
+
+html[data-theme="light"] .dashboard-shell .secondary-button,
+html[data-theme="light"] .dashboard-shell .ui-btn-default {
+  color: #0f172a;
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+html[data-theme="light"] .dashboard-shell .danger-button,
+html[data-theme="light"] .dashboard-shell .ui-btn-destructive {
+  color: #ffffff;
+  background: linear-gradient(135deg, #ef4444, #fb7185);
+  border-color: transparent;
+}
+
+html[data-theme="light"] .dashboard-shell .success-button,
+html[data-theme="light"] .dashboard-shell .ui-btn-success {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #22c55e);
+  border-color: transparent;
+}
+
+html[data-theme="light"] .dashboard-shell .validation-report .detail-grid section,
+html[data-theme="light"] .dashboard-shell .project-plan-viewer .detail-grid section {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .validation-report .detail-grid h3,
+html[data-theme="light"] .dashboard-shell .project-plan-viewer .detail-grid h3,
+html[data-theme="light"] .dashboard-shell .validation-report .detail-grid p,
+html[data-theme="light"] .dashboard-shell .project-plan-viewer .detail-grid p {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar,
+html[data-theme="light"] body:has(.dashboard-shell) .desktop-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content > header,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content > .desktop-app-bar {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .module-header,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-page-header,
+html[data-theme="light"] body:has(.dashboard-shell) .content-section,
+html[data-theme="light"] body:has(.dashboard-shell) .groups-page .group-filter-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .module-page,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-header,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-details,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-card,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-section,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-form,
+html[data-theme="light"] body:has(.dashboard-shell) .project-card,
+html[data-theme="light"] body:has(.dashboard-shell) .class-card,
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item,
+html[data-theme="light"] body:has(.dashboard-shell) .group-card,
+html[data-theme="light"] body:has(.dashboard-shell) .task-card,
+html[data-theme="light"] body:has(.dashboard-shell) .main-task-section,
+html[data-theme="light"] body:has(.dashboard-shell) .progress-metric,
+html[data-theme="light"] body:has(.dashboard-shell) .progress-row-card,
+html[data-theme="light"] body:has(.dashboard-shell) .member-progress-card,
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row,
+html[data-theme="light"] body:has(.dashboard-shell) .progress-section,
+html[data-theme="light"] body:has(.dashboard-shell) .metric-card,
+html[data-theme="light"] body:has(.dashboard-shell) .analytics-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .analytics-row,
+html[data-theme="light"] body:has(.dashboard-shell) .analytics-chart,
+html[data-theme="light"] body:has(.dashboard-shell) .health-card,
+html[data-theme="light"] body:has(.dashboard-shell) .validation-scorebar > div,
+html[data-theme="light"] body:has(.dashboard-shell) .validation-card,
+html[data-theme="light"] body:has(.dashboard-shell) .validation-row,
+html[data-theme="light"] body:has(.dashboard-shell) .generated-task,
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-form,
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-card,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-thread,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-composer,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-message,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-message.is-mine,
+html[data-theme="light"] body:has(.dashboard-shell) .attachment-grid a,
+html[data-theme="light"] body:has(.dashboard-shell) .message-bubble,
+html[data-theme="light"] body:has(.dashboard-shell) .activity-event,
+html[data-theme="light"] body:has(.dashboard-shell) .notification-item,
+html[data-theme="light"] body:has(.dashboard-shell) .notification-dropdown,
+html[data-theme="light"] body:has(.dashboard-shell) .announcement-item,
+html[data-theme="light"] body:has(.dashboard-shell) .leaderboard-row,
+html[data-theme="light"] body:has(.dashboard-shell) .timeline-event,
+html[data-theme="light"] body:has(.dashboard-shell) .contribution-type-row,
+html[data-theme="light"] body:has(.dashboard-shell) .empty-state,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-card,
+html[data-theme="light"] body:has(.dashboard-shell) .modal-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .group-filter-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .card-menu-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dialog-content,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-sheet-content,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-content {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .module-header,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-page-header {
+  background:
+    linear-gradient(135deg, rgba(11, 61, 175, 0.08), transparent 28%),
+    linear-gradient(315deg, rgba(35, 230, 110, 0.06), transparent 24%),
+    #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) h1,
+html[data-theme="light"] body:has(.dashboard-shell) h2,
+html[data-theme="light"] body:has(.dashboard-shell) h3,
+html[data-theme="light"] body:has(.dashboard-shell) h4,
+html[data-theme="light"] body:has(.dashboard-shell) strong,
+html[data-theme="light"] body:has(.dashboard-shell) dd,
+html[data-theme="light"] body:has(.dashboard-shell) .brand-link,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-card-title,
+html[data-theme="light"] body:has(.dashboard-shell) .metric-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .progress-metric strong,
+html[data-theme="light"] body:has(.dashboard-shell) .validation-scorebar strong,
+html[data-theme="light"] body:has(.dashboard-shell) .validation-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-header h1,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-panel-head h2,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-class-card h3,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-project-card h3,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-announcement-card h3,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-action-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-kpi-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-alert-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-health-list strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) p,
+html[data-theme="light"] body:has(.dashboard-shell) span,
+html[data-theme="light"] body:has(.dashboard-shell) label,
+html[data-theme="light"] body:has(.dashboard-shell) dt,
+html[data-theme="light"] body:has(.dashboard-shell) small,
+html[data-theme="light"] body:has(.dashboard-shell) .eyebrow,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-card-description,
+html[data-theme="light"] body:has(.dashboard-shell) .progress-row-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .member-progress-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row p,
+html[data-theme="light"] body:has(.dashboard-shell) .chat-message-meta,
+html[data-theme="light"] body:has(.dashboard-shell) .activity-event p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-kicker,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-header p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-action-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-kpi-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-class-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-project-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-announcement-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-activity-row p,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-muted,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-subtitle,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-details dt {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar-logout,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-actions a,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-actions button,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-link {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a span,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar-logout span {
+  color: #0b3daf !important;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.06), rgba(40, 215, 255, 0.1)) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-actions a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-actions button:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-inline-link:hover {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.08), rgba(40, 215, 255, 0.12)) !important;
+  border-color: rgba(40, 215, 255, 0.28) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.12), rgba(40, 215, 255, 0.14)), #f8fbff !important;
+  border-color: rgba(40, 215, 255, 0.34) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active span {
+  color: #0b3daf !important;
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-page,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-page,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page {
+  color: #0f172a !important;
+  background: transparent !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-header,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-action-card,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-kpi-card,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-class-card,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-project-card,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-alert-card,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-announcement-card,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-card,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-section {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-bell,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-avatar,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-search-wrap {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-bell strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-group-row,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-mini-grid article,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-ai-list article,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-side-feed article,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-project-card dl,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-class-card dl,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-announcement-card header span {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-group-head {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-group-row span {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-group-row a {
+  color: #0b3daf !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .profile-details > div,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .count-tile,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .rubric-block,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .class-code-box {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] .landing-shell {
+  color: #0f172a !important;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(14, 165, 233, 0.08), transparent 24%),
+    radial-gradient(circle at 82% 78%, rgba(34, 197, 94, 0.06), transparent 26%),
+    linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%) !important;
+}
+
+html[data-theme="light"] .landing-shell :is(h1, h2, h3, h4, strong, label, dt, dd, a, button) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .landing-shell :is(p, small, .landing-copy p, .collabify-hero p, .feature-card p) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .landing-shell .landing-badge,
+html[data-theme="light"] .landing-shell .collabify-hero-badge {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+  border-color: #bae6fd !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-nav {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: #dbe3ee !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-nav nav a {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-nav nav a:hover {
+  color: #0f172a !important;
+  background: #eef6ff !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-menu {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-menu span {
+  background: linear-gradient(135deg, #0b3daf 0%, #28d7ff 52%, #23e66e 100%) !important;
+}
+
+html[data-theme="light"] .landing-shell .hero-actions .ui-button-secondary,
+html[data-theme="light"] .landing-shell .marketing-actions .ui-button-secondary,
+html[data-theme="light"] .landing-shell .marketing-actions .ui-button-ghost {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .landing-shell .feature-card {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .landing-shell .feature-card h3,
+html[data-theme="light"] .landing-shell .feature-card p {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .landing-shell .marketing-section {
+  color: #0f172a !important;
+  border-top-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] .landing-shell .hero-visual::before {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.22), transparent 66%) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(40, 215, 255, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 82%, rgba(35, 230, 110, 0.06), transparent 26%),
+    linear-gradient(135deg, #f5f7fb 0%, #f8fbff 38%, #eef6ff 100%) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-shell,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content {
+  color: #0f172a !important;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(40, 215, 255, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 82%, rgba(35, 230, 110, 0.06), transparent 26%),
+    linear-gradient(135deg, #f5f7fb 0%, #f8fbff 38%, #eef6ff 100%) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .desktop-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content > .desktop-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar-logout {
+  color: #1f2937 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a span,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar-logout span {
+  color: #0b3daf !important;
+  background: #eff6ff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar-logout:hover {
+  color: #0f172a !important;
+  background: #eef6ff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active {
+  color: #0f172a !important;
+  background: #eef6ff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active span {
+  color: #0b3daf !important;
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .topbar-actions .notification-bell,
+html[data-theme="light"] body:has(.dashboard-shell) .topbar-actions .topbar-profile-button,
+html[data-theme="light"] body:has(.dashboard-shell) .theme-toggle-button,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-bell,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-avatar {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .topbar-actions .notification-bell:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .topbar-actions .topbar-profile-button:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .theme-toggle-button:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-bell:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-avatar:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0b3daf, #00bfff) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .module-header,
+    .ui-page-header,
+    .content-section,
+    .profile-header,
+    .profile-card,
+    .profile-section,
+    .profile-form,
+    .project-card,
+    .class-card,
+    .class-details-page .class-code-box,
+    .class-details-page .count-tile,
+    .class-details-page .detail-grid section,
+    .class-details-page .announcement-item,
+    .project-details-page .class-code-box,
+    .project-details-page .count-tile,
+    .project-details-page .project-details-card,
+    .project-details-page .rubric-block,
+    .syllabus-item,
+    .curriculum-card,
+    .curriculum-item,
+    .curriculum-details-page,
+    .group-card,
+    .group-details-members-panel,
+    .task-card,
+    .main-task-section,
+    .progress-metric,
+    .progress-row-card,
+    .member-progress-card,
+    .task-progress-row,
+    .progress-section,
+    .metric-card,
+    .analytics-panel,
+    .analytics-row,
+    .analytics-chart,
+    .health-card,
+    .validation-card,
+    .notification-item,
+    .notification-dropdown,
+    .notification-preview,
+    .notification-card,
+    .announcement-item,
+    .leaderboard-row,
+    .timeline-event,
+    .contribution-type-row,
+    .empty-state,
+    .ui-card,
+    .modal-panel,
+    .group-filter-bar,
+    .card-menu-panel,
+    .ui-dialog-content,
+    .ui-sheet-content,
+    .ui-dropdown-content,
+    .task-modal,
+    .task-modal-backdrop .task-modal,
+    .task-detail-modal-panel,
+    .task-detail-main,
+    .task-detail-sidebar,
+    .task-detail-section,
+    .task-activity-panel,
+    .reassignment-form,
+    .chat-thread,
+    .chat-message,
+    .chat-composer,
+    .message-menu,
+    .pinned-modal,
+    .task-file-paper,
+    .version-row,
+    .profile-page,
+    .prof-dashboard-page,
+    .prof-dashboard-header,
+    .prof-dashboard-panel,
+    .prof-dashboard-action-card,
+    .prof-dashboard-kpi-card,
+    .prof-dashboard-class-card,
+    .prof-dashboard-project-card,
+    .prof-dashboard-alert-card,
+    .prof-dashboard-announcement-card,
+    .prof-dashboard-group-row,
+    .prof-dashboard-mini-grid article,
+    .prof-dashboard-ai-list article,
+    .prof-dashboard-side-feed article,
+    .prof-dashboard-search-wrap
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    strong,
+    dd,
+    .brand-link,
+    .ui-card-title,
+    .metric-card strong,
+    .progress-metric strong,
+    .validation-scorebar strong,
+    .validation-card strong,
+    .prof-dashboard-header h1,
+    .prof-dashboard-panel-head h2,
+    .prof-dashboard-class-card h3,
+    .prof-dashboard-project-card h3,
+    .prof-dashboard-announcement-card h3,
+    .prof-dashboard-action-card strong,
+    .prof-dashboard-kpi-card strong,
+    .prof-dashboard-alert-card strong,
+    .prof-dashboard-health-list strong,
+    .task-detail-titlebar h2
+  ) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    p,
+    span,
+    label,
+    dt,
+    small,
+    .eyebrow,
+    .ui-card-description,
+    .progress-row-card p,
+    .member-progress-card p,
+    .task-progress-row p,
+    .chat-message-meta,
+    .activity-event p,
+    .prof-dashboard-kicker,
+    .prof-dashboard-header p,
+    .prof-dashboard-action-card p,
+    .prof-dashboard-kpi-card p,
+    .prof-dashboard-class-card p,
+    .prof-dashboard-project-card p,
+    .prof-dashboard-announcement-card p,
+    .prof-dashboard-activity-row p,
+    .prof-dashboard-muted,
+    .profile-subtitle,
+    .profile-details dt,
+    .class-card-description,
+    .project-card-description,
+    .syllabus-description,
+    .task-card-summary small,
+    .main-task-heading p,
+    .task-detail-titlebar p,
+    .muted-copy,
+    .task-comment-line,
+    .notification-dropdown-header button,
+    .notification-preview p,
+    .notification-card p,
+    .message-menu button,
+    .card-menu-panel a,
+    .card-menu-panel button
+  ) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    input,
+    select,
+    textarea,
+    option,
+    .ui-input,
+    .ui-select,
+    .ui-textarea,
+    .task-comment-form input,
+    .prof-dashboard-search-wrap input
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    input::placeholder,
+    textarea::placeholder,
+    .prof-dashboard-search-wrap input::placeholder
+  ) {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .secondary-button,
+    .secondary-link-button,
+    .ui-btn-secondary,
+    .ui-btn-outline,
+    .chat-message-actions button,
+    .pinned-strip button,
+    .task-comments-header button,
+    .syllabus-menu button,
+    .syllabus-menu a,
+    .message-menu button,
+    .task-version-menu-popover button
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .primary-button,
+    .ui-btn-primary,
+    .danger-button,
+    .ui-btn-destructive,
+    .success-button,
+    .ui-btn-success
+  ) {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .progress-track,
+    .progress-bar
+  ) {
+  background: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .progress-track span,
+    .progress-bar > span,
+    .progress-fill
+  ) {
+  background: linear-gradient(90deg, #0b3daf, #28d7ff, #23e66e) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-file-paper,
+html[data-theme="light"] body:has(.dashboard-shell) .task-file-paper:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .version-row,
+html[data-theme="light"] body:has(.dashboard-shell) .version-row.is-final {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .version-row.is-final {
+  background: #ecfdf5 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-modal-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .task-modal,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-main,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-sidebar,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-section,
+html[data-theme="light"] body:has(.dashboard-shell) .task-activity-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .messages-page,
+html[data-theme="light"] body:has(.dashboard-shell) .groups-page,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-page,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-page {
+  color: #0f172a !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.98)) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .class-code-box,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .count-tile,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .detail-grid section,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .announcement-item,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .class-code-box,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .count-tile,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .project-details-card,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .rubric-block,
+html[data-theme="light"] body:has(.dashboard-shell) .group-filter-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-details > div {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .announcement-title-row span,
+html[data-theme="light"] body:has(.dashboard-shell) .project-card-heading span,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-announcement-card header span,
+html[data-theme="light"] body:has(.dashboard-shell) .group-member-row small,
+html[data-theme="light"] body:has(.dashboard-shell) .status-badge,
+html[data-theme="light"] body:has(.dashboard-shell) .badge,
+html[data-theme="light"] body:has(.dashboard-shell) .health-status {
+  color: #0f172a !important;
+  background: #e0f2fe !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] body {
+  background: #eef3f8 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) {
+  background: #eef3f8 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong,
+    a,
+    button,
+    dt,
+    dd,
+    label
+  ) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    p,
+    span,
+    small,
+    li,
+    em,
+    .eyebrow,
+    .muted-copy,
+    .profile-subtitle,
+    .profile-details dt,
+    .profile-details dd,
+    .class-card-description,
+    .project-card-description,
+    .syllabus-description,
+    .task-card-summary small,
+    .main-task-heading p,
+    .task-detail-titlebar p,
+    .task-comment-line,
+    .notification-preview p,
+    .notification-card p,
+    .prof-dashboard-kicker,
+    .prof-dashboard-header p,
+    .prof-dashboard-action-card p,
+    .prof-dashboard-kpi-card p,
+    .prof-dashboard-class-card p,
+    .prof-dashboard-project-card p,
+    .prof-dashboard-announcement-card p,
+    .prof-dashboard-activity-row p,
+    .prof-dashboard-muted
+  ) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    input,
+    select,
+    textarea,
+    option,
+    .ui-input,
+    .ui-select,
+    .ui-textarea,
+    .ui-btn,
+    .secondary-button,
+    .secondary-link-button,
+    .ui-btn-secondary,
+    .ui-btn-outline,
+    .icon-button,
+    .pill-button,
+    .menu-button,
+    .card-menu-trigger,
+    .filter-trigger,
+    .task-comments-header button,
+    .chat-message-actions button,
+    .pinned-strip button,
+    .syllabus-menu button,
+    .syllabus-menu a,
+    .message-menu button,
+    .task-version-menu-popover button,
+    .prof-dashboard-search-wrap input
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    input::placeholder,
+    textarea::placeholder,
+    .prof-dashboard-search-wrap input::placeholder
+  ) {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    .ui-card,
+    .modal-panel,
+    .group-card,
+    .task-card,
+    .class-card,
+    .project-card,
+    .metric-card,
+    .analytics-panel,
+    .analytics-row,
+    .analytics-chart,
+    .health-card,
+    .validation-card,
+    .notification-item,
+    .notification-dropdown,
+    .notification-preview,
+    .notification-card,
+    .announcement-item,
+    .leaderboard-row,
+    .timeline-event,
+    .contribution-type-row,
+    .empty-state,
+    .task-modal,
+    .task-detail-modal-panel,
+    .task-detail-main,
+    .task-detail-sidebar,
+    .task-detail-section,
+    .task-activity-panel,
+    .reassignment-form,
+    .chat-thread,
+    .chat-message,
+    .chat-composer,
+    .pinned-modal,
+    .task-file-paper,
+    .version-row,
+    .profile-card,
+    .profile-section,
+    .profile-header,
+    .group-filter-bar,
+    .group-details-members-panel,
+    .group-member-table,
+    .group-member-row,
+    .class-details-page .class-code-box,
+    .class-details-page .count-tile,
+    .class-details-page .detail-grid section,
+    .class-details-page .announcement-item,
+    .project-details-page .class-code-box,
+    .project-details-page .count-tile,
+    .project-details-page .project-details-card,
+    .project-details-page .rubric-block,
+    .syllabus-item,
+    .syllabus-menu,
+    .program-study-panel,
+    .program-study-list,
+    .curriculum-card,
+    .curriculum-item,
+    .curriculum-details-page,
+    .prof-dashboard-panel,
+    .prof-dashboard-action-card,
+    .prof-dashboard-kpi-card,
+    .prof-dashboard-class-card,
+    .prof-dashboard-project-card,
+    .prof-dashboard-alert-card,
+    .prof-dashboard-announcement-card,
+    .prof-dashboard-group-row,
+    .prof-dashboard-mini-grid article,
+    .prof-dashboard-ai-list article,
+    .prof-dashboard-side-feed article
+  ) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell,
+    .auth-shell,
+    .dashboard-shell,
+    .prof-dashboard-page,
+    .profile-page,
+    .messages-page,
+    .groups-page,
+    .classes-page,
+    .projects-page,
+    .tasks-page,
+    .task-system-page,
+    .task-detail-page,
+    .task-modal,
+    .task-detail-modal-shell,
+    .class-details-page,
+    .project-details-page,
+    .curriculum-page,
+    .curriculum-details-page,
+    .syllabi-page,
+    .syllabus-page
+  ) :is(
+    .sidebar,
+    .mobile-sidebar,
+    .desktop-app-bar,
+    .auth-panel-topbar,
+    .notification-dropdown,
+    .message-menu,
+    .card-menu-panel,
+    .ui-dropdown-content,
+    .ui-dialog-content,
+    .ui-sheet-content,
+    .pinned-modal
+  ) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] :is(
+    .sidebar a,
+    .sidebar-logout,
+    .mobile-sidebar a,
+    .mobile-sidebar .sidebar-logout
+  ) {
+  color: #0f172a !important;
+  background: transparent !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] :is(
+    .sidebar a:hover,
+    .sidebar-logout:hover,
+    .mobile-sidebar a:hover,
+    .mobile-sidebar .sidebar-logout:hover
+  ) {
+  background: #edf4fb !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] :is(
+    .sidebar a.active,
+    .mobile-sidebar a.active
+  ) {
+  background: #e6f2ff !important;
+  color: #0f172a !important;
+  border-color: #8ed8ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] :is(
+    .theme-toggle-button,
+    .topbar-profile-button,
+    .notification-bell,
+    .mobile-menu-button,
+    .prof-dashboard-bell,
+    .prof-dashboard-avatar
+  ) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] :is(
+    .theme-toggle-button svg,
+    .topbar-profile-button svg,
+    .notification-bell svg,
+    .mobile-menu-button span,
+    .prof-dashboard-bell svg,
+    .prof-dashboard-avatar svg,
+    .sidebar svg,
+    .sidebar-logout svg
+  ) {
+  color: #0f172a !important;
+  stroke: #0f172a !important;
+  fill: currentColor !important;
+}
+
+html[data-theme="light"] :is(
+    .landing-shell .marketing-nav,
+    .landing-shell .marketing-menu,
+    .landing-shell .marketing-section,
+    .landing-shell .feature-card,
+    .landing-shell .collabify-hero,
+    .landing-shell .collabify-hero-grid,
+    .landing-shell .hero-actions .ui-button-secondary,
+    .landing-shell .marketing-actions .ui-button-secondary,
+    .landing-shell .marketing-actions .ui-button-ghost
+  ) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] .landing-shell :is(h1, h2, h3, h4, h5, h6, strong, a, label, dt, dd) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .landing-shell :is(p, small, span) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-shell,
+html[data-theme="light"] body:has(.dashboard-shell) .content-section,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-page-header,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-page,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-page,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-page,
+html[data-theme="light"] body:has(.dashboard-shell) .messages-page,
+html[data-theme="light"] body:has(.dashboard-shell) .groups-page,
+html[data-theme="light"] body:has(.dashboard-shell) .classes-page,
+html[data-theme="light"] body:has(.dashboard-shell) .projects-page,
+html[data-theme="light"] body:has(.dashboard-shell) .tasks-page,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page {
+  background: #eef3f8 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content > header,
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content > .desktop-app-bar,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-header,
+html[data-theme="light"] body:has(.dashboard-shell) .prof-dashboard-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-header,
+html[data-theme="light"] body:has(.dashboard-shell) .profile-details,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-main,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-sidebar,
+html[data-theme="light"] body:has(.dashboard-shell) .task-detail-section,
+html[data-theme="light"] body:has(.dashboard-shell) .task-activity-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .detail-grid section,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .announcement-item,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .project-details-card,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .rubric-block,
+html[data-theme="light"] body:has(.dashboard-shell) .group-details-members-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .group-card,
+html[data-theme="light"] body:has(.dashboard-shell) .class-card,
+html[data-theme="light"] body:has(.dashboard-shell) .project-card,
+html[data-theme="light"] body:has(.dashboard-shell) .task-card,
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-card,
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content :is(h1, h2, h3, h4, strong, dt, dd, a, button, label, span) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .dashboard-content :is(p, small, .eyebrow, .prof-dashboard-muted, .muted-copy, .profile-subtitle, .class-card-description, .project-card-description, .syllabus-description, .task-card-summary small) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .class-details-page .class-code-box,
+    .class-details-page .count-tile,
+    .project-details-page .class-code-box,
+    .project-details-page .count-tile,
+    .group-filter-bar,
+    .task-file-paper,
+    .version-row,
+    .task-version-panel,
+    .task-version-row,
+    .task-version-menu-popover,
+    .task-modal-section,
+    .task-modal,
+    .message-menu,
+    .notification-dropdown,
+    .card-menu-panel,
+    .program-study-panel,
+    .program-study-list,
+    .syllabus-menu,
+    .chat-thread,
+    .chat-message,
+    .chat-composer,
+    .group-member-row,
+    .group-member-table,
+    .prof-dashboard-search-wrap input
+  ) {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .class-details-page .class-code-box span,
+    .class-details-page .count-tile dt,
+    .project-details-page .class-code-box span,
+    .project-details-page .count-tile dt,
+    .group-member-row small,
+    .message-menu button,
+    .notification-dropdown button,
+    .card-menu-panel button,
+    .task-version-menu-popover button
+  ) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .class-details-page .class-code-box strong,
+    .class-details-page .count-tile dd,
+    .project-details-page .class-code-box strong,
+    .project-details-page .count-tile dd,
+    .group-member-row span,
+    .task-version-row strong,
+    .task-file-paper strong,
+    .prof-dashboard-project-card dd,
+    .prof-dashboard-class-card dd
+  ) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .analytics-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .analytics-panel > h3,
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .validation-list,
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .validation-row,
+html[data-theme="light"] body:has(.dashboard-shell) .health-phase-grid .metric-card,
+html[data-theme="light"] body:has(.dashboard-shell) .health-phase-grid .metric-card span,
+html[data-theme="light"] body:has(.dashboard-shell) .health-phase-grid .metric-card strong,
+html[data-theme="light"] body:has(.dashboard-shell) .health-phase-grid .metric-card p {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .validation-row p,
+html[data-theme="light"] body:has(.dashboard-shell) .health-report-grid .validation-row small {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-card .compact-details {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  gap: 10px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-card .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .health-card .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item .compact-details {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .syllabus-item .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a {
+  color: #1e293b !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a span {
+  color: #0b3daf !important;
+  background: #eff6ff !important;
+  border: 1px solid #dbeafe !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a:hover {
+  color: #0f172a !important;
+  background: #eaf3ff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 10px 22px rgba(11, 61, 175, 0.08) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a:hover span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a:hover span {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0b3daf, #00bfff) !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active {
+  color: #0f172a !important;
+  background: linear-gradient(135deg, rgba(11, 61, 175, 0.16), rgba(40, 215, 255, 0.18)), #eaf3ff !important;
+  border-color: #93c5fd !important;
+  box-shadow: 0 12px 26px rgba(11, 61, 175, 0.14) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .sidebar a.active span,
+html[data-theme="light"] body:has(.dashboard-shell) .mobile-sidebar a.active span {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0b3daf, #00bfff) !important;
+  border-color: transparent !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .pinned-modal-item {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .pinned-modal-item p,
+html[data-theme="light"] body:has(.dashboard-shell) .pinned-modal-item small {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .pinned-modal-item strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-card .compact-details {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-card .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-card .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-panel {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-search-input {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-table-wrap {
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table th {
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table td {
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover td {
+  color: #0f172a !important;
+  background: #eef7ff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-request-modal {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .join-class-modal {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .join-class-modal .join-class-form {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .generated-task .compact-details {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .generated-task .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .generated-task .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .generated-task .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-plan-viewer .detail-grid {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  gap: 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-card .compact-details {
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-card .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-card .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .notification-bell,
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .theme-toggle-button,
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .topbar-profile-button {
+  color: #ffffff !important;
+  background: #111111 !important;
+  border: 1px solid #0ea5e9 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .notification-bell svg,
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .theme-toggle-button svg,
+html[data-theme="dark"] body:has(.dashboard-shell) .topbar-actions .topbar-profile-button svg {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .class-card .syllabus-status,
+body[data-theme="dark"]:has(.dashboard-shell) .class-card .syllabus-status {
+  color: #0f172a !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-high,
+body[data-theme="dark"]:has(.dashboard-shell) .task-system-page .task-priority.priority-high {
+  color: #fecaca !important;
+  background: rgba(239, 68, 68, 0.24) !important;
+  border-color: #ef4444 !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-medium,
+body[data-theme="dark"]:has(.dashboard-shell) .task-system-page .task-priority.priority-medium {
+  color: #fef3c7 !important;
+  background: rgba(234, 179, 8, 0.24) !important;
+  border-color: #eab308 !important;
+}
+
+html[data-theme="dark"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-low,
+body[data-theme="dark"]:has(.dashboard-shell) .task-system-page .task-priority.priority-low {
+  color: #bbf7d0 !important;
+  background: rgba(34, 197, 94, 0.22) !important;
+  border-color: #22c55e !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .classes-page .class-card .compact-details,
+body[data-theme="light"]:has(.dashboard-shell) .classes-page .class-card .compact-details {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .classes-page .class-card .compact-details > div,
+body[data-theme="light"]:has(.dashboard-shell) .classes-page .class-card .compact-details > div {
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .classes-page .class-card .compact-details :is(dt, dd),
+body[data-theme="light"]:has(.dashboard-shell) .classes-page .class-card .compact-details :is(dt, dd) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .classes-page .class-card .compact-details dt,
+body[data-theme="light"]:has(.dashboard-shell) .classes-page .class-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .detail-grid,
+body[data-theme="light"]:has(.dashboard-shell) .class-details-page .detail-grid,
+html[data-theme="light"] body:has(.dashboard-shell) .class-details-page .count-grid,
+body[data-theme="light"]:has(.dashboard-shell) .class-details-page .count-grid {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card .compact-details,
+body[data-theme="light"]:has(.dashboard-shell) .project-card .compact-details {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card .compact-details > div,
+body[data-theme="light"]:has(.dashboard-shell) .project-card .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card .compact-details dt,
+body[data-theme="light"]:has(.dashboard-shell) .project-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card .compact-details dd,
+body[data-theme="light"]:has(.dashboard-shell) .project-card .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card-heading,
+body[data-theme="light"]:has(.dashboard-shell) .project-card-heading {
+  align-items: flex-start;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-card-heading span,
+body[data-theme="light"]:has(.dashboard-shell) .project-card-heading span {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .validation-report .detail-grid,
+body[data-theme="light"]:has(.dashboard-shell) .validation-report .detail-grid {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-card .compact-details,
+body[data-theme="light"]:has(.dashboard-shell) .group-card .compact-details {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-card .compact-details > div,
+body[data-theme="light"]:has(.dashboard-shell) .group-card .compact-details > div {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-card .compact-details dt,
+body[data-theme="light"]:has(.dashboard-shell) .group-card .compact-details dt {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-card .compact-details dd,
+body[data-theme="light"]:has(.dashboard-shell) .group-card .compact-details dd {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .count-grid,
+body[data-theme="light"]:has(.dashboard-shell) .project-details-page .count-grid,
+html[data-theme="light"] body:has(.dashboard-shell) .project-details-page .detail-grid,
+body[data-theme="light"]:has(.dashboard-shell) .project-details-page .detail-grid {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .compact-details,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .compact-details {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-board,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-board,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-children,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-children {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-priority,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-priority {
+  color: #064e3b !important;
+  background: #bbf7d0 !important;
+  border-color: #86efac !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-high,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-priority.priority-high {
+  color: #7f1d1d !important;
+  background: #fecaca !important;
+  border-color: #f87171 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-medium,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-priority.priority-medium {
+  color: #713f12 !important;
+  background: #fef08a !important;
+  border-color: #fde047 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-priority.priority-low,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-priority.priority-low {
+  color: #064e3b !important;
+  background: #bbf7d0 !important;
+  border-color: #86efac !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .compact-details > div,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .compact-details > div,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-assignees,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-assignees,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-comments,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments {
+  background: #ffffff !important;
+  border: 1px solid #dbe3ee !important;
+  border-radius: 10px !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .compact-details dt,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .compact-details dt,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-assignees .eyebrow,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-assignees .eyebrow,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-comments .eyebrow,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments .eyebrow {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .compact-details dd,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .compact-details dd,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-assignees p,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-assignees p,
+html[data-theme="light"] body:has(.dashboard-shell) .task-system-page .task-comments p,
+body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments p {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .route-state,
+body[data-theme="light"]:has(.dashboard-shell) .route-state {
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .route-state::before,
+body[data-theme="light"]:has(.dashboard-shell) .route-state::before {
+  background: linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.22), transparent) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .route-state::after,
+body[data-theme="light"]:has(.dashboard-shell) .route-state::after {
+  background:
+    linear-gradient(#cbd5e1 0 0) 0 0 / 28% 20px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 36px / 52% 14px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 62px / 46% 14px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 98px / 100% 1px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 122px / 100% 12px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 146px / 88% 12px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 170px / 92% 12px no-repeat,
+    linear-gradient(#cbd5e1 0 0) 0 194px / 80% 12px no-repeat !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-details-page .detail-grid,
+body[data-theme="light"]:has(.dashboard-shell) .curriculum-details-page .detail-grid,
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-details-page .program-study-section,
+body[data-theme="light"]:has(.dashboard-shell) .curriculum-details-page .program-study-section {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-details-page .curriculum-detail-block,
+body[data-theme="light"]:has(.dashboard-shell) .curriculum-details-page .curriculum-detail-block,
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-details-page .analytics-panel,
+body[data-theme="light"]:has(.dashboard-shell) .curriculum-details-page .analytics-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .curriculum-form .program-study-panel,
+body[data-theme="light"]:has(.dashboard-shell) .curriculum-form .program-study-panel {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-table-wrap,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-table-wrap {
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-table th,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-table th {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-table td,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-table td {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-actions .icon-button,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-actions .icon-button {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-actions .danger-icon,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-actions .danger-icon {
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-detail p,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-detail p {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-modal-backdrop,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-modal-backdrop {
+  background: rgba(15, 23, 42, 0.42) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-modal-card,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-modal-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #0ea5e9 !important;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-modal-card h3,
+html[data-theme="light"] body:has(.dashboard-shell) .program-study-modal-card h4,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-modal-card h3,
+body[data-theme="light"]:has(.dashboard-shell) .program-study-modal-card h4 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-page,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-page {
+  color: #0f172a !important;
+  background: #eef5fb !important;
+  border-color: #d6e2ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-header,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-header,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-panel,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-panel,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-quick-card,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-quick-card,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-task-item,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-task-item,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-project-item,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-project-item,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-progress-pair div,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-progress-pair div,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-insight-item,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-insight-item {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #d6e2ee !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-quick-card:hover,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-quick-card:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-project-item:hover,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-project-item:hover {
+  border-color: #38bdf8 !important;
+  background: #f8fbff !important;
+  box-shadow: 0 16px 34px rgba(14, 165, 233, 0.14) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-search,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-search {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-search::placeholder,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-search::placeholder {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-bell,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-bell,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-avatar,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-avatar,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-author-avatar,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-author-avatar,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-member-dots span,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-member-dots span {
+  color: #0369a1 !important;
+  background: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-quick-card svg,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-quick-card svg,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-bell svg,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-bell svg {
+  color: #0284c7 !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-header h1,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-header h1,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-panel-head h2,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-panel-head h2,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item h3,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item h3,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item header strong,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item header strong,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-task-item h3,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-task-item h3,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-project-item h3,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-project-item h3,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-progress-pair strong,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-progress-pair strong,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-insight-item strong,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-insight-item strong,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-health-list strong,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-health-list strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-greeting-label,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-greeting-label,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-subtitle,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-subtitle,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-quick-card p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-quick-card p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-quick-card strong span,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-quick-card strong span,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item header p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item header p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item footer small,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item footer small,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-task-item p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-task-item p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-project-item p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-project-item p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-status span,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-status span,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-status small,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-status small,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-progress-pair p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-progress-pair p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-deadline-columns h3,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-deadline-columns h3,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-activity-item small,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-activity-item small,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-muted,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-muted {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-deadline-columns p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-deadline-columns p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-health-list p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-health-list p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-activity-item p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-activity-item p,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-insight-item p,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-insight-item p {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-panel-head a,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-panel-head a,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-inline,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-inline,
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-item footer a,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-item footer a {
+  color: #0369a1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-pin,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-pin {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-image,
+body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-image {
+  border-color: #cbd5e1 !important;
 }

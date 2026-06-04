@@ -21,6 +21,7 @@ create table if not exists public.curricula (
 create table if not exists public.curriculum_program_studies (
   id uuid primary key default gen_random_uuid(),
   curriculum_id uuid not null references public.curricula(id) on delete cascade,
+  title text,
   content text not null,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),

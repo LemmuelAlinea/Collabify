@@ -22,6 +22,7 @@ const CURRICULUM_SELECT = `
   programStudies:curriculum_program_studies (
     id,
     curriculum_id,
+    title,
     content,
     sort_order,
     created_at,
@@ -33,6 +34,7 @@ function normalizeProgramStudy(item) {
   return {
     id: item.id,
     curriculumId: item.curriculum_id,
+    title: item.title,
     content: item.content,
     sortOrder: item.sort_order,
     createdAt: item.created_at,
@@ -103,7 +105,16 @@ async function replaceProgramStudies(curriculumId, programStudies) {
   if (deleteError) throw new HttpError(400, 'Unable to update program of study', deleteError.message)
 
   const rows = programStudies
-    .map((content, index) => ({ curriculum_id: curriculumId, content, sort_order: index }))
+    .map((study, index) => {
+      const content = typeof study === 'string' ? study : study?.content
+      const title = typeof study === 'string' ? study.slice(0, 120) : study?.title
+      return {
+        curriculum_id: curriculumId,
+        title: title || content?.slice(0, 120) || `Program of Study ${index + 1}`,
+        content,
+        sort_order: index,
+      }
+    })
     .filter((item) => item.content)
 
   if (!rows.length) return

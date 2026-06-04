@@ -1,4 +1,5 @@
 import {
+  archiveReassignmentRequest,
   createReassignmentRequest,
   listReassignmentRequests,
   reviewReassignmentRequest,
@@ -8,6 +9,15 @@ export async function getReassignments(req, res, next) {
   try {
     const reassignments = await listReassignmentRequests(req.auth.user.id, req.auth.role)
     res.json({ reassignments })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function patchReassignmentArchive(req, res, next) {
+  try {
+    const reassignment = await archiveReassignmentRequest(req.auth.user.id, req.auth.role, req.params.id)
+    res.json({ reassignment })
   } catch (error) {
     next(error)
   }

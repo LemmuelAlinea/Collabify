@@ -134,6 +134,19 @@ async function assertProfessorOwnsClasses(classIds, professorId) {
   await Promise.all(classIds.map((classId) => assertProfessorOwnsClass(classId, professorId)))
 }
 
+async function isStudentProjectGroupMember(projectId, userId) {
+  const { data, error } = await supabaseAdminClient
+    .from('group_members')
+    .select('id, groups!inner(id, project_id)')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .eq('groups.project_id', projectId)
+    .limit(1)
+
+  if (error) throw new HttpError(400, 'Unable to verify project group access', error.message)
+  return (data ?? []).length > 0
+}
+
 async function attachReleases(projects) {
   if (projects.length === 0) return projects
 
@@ -338,17 +351,23 @@ export async function getProject(userId, role, projectId) {
   if (role === 'professor') {
     await assertProfessorOwnsClass(data.class_id, userId)
   } else {
+    const hasGroupAccess = await isStudentProjectGroupMember(projectId, userId)
     const classIds = (releases ?? []).map((release) => release.class_id)
-    if (classIds.length === 0) throw new HttpError(404, 'Project not found')
+    if (classIds.length === 0 && !hasGroupAccess) throw new HttpError(404, 'Project not found')
 
-    const { data: memberships, error: membershipError } = await supabaseAdminClient
-      .from('class_members')
-      .select('class_id')
-      .in('class_id', classIds)
-      .eq('user_id', userId)
-      .eq('status', 'active')
+    let memberships = []
 
-    if (membershipError) throw new HttpError(400, 'Unable to verify project access', membershipError.message)
+    if (classIds.length > 0) {
+      const { data: membershipRows, error: membershipError } = await supabaseAdminClient
+        .from('class_members')
+        .select('class_id')
+        .in('class_id', classIds)
+        .eq('user_id', userId)
+        .eq('status', 'active')
+
+      if (membershipError) throw new HttpError(400, 'Unable to verify project access', membershipError.message)
+      memberships = membershipRows ?? []
+    }
 
     const memberClassIds = new Set((memberships ?? []).map((membership) => membership.class_id))
     visibleReleases = (releases ?? []).filter((release) => (
@@ -356,7 +375,7 @@ export async function getProject(userId, role, projectId) {
       && new Date(release.release_at) <= new Date()
     ))
 
-    if (visibleReleases.length === 0) throw new HttpError(404, 'Project not found')
+    if (visibleReleases.length === 0 && !hasGroupAccess) throw new HttpError(404, 'Project not found')
   }
 
   if (

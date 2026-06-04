@@ -1,15 +1,19 @@
 import { Link } from 'react-router-dom'
+import { ThemeToggle } from '../../../app/providers/ThemeProvider'
 
 export function AuthLayout({ children, eyebrow, title, subtitle }) {
   return (
     <main className="auth-shell">
       <section className="auth-panel" aria-labelledby="auth-title">
-        <div className="brand-block">
-          <img className="brand-logo" src="/brand/collabify-logo.png" alt="Collabify" />
-          <div>
-            <p className="eyebrow">{eyebrow}</p>
-            <h1 id="auth-title">{title}</h1>
+        <div className="auth-panel-topbar">
+          <div className="brand-block">
+            <img className="brand-logo" src="/brand/collabify-logo.png" alt="Collabify" />
+            <div>
+              <p className="eyebrow">{eyebrow}</p>
+              <h1 id="auth-title">{title}</h1>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
         <p className="auth-subtitle">{subtitle}</p>
         {children}

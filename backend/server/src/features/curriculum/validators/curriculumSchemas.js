@@ -13,7 +13,17 @@ const allowedMimeTypes = [
 ]
 
 const programStudies = z
-  .array(z.string().trim().min(1).max(4000))
+  .array(z.union([
+    z.string().trim().min(1).max(4000).transform((content) => ({
+      title: content.slice(0, 120),
+      content,
+    })),
+    z.object({
+      id: z.string().uuid().optional(),
+      title: z.string().trim().min(1).max(180),
+      content: z.string().trim().min(1).max(4000),
+    }),
+  ]))
   .max(80)
   .optional()
   .default([])

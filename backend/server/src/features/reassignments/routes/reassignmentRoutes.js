@@ -4,6 +4,7 @@ import { requireRole } from '../../../core/middleware/requireRole.js'
 import { validateBody } from '../../../core/middleware/validateRequest.js'
 import {
   getReassignments,
+  patchReassignmentArchive,
   patchReassignmentReview,
   postReassignment,
 } from '../controllers/reassignmentController.js'
@@ -17,3 +18,4 @@ export const reassignmentRoutes = Router()
 reassignmentRoutes.get('/', authenticate, getReassignments)
 reassignmentRoutes.post('/', authenticate, validateBody(createReassignmentSchema), postReassignment)
 reassignmentRoutes.patch('/:id/review', authenticate, requireRole('professor'), validateBody(reviewReassignmentSchema), patchReassignmentReview)
+reassignmentRoutes.patch('/:id/archive', authenticate, patchReassignmentArchive)

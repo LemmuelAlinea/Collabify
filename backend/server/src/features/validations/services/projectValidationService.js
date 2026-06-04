@@ -134,7 +134,7 @@ async function getProjectContext(projectId, professorId) {
     project.classes.curriculum_id
       ? supabaseAdminClient
         .from('curriculum_program_studies')
-        .select('id, curriculum_id, content, sort_order')
+        .select('id, curriculum_id, title, content, sort_order')
         .eq('curriculum_id', project.classes.curriculum_id)
         .order('sort_order', { ascending: true })
       : Promise.resolve({ data: [] }),

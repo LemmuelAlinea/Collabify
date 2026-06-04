@@ -20,3 +20,10 @@ export async function reviewReassignment(id, payload) {
   })
   return data.reassignment
 }
+
+export async function archiveReassignment(id) {
+  const data = await apiRequest(`/reassignments/${id}/archive`, {
+    method: 'PATCH',
+  })
+  return data.reassignment
+}

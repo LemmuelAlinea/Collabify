@@ -162,7 +162,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
   return (
     <article className={`task-card compact-task-card depth-${depth}`}>
       <button className="task-card-summary" type="button" onClick={() => setIsExpanded((current) => !current)}>
-        <span className="task-priority">{task.priority}</span>
+        <span className={`task-priority priority-${String(task.priority || '').toLowerCase()}`}>{task.priority}</span>
         <strong>{task.title}</strong>
         <small>{task.description || 'No description'}</small>
       </button>

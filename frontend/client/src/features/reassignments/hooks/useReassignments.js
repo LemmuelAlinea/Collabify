@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  archiveReassignment,
   createReassignment,
   getReassignments,
   reviewReassignment,
@@ -39,7 +40,13 @@ export function useReassignments() {
     return reassignment
   }, [])
 
+  const archive = useCallback(async (id) => {
+    await archiveReassignment(id)
+    setReassignments((current) => current.filter((item) => item.id !== id))
+  }, [])
+
   return {
+    archive,
     error,
     isLoading,
     loadReassignments,
