@@ -32,6 +32,35 @@ function groupBy(items, keyFn) {
   return map
 }
 
+function isMissingRelationError(error) {
+  return ['42P01', '42703'].includes(error?.code)
+}
+
+function toTimestamp(value) {
+  if (!value) return null
+  const time = new Date(value).getTime()
+  return Number.isFinite(time) ? time : null
+}
+
+function earliestDate(values) {
+  const timestamps = values.map(toTimestamp).filter(Number.isFinite)
+  if (timestamps.length === 0) return null
+  return new Date(Math.min(...timestamps)).toISOString()
+}
+
+function latestDate(values) {
+  const timestamps = values.map(toTimestamp).filter(Number.isFinite)
+  if (timestamps.length === 0) return null
+  return new Date(Math.max(...timestamps)).toISOString()
+}
+
+function daysBetween(start, end) {
+  const startTime = toTimestamp(start)
+  const endTime = toTimestamp(end)
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return 0
+  return Math.max(1, Math.ceil((endTime - startTime) / 86400000))
+}
+
 async function getProfiles(userIds) {
   if (userIds.length === 0) return new Map()
 
@@ -41,6 +70,182 @@ async function getProfiles(userIds) {
     .in('user_id', [...new Set(userIds)])
 
   return new Map((data ?? []).map((profile) => [profile.user_id, profile]))
+}
+
+async function loadTimelineData({ classIds = [], groupIds = [] }) {
+  if (classIds.length === 0 && groupIds.length === 0) {
+    return {
+      assignments: [],
+      doneHistory: [],
+      groups: [],
+      members: [],
+      profileByUserId: new Map(),
+      tasks: [],
+    }
+  }
+
+  const { data: groups, error: groupsError } = groupIds.length > 0
+    ? await supabaseAdminClient
+      .from('groups')
+      .select('id, class_id, project_id, name, projects:project_id (id, title), classes:class_id (id, title, section)')
+      .in('id', groupIds)
+    : await supabaseAdminClient
+      .from('groups')
+      .select('id, class_id, project_id, name, projects:project_id (id, title), classes:class_id (id, title, section)')
+      .in('class_id', classIds)
+
+  if (groupsError) throw new HttpError(400, 'Unable to load timeline groups', groupsError.message)
+
+  const resolvedGroupIds = (groups ?? []).map((group) => group.id)
+  if (resolvedGroupIds.length === 0) {
+    return {
+      assignments: [],
+      doneHistory: [],
+      groups: groups ?? [],
+      members: [],
+      profileByUserId: new Map(),
+      tasks: [],
+    }
+  }
+
+  const [{ data: tasks, error: tasksError }, { data: members, error: membersError }] = await Promise.all([
+    supabaseAdminClient
+      .from('tasks')
+      .select('id, project_id, group_id, title, description, status, progress, due_at, completed_at, created_at, archived_at, groups:group_id (name), projects:project_id (id, title)')
+      .in('group_id', resolvedGroupIds)
+      .is('archived_at', null),
+    supabaseAdminClient
+      .from('group_members')
+      .select('group_id, user_id, is_leader, users:user_id (email)')
+      .in('group_id', resolvedGroupIds)
+      .eq('status', 'active'),
+  ])
+
+  if (tasksError) throw new HttpError(400, 'Unable to load timeline tasks', tasksError.message)
+  if (membersError) throw new HttpError(400, 'Unable to load timeline members', membersError.message)
+
+  const taskIds = (tasks ?? []).map((task) => task.id)
+  const { data: assignments, error: assignmentsError } = taskIds.length > 0
+    ? await supabaseAdminClient
+      .from('task_assignments')
+      .select('task_id, assignee_id, assigned_at, users:assignee_id (email)')
+      .in('task_id', taskIds)
+    : { data: [] }
+
+  if (assignmentsError) throw new HttpError(400, 'Unable to load timeline assignments', assignmentsError.message)
+
+  let doneHistory = []
+  if (taskIds.length > 0) {
+    const { data: history, error: historyError } = await supabaseAdminClient
+      .from('task_status_history')
+      .select('task_id, new_status, created_at')
+      .in('task_id', taskIds)
+      .eq('new_status', 'done')
+      .order('created_at', { ascending: false })
+
+    if (historyError && !isMissingRelationError(historyError)) {
+      throw new HttpError(400, 'Unable to load timeline history', historyError.message)
+    }
+
+    doneHistory = historyError ? [] : (history ?? [])
+  }
+
+  const profileByUserId = await getProfiles([
+    ...(members ?? []).map((member) => member.user_id),
+    ...(assignments ?? []).map((assignment) => assignment.assignee_id),
+  ])
+
+  return {
+    assignments: assignments ?? [],
+    doneHistory,
+    groups: groups ?? [],
+    members: members ?? [],
+    profileByUserId,
+    tasks: tasks ?? [],
+  }
+}
+
+function buildTimeline(data, scope) {
+  const today = new Date().toISOString()
+  const assignmentsByTaskId = groupBy(data.assignments, (assignment) => assignment.task_id)
+  const membersByGroupId = groupBy(data.members, (member) => member.group_id)
+  const tasksByGroupId = groupBy(data.tasks, (task) => task.group_id)
+  const doneHistoryByTaskId = new Map()
+
+  for (const history of data.doneHistory) {
+    if (!doneHistoryByTaskId.has(history.task_id)) doneHistoryByTaskId.set(history.task_id, history.created_at)
+  }
+
+  const groups = data.groups.map((group) => {
+    const groupTasks = tasksByGroupId.get(group.id) ?? []
+    const tasks = groupTasks.map((task) => {
+      const assignments = assignmentsByTaskId.get(task.id) ?? []
+      const startAt = earliestDate(assignments.map((assignment) => assignment.assigned_at)) ?? task.created_at ?? today
+      const completedAt = task.completed_at ?? doneHistoryByTaskId.get(task.id) ?? null
+      const endAt = task.status === 'done' ? (completedAt ?? today) : today
+      const assignees = assignments.map((assignment) => ({
+        displayName: data.profileByUserId.get(assignment.assignee_id)?.display_name ?? assignment.users?.email ?? 'Member',
+        assignedAt: assignment.assigned_at,
+        userId: assignment.assignee_id,
+      }))
+
+      return {
+        assigneeLabel: assignees.length > 0 ? assignees.map((assignee) => assignee.displayName).join(', ') : 'Unassigned',
+        assignees,
+        completedAt,
+        createdAt: task.created_at,
+        description: task.description,
+        dueAt: task.due_at,
+        durationDays: daysBetween(startAt, endAt),
+        endAt,
+        groupId: task.group_id,
+        groupName: task.groups?.name ?? group.name,
+        id: task.id,
+        isOverdue: task.status !== 'done' && task.due_at && toTimestamp(task.due_at) < toTimestamp(today),
+        progress: task.progress ?? (task.status === 'done' ? 100 : 0),
+        projectId: task.project_id,
+        projectTitle: task.projects?.title ?? group.projects?.title,
+        startAt,
+        status: task.status,
+        title: task.title,
+      }
+    })
+
+    const members = (membersByGroupId.get(group.id) ?? []).map((member) => ({
+      displayName: data.profileByUserId.get(member.user_id)?.display_name ?? member.users?.email ?? 'Member',
+      role: member.is_leader ? 'Leader' : 'Member',
+      userId: member.user_id,
+    }))
+
+    return {
+      classId: group.class_id,
+      className: group.classes?.title,
+      id: group.id,
+      memberCount: members.length,
+      members,
+      name: group.name,
+      projectId: group.project_id,
+      projectTitle: group.projects?.title,
+      section: group.classes?.section,
+      tasks,
+    }
+  })
+
+  const allTasks = groups.flatMap((group) => group.tasks)
+  const rangeStart = earliestDate(allTasks.map((task) => task.startAt)) ?? today
+  const rangeEnd = latestDate([
+    ...allTasks.map((task) => task.endAt),
+    ...allTasks.map((task) => task.dueAt),
+    today,
+  ]) ?? today
+
+  return {
+    generatedAt: today,
+    groups,
+    rangeEnd,
+    rangeStart,
+    scope,
+  }
 }
 
 async function loadContributionLogs({ groupIds = [], projectIds = [], userIds = [] }) {
@@ -295,4 +500,30 @@ export async function getProgressDashboard(userId, role) {
       taskCompletion: taskCompletion(assignedTasks),
     },
   }
+}
+
+export async function getProgressTimeline(userId, role) {
+  if (role === 'professor') {
+    const { data: classes, error } = await supabaseAdminClient
+      .from('classes')
+      .select('id, title, section')
+      .eq('professor_id', userId)
+      .eq('is_archived', false)
+
+    if (error) throw new HttpError(400, 'Unable to load classes', error.message)
+
+    const data = await loadTimelineData({ classIds: (classes ?? []).map((classItem) => classItem.id) })
+    return buildTimeline(data, { classes: classes ?? [], role })
+  }
+
+  const { data: memberships, error } = await supabaseAdminClient
+    .from('group_members')
+    .select('group_id')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+
+  if (error) throw new HttpError(400, 'Unable to load your groups', error.message)
+
+  const data = await loadTimelineData({ groupIds: (memberships ?? []).map((membership) => membership.group_id) })
+  return buildTimeline(data, { role })
 }

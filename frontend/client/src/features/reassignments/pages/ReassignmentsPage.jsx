@@ -8,7 +8,7 @@ import { ReassignmentRequestForm } from '../components/ReassignmentRequestForm'
 import { useReassignments } from '../hooks/useReassignments'
 
 export function ReassignmentsPage() {
-  const { role } = useAuth()
+  const { profile, role, user } = useAuth()
   const taskFilters = useMemo(() => ({}), [])
   const { error: groupError, groups, isLoading: isLoadingGroups } = useGroups()
   const { error: taskError, tasks, isLoading: isLoadingTasks } = useTasks(taskFilters)
@@ -22,6 +22,7 @@ export function ReassignmentsPage() {
   } = useReassignments()
   const isStudent = role === USER_ROLES.STUDENT
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
+  const currentAssigneeName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim() || profile?.fullName || profile?.displayName || user?.email || 'Current assignee'
 
   async function submitRequest(payload) {
     const result = await request(payload)
@@ -58,7 +59,7 @@ export function ReassignmentsPage() {
                   </div>
                   <button className="ghost-button" type="button" onClick={() => setIsRequestModalOpen(false)}>Close</button>
                 </div>
-                <ReassignmentRequestForm groups={groups} tasks={tasks} onSubmit={submitRequest} />
+                <ReassignmentRequestForm currentAssigneeName={currentAssigneeName} groups={groups} tasks={tasks} userId={user?.id} onSubmit={submitRequest} />
               </div>
             </div>
           ) : null}

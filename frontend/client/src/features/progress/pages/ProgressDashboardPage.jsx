@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { ProgressBar } from '../components/ProgressBar'
 import { ProgressMetric } from '../components/ProgressMetric'
 import { ProgressSection } from '../components/ProgressSection'
+import { TaskTimeline } from '../components/TaskTimeline'
 import { useProgress } from '../hooks/useProgress'
+import { useProgressTimeline } from '../hooks/useProgressTimeline'
 
 function completionLabel(completion) {
   return `${completion.completed}/${completion.total} done`
@@ -31,7 +34,9 @@ function normalizeTaskShares(tasks) {
 
 export function ProgressDashboardPage() {
   const { role, user } = useAuth()
+  const navigate = useNavigate()
   const { error, isLoading, progress } = useProgress()
+  const { error: timelineError, isLoading: isTimelineLoading, timeline } = useProgressTimeline()
   const isProfessor = role === USER_ROLES.PROFESSOR
   const [classFilterId, setClassFilterId] = useState('')
   const [sectionFilter, setSectionFilter] = useState('')
@@ -116,6 +121,10 @@ export function ProgressDashboardPage() {
     const completed = myTasksWithShare.filter((task) => task.status === 'done').length
     return { completed, total }
   }, [myTasksWithShare])
+  const openTimelineTask = (task) => {
+    const basePath = isProfessor ? '/professor' : '/student'
+    navigate(`${basePath}/tasks/${task.id}`)
+  }
 
   if (isLoading) return <div className="route-state">Loading progress...</div>
 
@@ -191,6 +200,21 @@ export function ProgressDashboardPage() {
         <ProgressMetric label="Task completion" value={`${visibleTaskCompletion.progress}%`} hint={completionLabel(visibleTaskCompletion)} />
         <ProgressMetric label="Contribution points" value={visibleContributionPoints} hint="logged contributions" />
       </div>
+
+      {timelineError ? (
+        <ProgressSection title="Task Timeline">
+          <p>{timelineError}</p>
+        </ProgressSection>
+      ) : (
+        <TaskTimeline
+          currentUserId={user?.id}
+          isLoading={isTimelineLoading}
+          isProfessor={isProfessor}
+          onTaskClick={openTimelineTask}
+          timeline={timeline}
+          visibleGroupIds={visibleGroupIds}
+        />
+      )}
 
       {!isProfessor ? (
         <>

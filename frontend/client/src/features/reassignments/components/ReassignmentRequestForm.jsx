@@ -1,13 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 function flattenTasks(tasks) {
   return tasks.flatMap((task) => [task, ...flattenTasks(task.children ?? [])])
 }
 
-export function ReassignmentRequestForm({ groups, onSubmit, tasks }) {
-  const taskOptions = useMemo(() => flattenTasks(tasks), [tasks])
+export function ReassignmentRequestForm({ currentAssigneeName, groups, onSubmit, tasks, userId }) {
+  const taskOptions = useMemo(() => {
+    return flattenTasks(tasks).filter((task) => {
+      const assignedToUser = (task.assignments ?? []).some((assignment) => assignment.assigneeId === userId)
+      return assignedToUser && task.status !== 'done'
+    })
+  }, [tasks, userId])
   const [form, setForm] = useState({
-    currentAssigneeId: '',
+    currentAssigneeId: userId ?? '',
     reason: '',
     requestedAssigneeId: '',
     scorePolicy: 'keep_original',
@@ -18,6 +23,13 @@ export function ReassignmentRequestForm({ groups, onSubmit, tasks }) {
   const selectedTask = taskOptions.find((task) => task.id === form.taskId)
   const selectedGroup = groups.find((group) => group.id === selectedTask?.groupId)
   const assignees = selectedTask?.assignments ?? []
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      currentAssigneeId: userId ?? '',
+    }))
+  }, [userId])
 
   function updateField(event) {
     setForm((current) => ({
@@ -59,14 +71,9 @@ export function ReassignmentRequestForm({ groups, onSubmit, tasks }) {
         </select>
       </label>
       <div className="form-grid">
-        <label className="form-field" htmlFor="currentAssigneeId">
+        <label className="form-field">
           <span>Current assignee</span>
-          <select id="currentAssigneeId" name="currentAssigneeId" required value={form.currentAssigneeId} onChange={updateField}>
-            <option value="">Select current</option>
-            {assignees.map((assignment) => (
-              <option key={assignment.assigneeId} value={assignment.assigneeId}>{assignment.displayName}</option>
-            ))}
-          </select>
+          <input value={currentAssigneeName || 'Current assignee'} readOnly />
         </label>
         <label className="form-field" htmlFor="requestedAssigneeId">
           <span>New assignee</span>

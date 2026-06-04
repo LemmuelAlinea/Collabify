@@ -456,30 +456,6 @@ export function StudentDashboardPage() {
           </div>
         </article>
 
-        <article className="student-dashboard-panel">
-          <div className="student-dashboard-panel-head"><h2>Learning Insights</h2></div>
-          <div className="student-dashboard-insight-list">
-            {insights.map((insight) => (
-              <div className="student-dashboard-insight-item" key={insight.label}>
-                <p>{insight.label}</p>
-                <strong>+{insight.value}%</strong>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="student-dashboard-panel">
-          <div className="student-dashboard-panel-head"><h2>Project Health</h2></div>
-          <div className="student-dashboard-health-list">
-            {projectRows.map((project) => (
-              <p key={project.id}>
-                <span>{project.title}</span>
-                <strong className={`health-${project.health.toLowerCase().replace(' ', '-')}`}>{project.health}</strong>
-              </p>
-            ))}
-            {projectRows.length === 0 ? <p className="student-dashboard-muted">No project health data.</p> : null}
-          </div>
-        </article>
       </section>
     </section>
   )

@@ -57,9 +57,11 @@ export function ClassDetailsPage() {
         <section>
           <AnnouncementPanel classId={classItem.id} initialAnnouncements={details.announcements} />
         </section>
-        <section>
+        <section className="class-members-panel">
           <h3>Members</h3>
-          {details.members.map((member) => <p key={member.id}>{member.displayName} - {member.role}</p>)}
+          <div className="class-members-list">
+            {details.members.map((member) => <p key={member.id}>{member.displayName} - {member.role}</p>)}
+          </div>
         </section>
         <section>
           <h3>Class Chat</h3>
