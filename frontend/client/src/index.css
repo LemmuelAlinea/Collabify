@@ -10586,7 +10586,7 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
 }
 
 .timeline-legend span {
@@ -10617,14 +10617,11 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
   background: #22c55e;
 }
 
-.gantt-dot--blocked {
-  background: #ef4444;
-}
-
 .timeline-card {
   color: #e5edf8;
   background: #111111;
   border-color: #333333;
+  overflow: hidden;
 }
 
 .timeline-card-header {
@@ -10672,24 +10669,35 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
 
 .gantt-chart {
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(560px, 1fr);
-  overflow-x: auto;
+  grid-template-columns: minmax(118px, 150px) minmax(0, 1fr);
+  width: 100%;
+  max-height: 360px;
+  max-width: 100%;
+  overflow: auto;
   border: 1px solid #333333;
   border-radius: 12px;
   background: #0f0f0f;
+  overscroll-behavior: contain;
 }
 
 .gantt-label-spacer {
-  min-height: 46px;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  min-height: 34px;
   border-right: 1px solid #333333;
   border-bottom: 1px solid #333333;
   background: #111827;
 }
 
 .gantt-week-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(var(--week-count), minmax(84px, 1fr));
-  min-width: 560px;
+  grid-template-columns: repeat(var(--week-count), minmax(64px, 1fr));
+  min-width: max(520px, calc(var(--week-count) * 64px));
   border-bottom: 1px solid #333333;
   background: #111827;
 }
@@ -10697,18 +10705,18 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
 .gantt-week {
   display: grid;
   gap: 2px;
-  min-height: 46px;
-  padding: 8px 10px;
+  min-height: 34px;
+  padding: 5px 7px;
   border-right: 1px solid #333333;
   color: #f8fafc;
-  font-size: 0.74rem;
+  font-size: 0.62rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .gantt-week small {
   color: #94a3b8;
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   text-transform: none;
 }
 
@@ -10717,30 +10725,34 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
 }
 
 .gantt-task-label {
+  position: sticky;
+  left: 0;
+  z-index: 1;
   display: grid;
-  gap: 4px;
-  min-height: 54px;
-  padding: 9px 12px;
+  gap: 2px;
+  min-height: 42px;
+  padding: 7px 8px;
   border-right: 1px solid #333333;
   border-bottom: 1px solid #252525;
+  background: #101010;
 }
 
 .gantt-task-label strong {
   color: #f8fafc;
-  font-size: 0.84rem;
+  font-size: 0.68rem;
   line-height: 1.25;
 }
 
 .gantt-task-label span {
   color: #94a3b8;
-  font-size: 0.76rem;
+  font-size: 0.6rem;
   font-weight: 700;
 }
 
 .gantt-track {
   position: relative;
-  min-width: 560px;
-  min-height: 54px;
+  min-width: max(520px, calc(var(--week-count) * 64px));
+  min-height: 42px;
   border-bottom: 1px solid #252525;
   background:
     repeating-linear-gradient(
@@ -10758,59 +10770,76 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
   top: 50%;
   display: flex;
   align-items: center;
-  min-height: 24px;
+  min-height: 22px;
   transform: translateY(-50%);
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   color: #ffffff;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .gantt-bar span {
-  padding: 0 8px;
+  padding: 0 7px;
   overflow: hidden;
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .gantt-bar--todo {
-  background: #64748b;
+  background: #737373;
 }
 
 .gantt-bar--in_progress {
-  background: linear-gradient(90deg, #2563eb, #06b6d4);
+  background: #56d5db;
 }
 
 .gantt-bar--review {
   color: #422006;
-  background: #facc15;
+  background: #ffdc58;
 }
 
 .gantt-bar--done {
   color: #052e16;
-  background: linear-gradient(90deg, #10b981, #22c55e);
-}
-
-.gantt-bar--blocked {
-  background: #ef4444;
+  background: #06c167;
 }
 
 .gantt-bar:hover {
   filter: brightness(1.1);
 }
 
+.gantt-done-gap {
+  position: absolute;
+  top: 50%;
+  min-height: 22px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: #cf74fb;
+  box-shadow: 0 8px 20px rgba(207, 116, 251, 0.2);
+}
+
 .gantt-due-marker {
   position: absolute;
-  top: 7px;
-  bottom: 7px;
-  width: 2px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
   transform: translateX(-1px);
   border-radius: 999px;
   background: #f97316;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+.gantt-completed-marker {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  transform: translateX(-1px);
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
 }
 
 .timeline-mobile-list {
@@ -10874,7 +10903,6 @@ body[data-theme="light"]:has(.dashboard-shell) .task-system-page .task-comments 
   border-color: #86efac;
 }
 
-.timeline-status-blocked,
 .timeline-overdue-badge {
   color: #fff1f2;
   background: #ef4444;

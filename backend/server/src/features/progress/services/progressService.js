@@ -61,6 +61,14 @@ function daysBetween(start, end) {
   return Math.max(1, Math.ceil((endTime - startTime) / 86400000))
 }
 
+function filterWorkTasks(tasks = []) {
+  const parentTaskIds = new Set(tasks.map((task) => task.parent_task_id).filter(Boolean))
+  return tasks.filter((task) => {
+    const taskType = task.metadata?.taskType ?? (task.parent_task_id ? 'child' : 'standalone')
+    return taskType !== 'main' && !parentTaskIds.has(task.id)
+  })
+}
+
 async function getProfiles(userIds) {
   if (userIds.length === 0) return new Map()
 
@@ -111,7 +119,7 @@ async function loadTimelineData({ classIds = [], groupIds = [] }) {
   const [{ data: tasks, error: tasksError }, { data: members, error: membersError }] = await Promise.all([
     supabaseAdminClient
       .from('tasks')
-      .select('id, project_id, group_id, title, description, status, progress, due_at, completed_at, created_at, archived_at, groups:group_id (name), projects:project_id (id, title)')
+      .select('id, project_id, group_id, parent_task_id, title, description, status, progress, due_at, completed_at, created_at, archived_at, metadata, groups:group_id (name), projects:project_id (id, title)')
       .in('group_id', resolvedGroupIds)
       .is('archived_at', null),
     supabaseAdminClient
@@ -138,10 +146,9 @@ async function loadTimelineData({ classIds = [], groupIds = [] }) {
   if (taskIds.length > 0) {
     const { data: history, error: historyError } = await supabaseAdminClient
       .from('task_status_history')
-      .select('task_id, new_status, created_at')
+      .select('task_id, old_status, new_status, created_at')
       .in('task_id', taskIds)
-      .eq('new_status', 'done')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
 
     if (historyError && !isMissingRelationError(historyError)) {
       throw new HttpError(400, 'Unable to load timeline history', historyError.message)
@@ -169,20 +176,31 @@ function buildTimeline(data, scope) {
   const today = new Date().toISOString()
   const assignmentsByTaskId = groupBy(data.assignments, (assignment) => assignment.task_id)
   const membersByGroupId = groupBy(data.members, (member) => member.group_id)
-  const tasksByGroupId = groupBy(data.tasks, (task) => task.group_id)
-  const doneHistoryByTaskId = new Map()
+  const timelineTasks = filterWorkTasks(data.tasks)
+  const tasksByGroupId = groupBy(timelineTasks, (task) => task.group_id)
+  const historyByTaskId = groupBy(data.doneHistory, (history) => history.task_id)
 
-  for (const history of data.doneHistory) {
-    if (!doneHistoryByTaskId.has(history.task_id)) doneHistoryByTaskId.set(history.task_id, history.created_at)
-  }
+  const firstStatusDate = (histories, status) => histories.find((history) => history.new_status === status)?.created_at ?? null
+  const lastStatusDate = (histories, status) => [...histories].reverse().find((history) => history.new_status === status)?.created_at ?? null
 
   const groups = data.groups.map((group) => {
     const groupTasks = tasksByGroupId.get(group.id) ?? []
     const tasks = groupTasks.map((task) => {
       const assignments = assignmentsByTaskId.get(task.id) ?? []
-      const startAt = earliestDate(assignments.map((assignment) => assignment.assigned_at)) ?? task.created_at ?? today
-      const completedAt = task.completed_at ?? doneHistoryByTaskId.get(task.id) ?? null
-      const endAt = task.status === 'done' ? (completedAt ?? today) : today
+      const histories = historyByTaskId.get(task.id) ?? []
+      const rawStatus = task.status === 'in_review' ? 'review' : task.status
+      const normalizedStatus = rawStatus === 'blocked' || rawStatus === 'cancelled' ? 'todo' : rawStatus
+      const assignedAt = earliestDate(assignments.map((assignment) => assignment.assigned_at))
+      const inProgressAt = firstStatusDate(histories, 'in_progress')
+      const reviewAt = firstStatusDate(histories, 'review') ?? firstStatusDate(histories, 'in_review')
+      const completedAt = task.completed_at ?? lastStatusDate(histories, 'done') ?? null
+      const startAt = inProgressAt ?? reviewAt ?? assignedAt ?? task.created_at ?? today
+      const endCandidates = [
+        task.due_at,
+        normalizedStatus === 'done' ? completedAt : null,
+        normalizedStatus !== 'done' && !task.due_at ? today : null,
+      ].filter(Boolean)
+      const endAt = latestDate(endCandidates) ?? today
       const assignees = assignments.map((assignment) => ({
         displayName: data.profileByUserId.get(assignment.assignee_id)?.display_name ?? assignment.users?.email ?? 'Member',
         assignedAt: assignment.assigned_at,
@@ -206,7 +224,7 @@ function buildTimeline(data, scope) {
         projectId: task.project_id,
         projectTitle: task.projects?.title ?? group.projects?.title,
         startAt,
-        status: task.status,
+        status: normalizedStatus,
         title: task.title,
       }
     })
@@ -351,7 +369,7 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
     resolvedGroupIds.length > 0
       ? supabaseAdminClient
         .from('tasks')
-        .select('id, project_id, group_id, title, status, progress, groups:group_id (name), projects:project_id (title)')
+        .select('id, project_id, group_id, parent_task_id, title, status, progress, metadata, groups:group_id (name), projects:project_id (title)')
         .in('group_id', resolvedGroupIds)
       : { data: [] },
     resolvedGroupIds.length > 0
@@ -366,7 +384,8 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
   if (tasksError) throw new HttpError(400, 'Unable to load tasks', tasksError.message)
   if (membersError) throw new HttpError(400, 'Unable to load members', membersError.message)
 
-  const taskIds = (tasks ?? []).map((task) => task.id)
+  const workTasks = filterWorkTasks(tasks ?? [])
+  const taskIds = workTasks.map((task) => task.id)
   const { data: assignments, error: assignmentsError } = taskIds.length > 0
     ? await supabaseAdminClient
       .from('task_assignments')
@@ -390,7 +409,7 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
     members: members ?? [],
     profileByUserId,
     projects: projects ?? [],
-    tasks: tasks ?? [],
+    tasks: workTasks,
   }
 }
 

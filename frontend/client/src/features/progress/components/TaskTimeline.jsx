@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui
 const DAY_MS = 86400000
 
 const STATUS_LABELS = {
-  blocked: 'Blocked',
   done: 'Done',
   in_progress: 'In progress',
   review: 'In review',
@@ -50,6 +49,8 @@ function formatShortDate(value) {
 }
 
 function normalizeStatus(status) {
+  if (status === 'in_review') return 'review'
+  if (status === 'blocked' || status === 'cancelled') return 'todo'
   return status || 'todo'
 }
 
@@ -111,9 +112,14 @@ function TaskTimelineRows({ onTaskClick, range, tasks }) {
         {tasks.map((task) => {
           const status = normalizeStatus(task.status)
           const left = positionFor(task.startAt, range.start, totalDays)
-          const end = Math.max(positionFor(task.endAt, range.start, totalDays), left + (100 / totalDays))
-          const width = Math.max(2.5, end - left)
+          const visualEndValue = status === 'done' && task.completedAt ? task.completedAt : task.endAt
+          const end = Math.max(positionFor(visualEndValue, range.start, totalDays), left + (100 / totalDays))
+          const width = Math.max(5, end - left)
           const dueLeft = task.dueAt ? positionFor(task.dueAt, range.start, totalDays) : null
+          const completedLeft = task.completedAt ? positionFor(task.completedAt, range.start, totalDays) : null
+          const doneGapWidth = status === 'done' && completedLeft !== null && dueLeft !== null && dueLeft > completedLeft
+            ? dueLeft - completedLeft
+            : 0
 
           return (
             <div className="gantt-row" key={task.id}>
@@ -126,13 +132,23 @@ function TaskTimelineRows({ onTaskClick, range, tasks }) {
                   className={`gantt-bar gantt-bar--${status}`}
                   onClick={() => onTaskClick(task)}
                   style={{ left: `${left}%`, width: `${width}%` }}
-                  title={`${task.title} | ${formatDate(task.startAt)} to ${formatDate(task.endAt)} | ${task.assigneeLabel}`}
+                  title={`${task.title} | Started ${formatDate(task.startAt)} | Due ${formatDate(task.dueAt)}${task.completedAt ? ` | Done ${formatDate(task.completedAt)}` : ''} | ${task.assigneeLabel}`}
                   type="button"
                 >
                   <span>{task.durationDays}d</span>
                 </button>
+                {doneGapWidth > 0 ? (
+                  <span
+                    className="gantt-done-gap"
+                    style={{ left: `${completedLeft}%`, width: `${doneGapWidth}%` }}
+                    title={`Done early: ${formatDate(task.completedAt)} to due date ${formatDate(task.dueAt)}`}
+                  />
+                ) : null}
                 {dueLeft !== null ? (
                   <span className="gantt-due-marker" style={{ left: `${dueLeft}%` }} title={`Due ${formatDate(task.dueAt)}`} />
+                ) : null}
+                {completedLeft !== null ? (
+                  <span className="gantt-completed-marker" style={{ left: `${completedLeft}%` }} title={`Done ${formatDate(task.completedAt)}`} />
                 ) : null}
               </div>
             </div>
