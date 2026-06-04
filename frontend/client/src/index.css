@@ -2661,6 +2661,24 @@ body:has(.dashboard-shell) .topbar-actions .topbar-profile-button:hover {
   border-radius: 8px;
 }
 
+.generated-task-edit {
+  display: grid;
+  gap: 12px;
+}
+
+.generated-task-edit .form-field {
+  margin: 0;
+}
+
+.generated-task-edit input,
+.generated-task-edit textarea {
+  width: 100%;
+}
+
+.generated-task-edit textarea {
+  resize: vertical;
+}
+
 .generated-subtasks {
   padding-left: 18px;
   border-left: 3px solid #dbeafe;
@@ -10711,4 +10729,181 @@ body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-pin {
 html[data-theme="light"] body:has(.dashboard-shell) .student-dashboard-feed-image,
 body[data-theme="light"]:has(.dashboard-shell) .student-dashboard-feed-image {
   border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .task-detail-layout,
+    .task-detail-modal-shell,
+    .task-detail-main,
+    .task-detail-sidebar,
+    .task-detail-section,
+    .task-activity-panel,
+    .task-detail-meta div,
+    .task-detail-comment,
+    .task-history-list,
+    .task-activity-tabs,
+    .task-version-table,
+    .task-version-row,
+    .task-version-menu-popover
+  ),
+body[data-theme="light"]:has(.dashboard-shell) :is(
+    .task-detail-layout,
+    .task-detail-modal-shell,
+    .task-detail-main,
+    .task-detail-sidebar,
+    .task-detail-section,
+    .task-activity-panel,
+    .task-detail-meta div,
+    .task-detail-comment,
+    .task-history-list,
+    .task-activity-tabs,
+    .task-version-table,
+    .task-version-row,
+    .task-version-menu-popover
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #dbe3ee !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .task-detail-comment-form textarea,
+    .task-detail-sidebar select,
+    .task-reassignment-modal input,
+    .task-reassignment-modal select,
+    .task-reassignment-modal textarea
+  ),
+body[data-theme="light"]:has(.dashboard-shell) :is(
+    .task-detail-comment-form textarea,
+    .task-detail-sidebar select,
+    .task-reassignment-modal input,
+    .task-reassignment-modal select,
+    .task-reassignment-modal textarea
+  ) {
+  color: #0f172a !important;
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .task-detail-titlebar p,
+    .task-detail-meta dt,
+    .task-detail-comment small,
+    .task-history-item small,
+    .task-detail-comment p,
+    .task-history-item p,
+    .task-history-change
+  ),
+body[data-theme="light"]:has(.dashboard-shell) :is(
+    .task-detail-titlebar p,
+    .task-detail-meta dt,
+    .task-detail-comment small,
+    .task-history-item small,
+    .task-detail-comment p,
+    .task-history-item p,
+    .task-history-change
+  ) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-activity-tabs button.is-active,
+body[data-theme="light"]:has(.dashboard-shell) .task-activity-tabs button.is-active {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-history-change span,
+body[data-theme="light"]:has(.dashboard-shell) .task-history-change span {
+  color: #075985 !important;
+  background: #eff6ff !important;
+  border-color: #93c5fd !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(.task-detail-main, .task-detail-sidebar, .task-detail-section, .task-activity-panel),
+body[data-theme="light"]:has(.dashboard-shell) :is(.task-detail-main, .task-detail-sidebar, .task-detail-section, .task-activity-panel) {
+  box-shadow: var(--shadow-card) !important;
+}
+
+body:has(.dashboard-shell) :is(
+    select,
+    .ui-select,
+    .card-menu-panel,
+    .syllabus-menu,
+    .message-menu,
+    .task-version-menu-popover,
+    .ui-dropdown-content
+  ) {
+  border-radius: 12px !important;
+}
+
+body:has(.dashboard-shell) :is(
+    .card-menu-panel a,
+    .card-menu-panel button,
+    .syllabus-menu a,
+    .syllabus-menu button,
+    .message-menu button,
+    .task-version-menu-popover button,
+    .ui-dropdown-item
+  ) {
+  border-radius: 8px !important;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+body:has(.dashboard-shell) :is(
+    .card-menu-panel a:hover,
+    .card-menu-panel button:hover,
+    .syllabus-menu a:hover,
+    .syllabus-menu button:hover,
+    .message-menu button:hover,
+    .task-version-menu-popover button:hover,
+    .ui-dropdown-item:hover,
+    .ui-dropdown-item[data-highlighted]
+  ) {
+  color: #ffffff !important;
+  background: rgba(14, 165, 233, 0.18) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .card-menu-panel,
+    .syllabus-menu,
+    .message-menu,
+    .task-version-menu-popover,
+    .ui-dropdown-content
+  ),
+body[data-theme="light"]:has(.dashboard-shell) :is(
+    .card-menu-panel,
+    .syllabus-menu,
+    .message-menu,
+    .task-version-menu-popover,
+    .ui-dropdown-content
+  ) {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) :is(
+    .card-menu-panel a:hover,
+    .card-menu-panel button:hover,
+    .syllabus-menu a:hover,
+    .syllabus-menu button:hover,
+    .message-menu button:hover,
+    .task-version-menu-popover button:hover,
+    .ui-dropdown-item:hover,
+    .ui-dropdown-item[data-highlighted]
+  ),
+body[data-theme="light"]:has(.dashboard-shell) :is(
+    .card-menu-panel a:hover,
+    .card-menu-panel button:hover,
+    .syllabus-menu a:hover,
+    .syllabus-menu button:hover,
+    .message-menu button:hover,
+    .task-version-menu-popover button:hover,
+    .ui-dropdown-item:hover,
+    .ui-dropdown-item[data-highlighted]
+  ) {
+  color: #075985 !important;
+  background: #e0f2fe !important;
 }

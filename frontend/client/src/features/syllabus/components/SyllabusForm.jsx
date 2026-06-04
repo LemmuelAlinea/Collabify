@@ -88,7 +88,7 @@ export function SyllabusForm({ classes, syllabus, onCancel, onSave }) {
       <AuthFormField id="title" label="Syllabus title" name="title" required value={form.title} onChange={updateField} />
 
       <label className="form-field" htmlFor="description">
-        <span>Description</span>
+        <span>Description (optional)</span>
         <textarea id="description" name="description" rows="4" value={form.description} onChange={updateField} />
       </label>
 

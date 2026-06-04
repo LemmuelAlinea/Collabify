@@ -106,6 +106,17 @@ async function assertCanPlan(userId, role, projectId, groupId) {
   return project
 }
 
+async function listProjectGroups(projectId) {
+  const { data, error } = await supabaseAdminClient
+    .from('groups')
+    .select('id, project_id, class_id, name')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw new HttpError(400, 'Unable to load project groups', error.message)
+  return data ?? []
+}
+
 async function getInputContext(userId, role, payload) {
   const project = await assertCanPlan(userId, role, payload.projectId, payload.groupId)
 
@@ -176,15 +187,44 @@ async function hydrateGeneration(row) {
   return normalizeGeneration(row, tasks, milestones ?? [], workloadRows ?? null)
 }
 
+function applyGeneratedTaskEdits(tasks, editedTasks = []) {
+  const editsById = new Map()
+
+  function collect(rows = []) {
+    for (const row of rows) {
+      editsById.set(row.id, row)
+      collect(row.subtasks ?? [])
+    }
+  }
+
+  function apply(rows = []) {
+    return rows.map((task) => {
+      const edit = editsById.get(task.id)
+      return {
+        ...task,
+        title: edit?.title ?? task.title,
+        description: edit?.description ?? task.description,
+        dueAt: edit && Object.prototype.hasOwnProperty.call(edit, 'dueAt') ? edit.dueAt : task.dueAt,
+        subtasks: apply(task.subtasks ?? []),
+      }
+    })
+  }
+
+  collect(editedTasks)
+  return apply(tasks)
+}
+
 export async function generateProjectPlan(userId, role, payload) {
   const input = await getInputContext(userId, role, payload)
   const plan = await runTaskGenerationAi(input)
 
-  const { count } = await supabaseAdminClient
+  let countQuery = supabaseAdminClient
     .from('ai_task_generations')
     .select('id', { count: 'exact', head: true })
     .eq('project_id', payload.projectId)
-    .eq('group_id', payload.groupId)
+
+  countQuery = payload.groupId ? countQuery.eq('group_id', payload.groupId) : countQuery.is('group_id', null)
+  const { count } = await countQuery
 
   const { data: generation, error } = await supabaseAdminClient
     .from('ai_task_generations')
@@ -305,61 +345,74 @@ export async function acceptGeneratedPlan(userId, role, generationId, payload) {
 
   if (error || !generation) throw new HttpError(404, 'Generated plan not found')
   await assertCanPlan(userId, role, generation.project_id, generation.group_id)
+  const targetGroups = generation.group_id
+    ? [{ id: generation.group_id }]
+    : await listProjectGroups(generation.project_id)
+
+  if (targetGroups.length === 0) throw new HttpError(422, 'This project has no groups yet')
 
   if (payload.mode === 'replace') {
-    await supabaseAdminClient.from('tasks').delete().eq('group_id', generation.group_id).eq('project_id', generation.project_id)
+    const deleteQuery = supabaseAdminClient.from('tasks').delete().eq('project_id', generation.project_id)
+    if (generation.group_id) {
+      await deleteQuery.eq('group_id', generation.group_id)
+    } else {
+      await deleteQuery.in('group_id', targetGroups.map((group) => group.id))
+    }
   }
 
   const plan = await hydrateGeneration(generation)
+  const acceptedTasks = applyGeneratedTaskEdits(plan.tasks, payload.tasks ?? [])
   const taskIdByGeneratedId = new Map()
 
-  for (const task of plan.tasks) {
-    const { data: taskRow, error: taskError } = await supabaseAdminClient
-      .from('tasks')
-      .insert({
-        project_id: generation.project_id,
-        group_id: generation.group_id,
-        created_by: userId,
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        due_at: task.dueAt,
-        estimated_hours: task.estimatedHours,
-        metadata: { aiGenerationId: generationId, points: task.points, weight: task.weight, roleSuggestion: task.roleSuggestion, reasoning: task.reasoning, learningOutcomes: task.learningOutcomes },
-      })
-      .select('id')
-      .single()
-
-    if (taskError) throw new HttpError(400, 'Unable to create generated task', taskError.message)
-    taskIdByGeneratedId.set(task.id, taskRow.id)
-    await supabaseAdminClient.from('ai_generated_tasks').update({ accepted_task_id: taskRow.id }).eq('id', task.id)
-
-    for (const subtask of task.subtasks) {
-      const { data: subtaskRow, error: subtaskError } = await supabaseAdminClient
+  for (const group of targetGroups) {
+    for (const task of acceptedTasks) {
+      const { data: taskRow, error: taskError } = await supabaseAdminClient
         .from('tasks')
         .insert({
           project_id: generation.project_id,
-          group_id: generation.group_id,
-          parent_task_id: taskRow.id,
+          group_id: group.id,
           created_by: userId,
-          title: subtask.title,
-          description: subtask.description,
-          priority: subtask.priority,
-          due_at: subtask.dueAt,
-          estimated_hours: subtask.estimatedHours,
-          metadata: { aiGenerationId: generationId, points: subtask.points, weight: subtask.weight, roleSuggestion: subtask.roleSuggestion, reasoning: subtask.reasoning, learningOutcomes: subtask.learningOutcomes },
+          title: task.title,
+          description: task.description,
+          priority: task.priority,
+          due_at: task.dueAt,
+          estimated_hours: task.estimatedHours,
+          metadata: { aiGenerationId: generationId, points: task.points, weight: task.weight, roleSuggestion: task.roleSuggestion, reasoning: task.reasoning, learningOutcomes: task.learningOutcomes },
         })
         .select('id')
         .single()
 
-      if (subtaskError) throw new HttpError(400, 'Unable to create generated subtask', subtaskError.message)
-      await supabaseAdminClient.from('ai_generated_subtasks').update({ accepted_task_id: subtaskRow.id }).eq('id', subtask.id)
+      if (taskError) throw new HttpError(400, 'Unable to create generated task', taskError.message)
+      if (!taskIdByGeneratedId.has(task.id)) taskIdByGeneratedId.set(task.id, taskRow.id)
+      await supabaseAdminClient.from('ai_generated_tasks').update({ accepted_task_id: taskRow.id }).eq('id', task.id)
+
+      for (const subtask of task.subtasks) {
+        const { data: subtaskRow, error: subtaskError } = await supabaseAdminClient
+          .from('tasks')
+          .insert({
+            project_id: generation.project_id,
+            group_id: group.id,
+            parent_task_id: taskRow.id,
+            created_by: userId,
+            title: subtask.title,
+            description: subtask.description,
+            priority: subtask.priority,
+            due_at: subtask.dueAt,
+            estimated_hours: subtask.estimatedHours,
+            metadata: { aiGenerationId: generationId, points: subtask.points, weight: subtask.weight, roleSuggestion: subtask.roleSuggestion, reasoning: subtask.reasoning, learningOutcomes: subtask.learningOutcomes },
+          })
+          .select('id')
+          .single()
+
+        if (subtaskError) throw new HttpError(400, 'Unable to create generated subtask', subtaskError.message)
+        await supabaseAdminClient.from('ai_generated_subtasks').update({ accepted_task_id: subtaskRow.id }).eq('id', subtask.id)
+      }
     }
   }
 
   const { data: milestones } = await supabaseAdminClient.from('milestones').select('id, title').eq('generation_id', generationId)
   for (const milestone of milestones ?? []) {
-    const matchingTaskIds = plan.tasks
+    const matchingTaskIds = acceptedTasks
       .filter((task) => task.milestoneKey && milestone.title.toLowerCase().includes(task.milestoneKey.toLowerCase()))
       .map((task) => taskIdByGeneratedId.get(task.id))
       .filter(Boolean)

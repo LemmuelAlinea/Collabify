@@ -19,6 +19,7 @@ export const updateGroupSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   description: optionalText(1000),
   isLocked: z.boolean().optional(),
+  memberLimit: z.coerce.number().int().min(1).max(100).optional().nullable(),
 }).refine((payload) => Object.keys(payload).length > 0, {
   message: 'At least one field is required',
 })
@@ -32,4 +33,35 @@ export const updateMemberSchema = z.object({
 
 export const addMemberSchema = z.object({
   userId: uuid,
+})
+
+export const groupModeSchema = z.enum(['manual', 'random', 'similar_performance', 'student_formed'])
+
+export const groupPreviewSchema = z.object({
+  projectId: uuid,
+  mode: groupModeSchema,
+})
+
+const generatedMemberSchema = z.object({
+  userId: uuid,
+  displayName: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+})
+
+const generatedGroupSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  description: optionalText(1000),
+  members: z.array(generatedMemberSchema).default([]),
+})
+
+export const groupGenerationSchema = z.object({
+  projectId: uuid,
+  mode: groupModeSchema,
+  formationStatus: z.enum(['open', 'closed', 'finalized']).optional(),
+  groups: z.array(generatedGroupSchema).min(1),
+})
+
+export const studentFormedStatusSchema = z.object({
+  projectId: uuid,
+  status: z.enum(['open', 'closed', 'finalized']),
 })

@@ -10,6 +10,9 @@ const GROUP_SELECT = `
   description,
   created_by,
   is_locked,
+  member_limit,
+  creation_method,
+  formation_status,
   created_at,
   updated_at,
   classes:class_id (
@@ -70,6 +73,9 @@ function normalizeGroup(group, members = [], profileByUserId = new Map()) {
     description: group.description,
     createdBy: group.created_by,
     isLocked: group.is_locked,
+    memberLimit: group.member_limit,
+    creationMethod: group.creation_method ?? 'manual',
+    formationStatus: group.formation_status ?? null,
     createdAt: group.created_at,
     updatedAt: group.updated_at,
     class: group.classes ? {
@@ -91,6 +97,44 @@ function normalizeGroup(group, members = [], profileByUserId = new Map()) {
     } : null,
     members: members.map((member) => normalizeMember(member, profileByUserId)),
   }
+}
+
+function getGroupMemberLimit(group) {
+  return Number(group.member_limit ?? group.projects?.member_count ?? 1)
+}
+
+function chunkItems(items, size) {
+  if (!size || size <= 0) return []
+  const chunks = []
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size))
+  }
+  return chunks
+}
+
+function shuffleItems(items) {
+  const copy = [...items]
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]]
+  }
+  return copy
+}
+
+function average(values) {
+  const valid = values.map(Number).filter((value) => Number.isFinite(value))
+  if (valid.length === 0) return 0
+  return valid.reduce((sum, value) => sum + value, 0) / valid.length
+}
+
+function normalizeRange(values) {
+  if (!values.length) return []
+  const max = Math.max(...values)
+  const min = Math.min(...values)
+  if (!Number.isFinite(max) || !Number.isFinite(min) || max === min) {
+    return values.map(() => 100)
+  }
+  return values.map((value) => ((value - min) / (max - min)) * 100)
 }
 
 async function getProfiles(userIds) {
@@ -227,6 +271,322 @@ async function getGroupWithMembers(groupId) {
   return normalizeGroup(groupWithChat ?? group, membersByGroupId.get(groupId) ?? [], profileByUserId)
 }
 
+async function getProfessorProjectContext(userId, projectId) {
+  const { data: project, error } = await supabaseAdminClient
+    .from('projects')
+    .select('id, class_id, title, work_mode, member_count, status, classes:class_id (id, title, section, professor_id)')
+    .eq('id', projectId)
+    .single()
+
+  if (error || !project) throw new HttpError(404, 'Project not found')
+  if (project.status === 'archived') throw new HttpError(404, 'Project not found')
+  if (project.work_mode !== 'group') throw new HttpError(400, 'Only group projects can have groups')
+  await assertProfessorOwnsClass(project.class_id, userId)
+  return project
+}
+
+async function loadProjectEligibleStudents(project) {
+  const alreadyGrouped = await getUsersAlreadyGroupedForProject(project.id)
+  const { data, error } = await supabaseAdminClient
+    .from('class_members')
+    .select('id, user_id, status, role, users:user_id (email)')
+    .eq('class_id', project.class_id)
+    .eq('status', 'active')
+    .eq('role', 'student')
+
+  if (error) throw new HttpError(400, 'Unable to load class members', error.message)
+
+  const eligible = (data ?? []).filter((member) => !alreadyGrouped.has(member.user_id))
+  const profileByUserId = await getProfiles(eligible.map((member) => member.user_id))
+  return eligible.map((member) => ({
+    id: member.id,
+    userId: member.user_id,
+    email: member.users?.email,
+    displayName: profileByUserId.get(member.user_id)?.display_name ?? member.users?.email,
+    avatarUrl: profileByUserId.get(member.user_id)?.avatar_url,
+  }))
+}
+
+async function loadClassStudents(classId) {
+  const { data, error } = await supabaseAdminClient
+    .from('class_members')
+    .select('id, user_id, status, role, users:user_id (email)')
+    .eq('class_id', classId)
+    .eq('status', 'active')
+    .eq('role', 'student')
+
+  if (error) throw new HttpError(400, 'Unable to load class members', error.message)
+
+  const profileByUserId = await getProfiles((data ?? []).map((member) => member.user_id))
+  return (data ?? []).map((member) => ({
+    id: member.id,
+    userId: member.user_id,
+    email: member.users?.email,
+    displayName: profileByUserId.get(member.user_id)?.display_name ?? member.users?.email,
+    avatarUrl: profileByUserId.get(member.user_id)?.avatar_url,
+  }))
+}
+
+async function loadStudentPerformance(studentIds) {
+  if (!studentIds.length) return new Map()
+
+  const [contributionResult, analyticsResult] = await Promise.all([
+    supabaseAdminClient
+      .from('contribution_logs')
+      .select('user_id, points')
+      .in('user_id', studentIds),
+    supabaseAdminClient
+      .from('student_analytics')
+      .select('student_id, contribution_score, task_completion, generated_at')
+      .in('student_id', studentIds)
+      .order('generated_at', { ascending: false }),
+  ])
+
+  if (contributionResult.error) throw new HttpError(400, 'Unable to load contribution data', contributionResult.error.message)
+  if (analyticsResult.error) throw new HttpError(400, 'Unable to load analytics data', analyticsResult.error.message)
+
+  const pointsByUser = new Map(studentIds.map((id) => [id, 0]))
+  for (const row of contributionResult.data ?? []) {
+    pointsByUser.set(row.user_id, (pointsByUser.get(row.user_id) ?? 0) + Number(row.points ?? 0))
+  }
+
+  const latestAnalytics = new Map()
+  for (const row of analyticsResult.data ?? []) {
+    if (!latestAnalytics.has(row.student_id)) latestAnalytics.set(row.student_id, row)
+  }
+
+  const pointScores = normalizeRange(studentIds.map((id) => pointsByUser.get(id) ?? 0))
+  const taskScores = normalizeRange(studentIds.map((id) => Number(latestAnalytics.get(id)?.task_completion ?? 0)))
+
+  return new Map(studentIds.map((id, index) => {
+    const score = Math.round(average([pointScores[index] ?? 0, taskScores[index] ?? 0]) * 100) / 100
+    return [id, {
+      points: pointsByUser.get(id) ?? 0,
+      taskCompletion: Number(latestAnalytics.get(id)?.task_completion ?? 0),
+      score,
+    }]
+  }))
+}
+
+function buildPreviewGroups(students, memberCount, mode) {
+  const groups = []
+  const completeCount = Math.floor(students.length / memberCount)
+  const usableStudents = students.slice(0, completeCount * memberCount)
+
+  for (let index = 0; index < completeCount; index += 1) {
+    const members = usableStudents.slice(index * memberCount, (index + 1) * memberCount)
+    groups.push({
+      name: mode === 'student_formed' ? `Group ${index + 1}` : `${mode === 'random' ? 'Random' : 'Performance'} Group ${index + 1}`,
+      description: null,
+      members,
+    })
+  }
+
+  return {
+    groups,
+    unassigned: students.slice(completeCount * memberCount),
+  }
+}
+
+async function saveGeneratedGroups({ classId, projectId, userId, groups, mode, formationStatus = null }) {
+  if (!Array.isArray(groups) || groups.length === 0) throw new HttpError(422, 'No generated groups to save')
+
+  const rows = groups.map((group) => ({
+    class_id: classId,
+    project_id: projectId,
+    name: group.name?.trim() || 'Group',
+    description: group.description ?? null,
+    created_by: userId,
+    creation_method: mode,
+    formation_status: formationStatus,
+    is_locked: mode === 'student_formed' ? formationStatus !== 'open' : false,
+  }))
+
+  const { data, error } = await supabaseAdminClient
+    .from('groups')
+    .insert(rows)
+    .select(GROUP_SELECT)
+
+  if (error) throw new HttpError(400, 'Unable to save generated groups', error.message)
+
+  const insertedGroups = data ?? []
+  const memberRows = []
+  insertedGroups.forEach((group, index) => {
+    const previewMembers = groups[index]?.members ?? []
+    previewMembers.forEach((member, memberIndex) => {
+      memberRows.push({
+        group_id: group.id,
+        user_id: member.userId,
+        is_leader: memberIndex === 0,
+        status: 'active',
+      })
+    })
+  })
+
+  if (memberRows.length) {
+    const { error: memberError } = await supabaseAdminClient.from('group_members').insert(memberRows)
+    if (memberError) throw new HttpError(400, 'Unable to save generated group members', memberError.message)
+  }
+
+  await Promise.all(insertedGroups.map((group) => supabaseAdminClient.from('group_chats').upsert({
+    group_id: group.id,
+    created_by: userId,
+  }, { onConflict: 'group_id' })))
+
+  const { data: reloadedGroups, error: reloadError } = await supabaseAdminClient
+    .from('groups')
+    .select(GROUP_SELECT)
+    .in('id', insertedGroups.map((group) => group.id))
+
+  if (reloadError) throw new HttpError(400, 'Unable to reload generated groups', reloadError.message)
+
+  const groupsWithChats = await ensureGroupChats(reloadedGroups ?? insertedGroups, userId)
+  const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds(groupsWithChats.map((group) => group.id))
+  const orderById = new Map(insertedGroups.map((group, index) => [group.id, index]))
+
+  return groupsWithChats
+    .map((group) => normalizeGroup(group, membersByGroupId.get(group.id) ?? [], profileByUserId))
+    .sort((left, right) => (orderById.get(left.id) ?? 0) - (orderById.get(right.id) ?? 0))
+}
+
+export async function previewGroupCreation(userId, role, payload) {
+  if (role !== 'professor') throw new HttpError(403, 'Only professors can generate groups')
+  const project = await getProfessorProjectContext(userId, payload.projectId)
+  const memberCount = Number(project.member_count ?? 1)
+  if (memberCount <= 0) throw new HttpError(422, 'Invalid member count')
+  const mode = payload.mode ?? 'manual'
+
+  if (mode === 'student_formed') {
+    const students = await loadClassStudents(project.class_id)
+    const totalGroups = Math.floor(students.length / memberCount)
+    return {
+      project,
+      memberCount,
+      groups: Array.from({ length: totalGroups }, (_, index) => ({
+        name: `Group ${index + 1}`,
+        description: null,
+        members: [],
+      })),
+      unassigned: students,
+      totalGroups,
+    }
+  }
+
+  const students = await loadProjectEligibleStudents(project)
+  const orderedStudents = mode === 'random'
+    ? shuffleItems(students)
+    : await (async () => {
+      const scores = await loadStudentPerformance(students.map((student) => student.userId))
+      return [...students].sort((left, right) => (scores.get(right.userId)?.score ?? 0) - (scores.get(left.userId)?.score ?? 0))
+    })()
+
+  const result = buildPreviewGroups(orderedStudents, memberCount, mode)
+  return {
+    project,
+    memberCount,
+    groups: result.groups.map((group, index) => ({
+      ...group,
+      name: group.name || `${mode === 'random' ? 'Random' : 'Performance'} Group ${index + 1}`,
+    })),
+    unassigned: result.unassigned,
+    totalGroups: result.groups.length,
+  }
+}
+
+export async function saveGroupCreation(userId, role, payload) {
+  if (role !== 'professor') throw new HttpError(403, 'Only professors can generate groups')
+  const project = await getProfessorProjectContext(userId, payload.projectId)
+  const memberCount = Number(project.member_count ?? 1)
+  if (!Array.isArray(payload.groups) || payload.groups.length === 0) throw new HttpError(422, 'No generated groups to save')
+
+  const eligibleStudents = await loadProjectEligibleStudents(project)
+  const eligibleIds = new Set(eligibleStudents.map((student) => student.userId))
+  const memberIds = new Set()
+
+  payload.groups.forEach((group) => {
+    if (!group?.members?.length && payload.mode !== 'student_formed') {
+      throw new HttpError(422, 'Generated groups are incomplete')
+    }
+    if (payload.mode === 'student_formed' && (group.members?.length ?? 0) > 0) {
+      throw new HttpError(422, 'Student-formed groups must be empty')
+    }
+    if (payload.mode !== 'student_formed' && group.members.length !== memberCount) {
+      throw new HttpError(422, 'Each group must match the project member count')
+    }
+    group.members?.forEach((member) => {
+      if (!eligibleIds.has(member.userId)) throw new HttpError(422, 'One or more selected members are not eligible')
+      if (memberIds.has(member.userId)) throw new HttpError(409, 'A student cannot appear in more than one generated group')
+      memberIds.add(member.userId)
+    })
+  })
+
+  return saveGeneratedGroups({
+    classId: project.class_id,
+    projectId: project.id,
+    userId,
+    groups: payload.groups,
+    mode: payload.mode ?? 'manual',
+    formationStatus: payload.mode === 'student_formed' ? (payload.formationStatus ?? 'open') : null,
+  })
+}
+
+export async function listAvailableStudentGroups(userId, role, filters = {}) {
+  if (role !== 'student') throw new HttpError(403, 'Only students can view available groups')
+
+  const { data: memberships, error: membershipError } = await supabaseAdminClient
+    .from('class_members')
+    .select('class_id')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+
+  if (membershipError) throw new HttpError(400, 'Unable to verify class membership', membershipError.message)
+
+  const classIds = filters.classId ? [filters.classId] : (memberships ?? []).map((row) => row.class_id)
+  if (!classIds.length) return []
+
+  if (filters.projectId) {
+    const alreadyGrouped = await getUsersAlreadyGroupedForProject(filters.projectId)
+    if (alreadyGrouped.has(userId)) return []
+  }
+
+  let query = supabaseAdminClient
+    .from('groups')
+    .select(GROUP_SELECT)
+    .in('class_id', classIds)
+    .eq('creation_method', 'student_formed')
+    .eq('formation_status', 'open')
+
+  if (filters.projectId) query = query.eq('project_id', filters.projectId)
+
+  const { data, error } = await query.order('created_at', { ascending: false })
+  if (error) throw new HttpError(400, 'Unable to load available groups', error.message)
+
+  const groupsWithChats = await ensureGroupChats(data ?? [], userId)
+  const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds(groupsWithChats.map((group) => group.id))
+  return groupsWithChats.map((group) => normalizeGroup(group, membersByGroupId.get(group.id) ?? [], profileByUserId))
+}
+
+export async function updateStudentFormedGroupsStatus(userId, role, payload) {
+  if (role !== 'professor') throw new HttpError(403, 'Only professors can update group formation')
+  const project = await getProfessorProjectContext(userId, payload.projectId)
+  const formationStatus = payload.status
+  if (!['open', 'closed', 'finalized'].includes(formationStatus)) throw new HttpError(422, 'Invalid formation status')
+
+  const updatePayload = {
+    formation_status: formationStatus,
+    is_locked: formationStatus !== 'open',
+  }
+
+  const { error } = await supabaseAdminClient
+    .from('groups')
+    .update(updatePayload)
+    .eq('project_id', project.id)
+    .eq('creation_method', 'student_formed')
+
+  if (error) throw new HttpError(400, 'Unable to update student-formed groups', error.message)
+  return listGroups(userId, role, project.id)
+}
+
 async function assertGroupManager(group, userId, role) {
   if (role === 'professor') {
     await assertProfessorOwnsClass(group.class_id, userId)
@@ -290,9 +650,10 @@ export async function getEligibleGroupMembers(userId, role, groupId) {
   const alreadyGrouped = await getUsersAlreadyGroupedForProject(group.project_id)
   const { data, error } = await supabaseAdminClient
     .from('class_members')
-    .select('id, user_id, status, users:user_id (email)')
+    .select('id, user_id, status, role, users:user_id (email)')
     .eq('class_id', group.class_id)
     .eq('status', 'active')
+    .eq('role', 'student')
 
   if (error) throw new HttpError(400, 'Unable to load class members', error.message)
 
@@ -306,7 +667,7 @@ export async function addGroupMember(userId, role, groupId, memberUserId) {
   await assertProfessorCanManageGroup(group, userId, role)
 
   const activeCount = await countActiveGroupMembers(groupId)
-  if (activeCount >= (group.projects?.member_count ?? 1)) throw new HttpError(409, 'This group is full')
+  if (activeCount >= getGroupMemberLimit(group)) throw new HttpError(409, 'This group is full')
 
   const { data: classMember, error: classMemberError } = await supabaseAdminClient
     .from('class_members')
@@ -427,6 +788,7 @@ export async function createGroup(userId, roleOrPayload, maybePayload) {
       name: payload.name,
       description: payload.description,
       created_by: userId,
+      creation_method: role === 'professor' ? 'manual' : 'manual',
     })
     .select(GROUP_SELECT)
     .single()
@@ -456,6 +818,8 @@ export async function createGroup(userId, roleOrPayload, maybePayload) {
 
 export async function joinGroup(studentId, groupId) {
   const group = await getGroup(groupId)
+  if (group.creation_method !== 'student_formed') throw new HttpError(403, 'This group cannot be joined')
+  if (group.formation_status !== 'open') throw new HttpError(409, 'This group is closed')
   if (group.is_locked) throw new HttpError(409, 'This group is locked')
 
   await getProjectForStudent(group.project_id, studentId, group.class_id)
@@ -468,7 +832,7 @@ export async function joinGroup(studentId, groupId) {
     .eq('status', 'active')
 
   if (countError) throw new HttpError(400, 'Unable to check group size', countError.message)
-  if (count >= (group.projects?.member_count ?? 1)) throw new HttpError(409, 'This group is full')
+  if (count >= getGroupMemberLimit(group)) throw new HttpError(409, 'This group is full')
 
   const { error } = await supabaseAdminClient
     .from('group_members')
@@ -487,11 +851,21 @@ export async function joinGroup(studentId, groupId) {
 export async function updateGroup(userId, role, groupId, payload) {
   const group = await getGroup(groupId)
   await assertGroupManager(group, userId, role)
+  if (payload.memberLimit !== undefined && role !== 'professor') {
+    throw new HttpError(403, 'Only professors can update group member count')
+  }
+  if (payload.memberLimit !== undefined && payload.memberLimit !== null) {
+    const activeCount = await countActiveGroupMembers(groupId)
+    if (Number(payload.memberLimit) < activeCount) {
+      throw new HttpError(422, 'Member count cannot be lower than current active members')
+    }
+  }
 
   const updatePayload = {
     name: payload.name,
     description: payload.description,
     is_locked: payload.isLocked,
+    member_limit: payload.memberLimit,
   }
 
   Object.keys(updatePayload).forEach((key) => {

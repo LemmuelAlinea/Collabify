@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { ProgressBar } from '../../progress/components/ProgressBar'
 import { ProgressMetric } from '../../progress/components/ProgressMetric'
@@ -28,7 +29,7 @@ function completionLabel(completion) {
 export function StudentGroupDetailsPage() {
   const navigate = useNavigate()
   const { groupId } = useParams()
-  const { user } = useAuth()
+  const { role, user } = useAuth()
   const { error: progressError, isLoading: isProgressLoading, progress } = useProgress()
   const [group, setGroup] = useState(null)
   const [error, setError] = useState('')
@@ -78,7 +79,8 @@ export function StudentGroupDetailsPage() {
     }
   }, [groupTasks])
   const currentMembership = group?.members.find((member) => member.userId === user?.id && member.status === 'active')
-  const canManageMembers = Boolean(currentMembership?.isLeader)
+  const canManageMembers = role === USER_ROLES.PROFESSOR || Boolean(currentMembership?.isLeader)
+  const basePath = role === USER_ROLES.PROFESSOR ? '/professor' : '/student'
 
   async function makeLeader(member) {
     setNotice('')
@@ -108,7 +110,7 @@ export function StudentGroupDetailsPage() {
   return (
     <section className="module-page student-group-details-page">
       <div className="task-detail-breadcrumb">
-        <button className="secondary-button" type="button" onClick={() => navigate('/student/groups')}>
+        <button className="secondary-button" type="button" onClick={() => navigate(`${basePath}/groups`)}>
           <ArrowLeft size={16} aria-hidden="true" />
           Groups
         </button>
@@ -117,11 +119,11 @@ export function StudentGroupDetailsPage() {
 
       <div className="module-header">
         <div>
-          <p className="eyebrow">Student group</p>
+          <p className="eyebrow">{role === USER_ROLES.PROFESSOR ? 'Professor group' : 'Student group'}</p>
           <h2>{group.name}</h2>
           <p>{group.project?.title ?? 'Project'}</p>
         </div>
-        {group.project?.id ? <Link className="secondary-link-button" to={`/student/projects/${group.project.id}`}>Open project</Link> : null}
+        {group.project?.id ? <Link className="secondary-link-button" to={`${basePath}/projects/${group.project.id}`}>Open project</Link> : null}
       </div>
 
       {notice ? <p className="form-success">{notice}</p> : null}

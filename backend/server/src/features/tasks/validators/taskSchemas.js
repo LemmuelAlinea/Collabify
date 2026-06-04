@@ -23,6 +23,8 @@ export const createTaskSchema = z.object({
   groupMode: z.enum(groupModes).optional().default('selected'),
   taskType: z.enum(taskTypes).optional().default('standalone'),
   parentTaskId: uuid.optional().nullable(),
+  parentTaskGroupMode: z.enum(['all']).optional().nullable(),
+  parentTaskTitle: z.string().trim().min(1).max(180).optional().nullable(),
   title: z.string().trim().min(1, 'Title is required').max(180),
   description: optionalText(5000),
   status: z.enum(taskStatuses).optional(),

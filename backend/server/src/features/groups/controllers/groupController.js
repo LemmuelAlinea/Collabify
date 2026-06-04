@@ -1,10 +1,14 @@
 import {
   addGroupMember,
   createGroup,
+  listAvailableStudentGroups,
   getEligibleGroupMembers,
   getGroupDetails,
+  previewGroupCreation,
   joinGroup,
   listGroups,
+  saveGroupCreation,
+  updateStudentFormedGroupsStatus,
   updateGroup,
   updateGroupMember,
 } from '../services/groupService.js'
@@ -12,6 +16,18 @@ import {
 export async function getGroups(req, res, next) {
   try {
     const groups = await listGroups(req.auth.user.id, req.auth.role, req.query.projectId)
+    res.json({ groups })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getAvailableGroups(req, res, next) {
+  try {
+    const groups = await listAvailableStudentGroups(req.auth.user.id, req.auth.role, {
+      projectId: req.query.projectId,
+      classId: req.query.classId,
+    })
     res.json({ groups })
   } catch (error) {
     next(error)
@@ -40,6 +56,24 @@ export async function postGroup(req, res, next) {
   try {
     const group = await createGroup(req.auth.user.id, req.auth.role, req.body)
     res.status(201).json({ group })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postGroupPreview(req, res, next) {
+  try {
+    const preview = await previewGroupCreation(req.auth.user.id, req.auth.role, req.body)
+    res.json(preview)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postGroupGeneration(req, res, next) {
+  try {
+    const groups = await saveGroupCreation(req.auth.user.id, req.auth.role, req.body)
+    res.status(201).json({ groups })
   } catch (error) {
     next(error)
   }
@@ -82,6 +116,15 @@ export async function patchGroupMember(req, res, next) {
       req.body,
     )
     res.json({ group })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function patchStudentFormedGroupsStatus(req, res, next) {
+  try {
+    const groups = await updateStudentFormedGroupsStatus(req.auth.user.id, req.auth.role, req.body)
+    res.json({ groups })
   } catch (error) {
     next(error)
   }

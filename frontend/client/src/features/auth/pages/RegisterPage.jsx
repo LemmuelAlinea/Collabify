@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 const initialForm = {
   email: '',
   password: '',
+  confirmPassword: '',
   firstName: '',
   lastName: '',
   role: USER_ROLES.STUDENT,
@@ -32,6 +33,12 @@ export function RegisterPage() {
     event.preventDefault()
     setError('')
     setMessage('')
+
+    if (form.password !== form.confirmPassword) {
+      setError('Password and confirm password must match.')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -81,6 +88,7 @@ export function RegisterPage() {
         </div>
         <AuthFormField id="email" label="Email" name="email" type="email" autoComplete="email" required value={form.email} onChange={updateField} />
         <AuthFormField id="password" label="Password" name="password" type="password" autoComplete="new-password" minLength="8" required value={form.password} onChange={updateField} />
+        <AuthFormField id="confirmPassword" label="Confirm password" name="confirmPassword" type="password" autoComplete="new-password" minLength="8" required value={form.confirmPassword} onChange={updateField} />
 
         {form.role === USER_ROLES.STUDENT ? (
           <div className="form-grid">

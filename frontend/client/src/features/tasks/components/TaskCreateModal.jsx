@@ -19,6 +19,18 @@ function toDateTime(value) {
   return value ? new Date(value).toISOString() : null
 }
 
+function allGroupsParentValue(title) {
+  return `all:${encodeURIComponent(title)}`
+}
+
+function isAllGroupsParentValue(value) {
+  return value.startsWith('all:')
+}
+
+function getAllGroupsParentTitle(value) {
+  return decodeURIComponent(value.replace(/^all:/, ''))
+}
+
 export function TaskCreateModal({
   groups,
   isOpen,
@@ -47,12 +59,33 @@ export function TaskCreateModal({
       .filter((task) => !form.groupId || task.groupId === form.groupId),
     [form.groupId, form.projectId, tasks],
   )
+  const parentTaskOptions = useMemo(() => {
+    const taskOptions = mainTasks.map((task) => ({
+      id: task.id,
+      label: `${task.title} - ${task.group?.name ?? 'No group'}`,
+    }))
+
+    if (!isProfessor || form.groupMode !== 'all') return taskOptions
+
+    const titles = [...new Set(mainTasks.map((task) => task.title).filter(Boolean))]
+    return [
+      ...titles.map((title) => ({
+        id: allGroupsParentValue(title),
+        label: `${title} - All groups`,
+      })),
+      ...taskOptions,
+    ]
+  }, [form.groupMode, isProfessor, mainTasks])
 
   if (!isOpen) return null
 
   function updateField(event) {
     const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: value }))
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === 'projectId' || name === 'groupId' || name === 'groupMode' ? { parentTaskId: '' } : {}),
+    }))
   }
 
   function toggleGroup(groupId, checked) {
@@ -77,14 +110,17 @@ export function TaskCreateModal({
     event.preventDefault()
     setIsSubmitting(true)
     try {
-      const parentTask = mainTasks.find((task) => task.id === form.parentTaskId)
+      const isAllGroupsParent = form.taskType === 'child' && isAllGroupsParentValue(form.parentTaskId)
+      const parentTask = isAllGroupsParent ? null : mainTasks.find((task) => task.id === form.parentTaskId)
       await onSave({
         projectId: form.projectId,
         groupId: isProfessor ? undefined : form.groupId || parentTask?.groupId,
         groupIds: isProfessor ? form.groupIds : undefined,
         groupMode: isProfessor ? form.groupMode : 'selected',
         taskType: form.taskType,
-        parentTaskId: form.taskType === 'child' ? form.parentTaskId : null,
+        parentTaskId: form.taskType === 'child' && !isAllGroupsParent ? form.parentTaskId : null,
+        parentTaskGroupMode: isAllGroupsParent ? 'all' : null,
+        parentTaskTitle: isAllGroupsParent ? getAllGroupsParentTitle(form.parentTaskId) : null,
         title: form.title,
         description: form.description,
         dueAt: toDateTime(form.dueAt),
@@ -178,8 +214,8 @@ export function TaskCreateModal({
             <span>Parent main task</span>
             <select name="parentTaskId" required value={form.parentTaskId} onChange={updateField}>
               <option value="">Select main task</option>
-              {mainTasks.map((task) => (
-                <option key={task.id} value={task.id}>{task.title} - {task.group?.name}</option>
+              {parentTaskOptions.map((task) => (
+                <option key={task.id} value={task.id}>{task.label}</option>
               ))}
             </select>
           </label>

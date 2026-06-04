@@ -1,7 +1,25 @@
+import { useEffect, useState } from 'react'
 import { GeneratedTaskTree } from './GeneratedTaskTree'
 
 export function ProjectPlanViewer({ generation, onAccept }) {
+  const [editableTasks, setEditableTasks] = useState([])
+
+  useEffect(() => {
+    setEditableTasks(generation?.tasks ? structuredClone(generation.tasks) : [])
+  }, [generation])
+
   if (!generation) return <div className="empty-state"><h3>No generated plan</h3><p>Select a project and generate a plan.</p></div>
+
+  function updateTask(taskId, patch) {
+    function updateRows(rows) {
+      return rows.map((task) => {
+        if (task.id === taskId) return { ...task, ...patch }
+        return { ...task, subtasks: updateRows(task.subtasks ?? []) }
+      })
+    }
+
+    setEditableTasks((current) => updateRows(current))
+  }
 
   return (
     <article className="project-plan-viewer">
@@ -38,7 +56,7 @@ export function ProjectPlanViewer({ generation, onAccept }) {
           ))}
         </div>
       </section>
-      <GeneratedTaskTree tasks={generation.tasks} />
+      <GeneratedTaskTree editable={generation.status === 'draft'} onTaskChange={updateTask} tasks={editableTasks} />
       <section className="analytics-panel">
         <h3>AI Project Plan Report</h3>
         <div className="detail-grid">
@@ -51,8 +69,8 @@ export function ProjectPlanViewer({ generation, onAccept }) {
         </div>
       </section>
       <div className="button-row">
-        <button className="primary-button" type="button" disabled={generation.status !== 'draft'} onClick={() => onAccept(generation.id, 'merge')}>Merge with Existing Tasks</button>
-        <button className="danger-button" type="button" disabled={generation.status !== 'draft'} onClick={() => onAccept(generation.id, 'replace')}>Replace Group Tasks</button>
+        <button className="primary-button" type="button" disabled={generation.status !== 'draft'} onClick={() => onAccept(generation.id, 'merge', editableTasks)}>Merge with Existing Tasks</button>
+        <button className="danger-button" type="button" disabled={generation.status !== 'draft'} onClick={() => onAccept(generation.id, 'replace', editableTasks)}>Replace Group Tasks</button>
       </div>
     </article>
   )

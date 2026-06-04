@@ -79,6 +79,7 @@ export function AppRouter() {
             <Route path="/professor/projects/:id" element={<ProjectDetailsPage />} />
             <Route path="/professor/projects/:id/validation" element={<ProjectValidationPage />} />
             <Route path="/professor/groups" element={<GroupsPage />} />
+            <Route path="/professor/groups/:groupId" element={<StudentGroupDetailsPage />} />
             <Route path="/professor/tasks" element={<TasksPage />} />
             <Route path="/professor/tasks/ai-planner" element={<TaskGenerationPage />} />
             <Route path="/professor/tasks/:taskId" element={<TaskDetailsPage />} />

@@ -114,7 +114,7 @@ export function CurriculumForm({ curriculum, onCancel, onSave }) {
       </div>
 
       <label className="form-field" htmlFor="description">
-        <span>Description</span>
+        <span>Description (optional)</span>
         <textarea id="description" name="description" rows="4" value={form.description} onChange={updateField} />
       </label>
 

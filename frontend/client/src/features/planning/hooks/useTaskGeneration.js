@@ -5,7 +5,8 @@ import {
   getGeneratedPlans,
 } from '../services/taskGenerationService'
 
-export function useTaskGeneration(projectId, groupId) {
+export function useTaskGeneration(projectId, groupId, options = {}) {
+  const requiresGroup = Boolean(options.requiresGroup)
   const [error, setError] = useState('')
   const [generations, setGenerations] = useState([])
   const [isGenerating, setIsGenerating] = useState(false)
@@ -13,6 +14,7 @@ export function useTaskGeneration(projectId, groupId) {
 
   const loadGenerations = useCallback(async () => {
     if (!projectId) return
+    if (requiresGroup && !groupId) return
     setIsLoading(true)
     setError('')
 
@@ -23,7 +25,7 @@ export function useTaskGeneration(projectId, groupId) {
     } finally {
       setIsLoading(false)
     }
-  }, [groupId, projectId])
+  }, [groupId, projectId, requiresGroup])
 
   useEffect(() => {
     loadGenerations()
@@ -45,8 +47,8 @@ export function useTaskGeneration(projectId, groupId) {
     }
   }, [groupId, projectId])
 
-  const accept = useCallback(async (id, mode) => {
-    const generation = await acceptPlan(id, mode)
+  const accept = useCallback(async (id, mode, tasks) => {
+    const generation = await acceptPlan(id, mode, tasks)
     setGenerations((current) => current.map((item) => item.id === id ? generation : item))
     return generation
   }, [])

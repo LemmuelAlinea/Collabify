@@ -16,10 +16,10 @@ export async function generatePlan(payload) {
   return data.generation
 }
 
-export async function acceptPlan(id, mode = 'merge') {
+export async function acceptPlan(id, mode = 'merge', tasks = []) {
   const data = await apiRequest(`/planning/${id}/accept`, {
     method: 'POST',
-    body: JSON.stringify({ mode }),
+    body: JSON.stringify({ mode, tasks }),
   })
   return data.generation
 }

@@ -461,6 +461,20 @@ async function listProjectGroups(projectId) {
   return data ?? []
 }
 
+async function listProjectMainTasksByTitle(projectId, title) {
+  const { data, error } = await supabaseAdminClient
+    .from('tasks')
+    .select(TASK_SELECT)
+    .eq('project_id', projectId)
+    .eq('title', title)
+    .is('parent_task_id', null)
+    .is('archived_at', null)
+
+  if (error) throw new HttpError(400, 'Unable to load parent main tasks', error.message)
+
+  return (data ?? []).filter((task) => (task.metadata?.taskType ?? 'standalone') === 'main')
+}
+
 function estimateHours(priority = 'medium', difficulty = 'medium') {
   const priorityMultiplier = { low: 0.75, medium: 1, high: 1.35, urgent: 1.75 }[priority] ?? 1
   const difficultyHours = { easy: 2, medium: 4, hard: 7, critical: 10 }[difficulty] ?? 4
@@ -718,10 +732,16 @@ export async function createTask(userId, role, payload) {
   const isProfessor = role === 'professor'
   const taskType = payload.taskType ?? (payload.parentTaskId ? 'child' : 'standalone')
   let targetGroups = []
+  let parentTasksByGroupId = new Map()
 
   if (isProfessor) {
     await assertProfessorOwnsProject(payload.projectId, userId)
-    if (payload.parentTaskId) {
+    if (payload.parentTaskGroupMode === 'all' && payload.parentTaskTitle) {
+      const parentTasks = await listProjectMainTasksByTitle(payload.projectId, payload.parentTaskTitle)
+      if (parentTasks.length === 0) throw new HttpError(422, 'No matching main tasks found for all groups')
+      parentTasksByGroupId = new Map(parentTasks.map((task) => [task.group_id, task]))
+      targetGroups = await Promise.all([...parentTasksByGroupId.keys()].map((groupId) => getGroup(groupId)))
+    } else if (payload.parentTaskId) {
       const parent = await getTaskRow(payload.parentTaskId)
       targetGroups = [await getGroup(parent.group_id)]
     } else if (payload.groupMode === 'all' || payload.groupMode === 'future') {
@@ -747,8 +767,11 @@ export async function createTask(userId, role, payload) {
   for (const group of targetGroups) {
     if (group.project_id !== payload.projectId) throw new HttpError(422, 'Task project must match the group project')
 
-    if (payload.parentTaskId) {
-      const parent = await getTaskRow(payload.parentTaskId)
+    const groupParentTask = parentTasksByGroupId.get(group.id)
+    const parentTaskId = groupParentTask?.id ?? payload.parentTaskId ?? null
+
+    if (parentTaskId) {
+      const parent = groupParentTask ?? await getTaskRow(parentTaskId)
       if (parent.group_id !== group.id) throw new HttpError(422, 'Child task must belong to the same group as its parent')
     }
 
@@ -762,7 +785,7 @@ export async function createTask(userId, role, payload) {
       .insert({
         project_id: payload.projectId,
         group_id: group.id,
-        parent_task_id: payload.parentTaskId ?? null,
+        parent_task_id: parentTaskId,
         created_by: userId,
         title: payload.title,
         description: payload.description,
@@ -776,7 +799,7 @@ export async function createTask(userId, role, payload) {
         difficulty,
         complexity: payload.complexity ?? 1,
         applies_to_future_groups: isProfessor && payload.groupMode === 'future',
-        metadata: { taskType: isMainTask ? 'main' : payload.parentTaskId ? 'child' : 'standalone' },
+        metadata: { taskType: isMainTask ? 'main' : parentTaskId ? 'child' : 'standalone' },
       })
       .select(TASK_SELECT)
       .single()

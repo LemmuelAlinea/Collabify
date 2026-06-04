@@ -6,6 +6,15 @@ export async function getGroups(projectId) {
   return data.groups
 }
 
+export async function getAvailableGroups(filters = {}) {
+  const params = new URLSearchParams()
+  if (filters.projectId) params.set('projectId', filters.projectId)
+  if (filters.classId) params.set('classId', filters.classId)
+  const query = params.toString() ? `?${params.toString()}` : ''
+  const data = await apiRequest(`/groups/available${query}`)
+  return data.groups
+}
+
 export async function getGroup(id) {
   const data = await apiRequest(`/groups/${id}`)
   return data.group
@@ -17,6 +26,21 @@ export async function createGroup(payload) {
     body: JSON.stringify(payload),
   })
   return data.group
+}
+
+export async function previewGroupCreation(payload) {
+  return apiRequest('/groups/preview', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function generateGroupCreation(payload) {
+  const data = await apiRequest('/groups/generate', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return data.groups
 }
 
 export async function joinGroup(id) {
@@ -51,4 +75,12 @@ export async function updateGroupMember(id, userId, payload) {
     body: JSON.stringify(payload),
   })
   return data.group
+}
+
+export async function updateStudentFormedGroupsStatus(payload) {
+  const data = await apiRequest('/groups/student-formed/status', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+  return data.groups
 }

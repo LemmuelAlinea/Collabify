@@ -4,7 +4,16 @@ import { Link } from 'react-router-dom'
 import { MoreHorizontal } from 'lucide-react'
 
 function activeMembers(group) {
-  return group.members.filter((member) => member.status === 'active')
+  return (group.members ?? []).filter((member) => member.status !== 'removed')
+}
+
+function memberLimit(group) {
+  return group.memberLimit ?? group.project?.memberCount ?? 1
+}
+
+function classLabel(group) {
+  const name = group.class?.name ?? group.class?.title ?? 'Class'
+  return `${name}${group.class?.section ? ` / ${group.class.section}` : ''}`
 }
 
 export function GroupCard({ group, onAddMember, onLock, onManage }) {
@@ -27,11 +36,11 @@ export function GroupCard({ group, onAddMember, onLock, onManage }) {
       <dl className="compact-details">
         <div>
           <dt>Class</dt>
-          <dd>{group.class?.name ?? 'Class'} {group.class?.section ? `/ ${group.class.section}` : ''}</dd>
+          <dd>{classLabel(group)}</dd>
         </div>
         <div>
           <dt>Members</dt>
-          <dd>{members.length} / {group.project?.memberCount ?? 1}</dd>
+          <dd>{members.length} / {memberLimit(group)}</dd>
         </div>
         <div>
           <dt>Group ID</dt>
@@ -39,17 +48,20 @@ export function GroupCard({ group, onAddMember, onLock, onManage }) {
         </div>
       </dl>
       <div className="member-list">
-        {members.map((member) => (
-          <div className="member-row compact-member-row" key={member.id}>
-            <span>{member.displayName}</span>
-            <span>{member.isLeader ? 'Leader' : 'Member'}</span>
-          </div>
-        ))}
+        {members.length > 0
+          ? members.map((member) => (
+            <div className="member-row compact-member-row" key={member.id}>
+              <span>{member.displayName}</span>
+              <span>{member.isLeader ? 'Leader' : 'Member'}</span>
+            </div>
+          ))
+          : <p className="muted-copy">No members yet.</p>}
       </div>
       {isProfessor && canManage ? (
         <details className="card-menu">
           <summary aria-label="Group actions"><MoreHorizontal size={18} aria-hidden="true" /></summary>
           <div className="card-menu-panel">
+            <Link to={`/professor/groups/${group.id}`}>View details</Link>
             <button type="button" onClick={() => onManage(group)}>Manage group</button>
             <button type="button" onClick={() => onAddMember(group)}>Add member</button>
             <button type="button" onClick={() => onLock(group.id, !group.isLocked)}>

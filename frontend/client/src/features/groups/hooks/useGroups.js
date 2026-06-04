@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   addGroupMember,
   createGroup,
+  generateGroupCreation,
   getEligibleGroupMembers,
+  getAvailableGroups,
   getGroups,
+  previewGroupCreation,
   joinGroup,
+  updateStudentFormedGroupsStatus,
   updateGroup,
   updateGroupMember,
 } from '../services/groupService'
@@ -66,16 +70,36 @@ export function useGroups(projectId) {
     return group
   }, [])
 
+  const previewCreation = useCallback((payload) => previewGroupCreation(payload), [])
+  const generateCreation = useCallback(async (payload) => {
+    const createdGroups = await generateGroupCreation(payload)
+    setGroups((current) => [...createdGroups, ...current])
+    return createdGroups
+  }, [])
+  const loadAvailableGroups = useCallback((filters) => getAvailableGroups(filters), [])
+  const updateFormationStatus = useCallback(async (payload) => {
+    const updatedGroups = await updateStudentFormedGroupsStatus(payload)
+    setGroups((current) => {
+      const byId = new Map(updatedGroups.map((group) => [group.id, group]))
+      return current.map((item) => byId.get(item.id) ?? item)
+    })
+    return updatedGroups
+  }, [])
+
   return {
     addMember,
     addGroup,
+    generateCreation,
     error,
     groups,
     isLoading,
     join,
     loadGroups,
+    loadAvailableGroups,
     loadEligibleMembers,
+    previewCreation,
     saveGroup,
     saveMember,
+    updateFormationStatus,
   }
 }
