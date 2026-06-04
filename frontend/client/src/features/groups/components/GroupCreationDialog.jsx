@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../../../components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs'
 import { Field, FieldGroup, FieldLabel, FieldDescription, Input, Select, Textarea } from '../../../components/ui/form'
 

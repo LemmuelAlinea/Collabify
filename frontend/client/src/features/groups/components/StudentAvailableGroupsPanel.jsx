@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/dialog'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card'
 import { Field, FieldGroup, FieldLabel, Select } from '../../../components/ui/form'
 
 function AvailableGroupCard({ group, onJoin }) {
