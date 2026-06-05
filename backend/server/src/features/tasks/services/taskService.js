@@ -317,6 +317,22 @@ function baseTaskWeight(task) {
   return (difficultyWeights[task.difficulty] ?? 4) * hours * (priorityWeights[task.priority] ?? 1) * complexity
 }
 
+function normalizeGroupWeights(tasks) {
+  const total = tasks.reduce((sum, task) => sum + baseTaskWeight(task), 0) || 1
+  const weightsByTaskId = new Map()
+  let used = 0
+
+  tasks.forEach((task, index) => {
+    const value = index === tasks.length - 1
+      ? Math.max(0, Math.round((100 - used) * 100) / 100)
+      : Math.round((baseTaskWeight(task) / total) * 10000) / 100
+    weightsByTaskId.set(task.id, value)
+    used += value
+  })
+
+  return weightsByTaskId
+}
+
 function flattenTree(tasks) {
   return tasks.flatMap((task) => [task, ...flattenTree(task.children ?? [])])
 }
@@ -576,6 +592,120 @@ async function syncAssignments(taskId, groupId, assigneeIds, assignedBy) {
   if (error) throw new HttpError(400, 'Unable to assign task', error.message)
 }
 
+function groupByRows(rows, key) {
+  const map = new Map()
+  for (const row of rows ?? []) {
+    const value = row[key]
+    const existing = map.get(value) ?? []
+    existing.push(row)
+    map.set(value, existing)
+  }
+  return map
+}
+
+function ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId) {
+  const reassignment = reassignmentByTaskId.get(task.id)
+  if (reassignment?.score_policy === 'full_transfer') {
+    return reassignment.requested_assignee_id ? [[reassignment.requested_assignee_id, 1]] : []
+  }
+  if (reassignment?.score_policy === 'split_50_50') {
+    if (!reassignment.current_assignee_id || !reassignment.requested_assignee_id) return []
+    return [
+      [reassignment.current_assignee_id, 0.5],
+      [reassignment.requested_assignee_id, 0.5],
+    ]
+  }
+  if (reassignment?.score_policy === 'keep_original') {
+    return reassignment.current_assignee_id ? [[reassignment.current_assignee_id, 1]] : []
+  }
+
+  const assigneeIds = [...new Set((assignmentsByTaskId.get(task.id) ?? []).map((assignment) => assignment.assignee_id))]
+  if (assigneeIds.length === 0) return []
+  const share = 1 / assigneeIds.length
+  return assigneeIds.map((assigneeId) => [assigneeId, share])
+}
+
+async function assertClaimWithinGroupBalance(taskId, groupId, userId) {
+  const [{ data: group, error: groupError }, { data: members, error: memberError }, { data: tasks, error: taskError }] = await Promise.all([
+    supabaseAdminClient
+      .from('groups')
+      .select('id, member_limit, projects:project_id (member_count)')
+      .eq('id', groupId)
+      .single(),
+    supabaseAdminClient
+      .from('group_members')
+      .select('user_id')
+      .eq('group_id', groupId)
+      .eq('status', 'active'),
+    supabaseAdminClient
+      .from('tasks')
+      .select('id, parent_task_id, status, priority, estimated_hours, difficulty, complexity, archived_at')
+      .eq('group_id', groupId)
+      .is('archived_at', null),
+  ])
+
+  if (groupError) throw new HttpError(400, 'Unable to load group balance', groupError.message)
+  if (memberError) throw new HttpError(400, 'Unable to load group members', memberError.message)
+  if (taskError) throw new HttpError(400, 'Unable to load group tasks', taskError.message)
+
+  const parentIds = new Set((tasks ?? []).map((task) => task.parent_task_id).filter(Boolean))
+  const scoredTasks = (tasks ?? []).filter((task) => !parentIds.has(task.id) && task.status !== 'cancelled')
+  const taskIds = scoredTasks.map((task) => task.id)
+  const targetTask = scoredTasks.find((task) => task.id === taskId)
+  if (!targetTask) throw new HttpError(422, 'Only task items can be claimed')
+
+  const [{ data: assignments, error: assignmentError }, { data: approvedReassignments, error: reassignmentError }] = await Promise.all([
+    taskIds.length
+      ? supabaseAdminClient
+        .from('task_assignments')
+        .select('task_id, assignee_id')
+        .in('task_id', taskIds)
+      : { data: [] },
+    taskIds.length
+      ? supabaseAdminClient
+        .from('reassignment_requests')
+        .select('task_id, current_assignee_id, requested_assignee_id, score_policy, reviewed_at')
+        .in('task_id', taskIds)
+        .eq('status', 'approved')
+        .order('reviewed_at', { ascending: false })
+      : { data: [] },
+  ])
+
+  if (assignmentError) throw new HttpError(400, 'Unable to load task assignments', assignmentError.message)
+  if (reassignmentError) throw new HttpError(400, 'Unable to load reassignment scores', reassignmentError.message)
+
+  const weightsByTaskId = normalizeGroupWeights(scoredTasks)
+  const assignmentsByTaskId = groupByRows(assignments, 'task_id')
+  const reassignmentByTaskId = new Map()
+  ;(approvedReassignments ?? []).forEach((row) => {
+    if (!reassignmentByTaskId.has(row.task_id)) reassignmentByTaskId.set(row.task_id, row)
+  })
+
+  const memberScores = new Map((members ?? []).map((member) => [member.user_id, 0]))
+  for (const task of scoredTasks) {
+    if (task.id === taskId) continue
+    const taskPoints = weightsByTaskId.get(task.id) ?? 0
+    ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId).forEach(([ownerId, share]) => {
+      memberScores.set(ownerId, (memberScores.get(ownerId) ?? 0) + (taskPoints * share))
+    })
+  }
+
+  const groupCapacity = Math.max(1, Number(group.member_limit ?? group.projects?.member_count ?? members?.length ?? 1))
+  const targetPoints = Math.round((100 / groupCapacity) * 100) / 100
+  const allowedOverage = Math.max(5, targetPoints * 0.15)
+  const maxPoints = targetPoints + allowedOverage
+  const currentPoints = memberScores.get(userId) ?? 0
+  const taskPoints = weightsByTaskId.get(taskId) ?? 0
+  const nextPoints = currentPoints + taskPoints
+
+  if (nextPoints > maxPoints) {
+    throw new HttpError(
+      422,
+      `Claiming this task would exceed the fair share limit (${nextPoints.toFixed(2)} pts / ${maxPoints.toFixed(2)} pts).`,
+    )
+  }
+}
+
 async function normalizeRows(rows) {
   const taskIds = rows.map((task) => task.id)
   const { assignmentsByTaskId, commentsByTaskId, profileByUserId } = await loadTaskExtras(taskIds)
@@ -829,6 +959,21 @@ export async function updateTask(userId, role, taskId, payload) {
     throw new HttpError(422, 'Main tasks are containers only')
   }
 
+  if (!isProfessor && payload.assigneeIds !== undefined) {
+    const existingAssigneeIds = await getTaskAssigneeIds(taskId)
+    const requestedAssigneeIds = [...new Set(payload.assigneeIds)]
+
+    if (existingAssigneeIds.length > 0) {
+      throw new HttpError(403, 'Assigned tasks can only be changed through reassignment requests')
+    }
+
+    if (requestedAssigneeIds.length !== 1 || requestedAssigneeIds[0] !== userId) {
+      throw new HttpError(403, 'You can only claim an unassigned task for yourself')
+    }
+
+    await assertClaimWithinGroupBalance(taskId, existing.group_id, userId)
+  }
+
   if (payload.parentTaskId) {
     if (payload.parentTaskId === taskId) throw new HttpError(422, 'A task cannot be its own parent')
     const parent = await getTaskRow(payload.parentTaskId)
@@ -861,12 +1006,14 @@ export async function updateTask(userId, role, taskId, payload) {
     if (updatePayload[key] === undefined) delete updatePayload[key]
   })
 
-  const { error } = await supabaseAdminClient
-    .from('tasks')
-    .update(updatePayload)
-    .eq('id', taskId)
+  if (Object.keys(updatePayload).length > 0) {
+    const { error } = await supabaseAdminClient
+      .from('tasks')
+      .update(updatePayload)
+      .eq('id', taskId)
 
-  if (error) throw new HttpError(400, 'Unable to update task', error.message)
+    if (error) throw new HttpError(400, 'Unable to update task', error.message)
+  }
 
   if (!isProfessor) await syncAssignments(taskId, existing.group_id, payload.assigneeIds, userId)
 

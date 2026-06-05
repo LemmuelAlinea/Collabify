@@ -21,6 +21,65 @@ function taskCompletion(tasks) {
   }
 }
 
+function roundPoints(value) {
+  return Math.round(Number(value ?? 0) * 100) / 100
+}
+
+function memberScoreKey(groupId, userId) {
+  return `${groupId}:${userId}`
+}
+
+function baseTaskWeight(task) {
+  const priorityWeights = { low: 0.75, medium: 1, high: 1.35, urgent: 1.75 }
+  const difficultyWeights = { easy: 2, medium: 4, hard: 7, critical: 10 }
+  const difficulty = task.difficulty ?? 'medium'
+  const hours = Number(task.estimated_hours) > 0 ? Number(task.estimated_hours) : (difficultyWeights[difficulty] ?? 4)
+  const complexity = Number(task.complexity) > 0 ? Number(task.complexity) : 1
+  return (difficultyWeights[difficulty] ?? 4) * hours * (priorityWeights[task.priority] ?? 1) * complexity
+}
+
+function normalizeGroupWeights(tasks) {
+  const byGroup = groupBy(tasks, (task) => task.group_id)
+  const weightsByTaskId = new Map()
+
+  for (const groupTasks of byGroup.values()) {
+    const totalWeight = groupTasks.reduce((sum, task) => sum + baseTaskWeight(task), 0) || 1
+    let used = 0
+
+    groupTasks.forEach((task, index) => {
+      const value = index === groupTasks.length - 1
+        ? Math.max(0, roundPoints(100 - used))
+        : roundPoints((baseTaskWeight(task) / totalWeight) * 100)
+      weightsByTaskId.set(task.id, value)
+      used += value
+    })
+  }
+
+  return weightsByTaskId
+}
+
+function ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId) {
+  const reassignment = reassignmentByTaskId.get(task.id)
+  if (reassignment?.score_policy === 'full_transfer') {
+    return reassignment.requested_assignee_id ? [[reassignment.requested_assignee_id, 1]] : []
+  }
+  if (reassignment?.score_policy === 'split_50_50') {
+    if (!reassignment.current_assignee_id || !reassignment.requested_assignee_id) return []
+    return [
+      [reassignment.current_assignee_id, 0.5],
+      [reassignment.requested_assignee_id, 0.5],
+    ]
+  }
+  if (reassignment?.score_policy === 'keep_original') {
+    return reassignment.current_assignee_id ? [[reassignment.current_assignee_id, 1]] : []
+  }
+
+  const assignees = [...new Set((assignmentsByTaskId.get(task.id) ?? []).map((assignment) => assignment.assignee_id))]
+  if (assignees.length === 0) return []
+  const share = 1 / assignees.length
+  return assignees.map((assigneeId) => [assigneeId, share])
+}
+
 function groupBy(items, keyFn) {
   const map = new Map()
   for (const item of items) {
@@ -266,41 +325,63 @@ function buildTimeline(data, scope) {
   }
 }
 
-async function loadContributionLogs({ groupIds = [], projectIds = [], userIds = [] }) {
-  let query = supabaseAdminClient
-    .from('contribution_logs')
-    .select('id, project_id, group_id, user_id, task_id, contribution_type, points, logged_at')
-    .order('logged_at', { ascending: false })
+function buildTaskPointScores(tasks, assignments, approvedReassignments) {
+  const assignmentsByTaskId = groupBy(assignments, (assignment) => assignment.task_id)
+  const reassignmentByTaskId = new Map()
+  ;(approvedReassignments ?? []).forEach((row) => {
+    if (!reassignmentByTaskId.has(row.task_id)) reassignmentByTaskId.set(row.task_id, row)
+  })
 
-  if (groupIds.length > 0) query = query.in('group_id', groupIds)
-  else if (projectIds.length > 0) query = query.in('project_id', projectIds)
-  else if (userIds.length > 0) query = query.in('user_id', userIds)
-  else return []
+  const weightsByTaskId = normalizeGroupWeights(tasks.filter((task) => task.status !== 'cancelled'))
+  const memberScores = new Map()
+  const groupPoints = new Map()
+  const projectPoints = new Map()
 
-  const { data, error } = await query
-  if (error) throw new HttpError(400, 'Unable to load contribution logs', error.message)
-  return data ?? []
+  for (const task of tasks) {
+    if (task.status === 'cancelled') continue
+    const taskWeight = weightsByTaskId.get(task.id) ?? 0
+    const owners = ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId)
+
+    for (const [userId, share] of owners) {
+      const key = memberScoreKey(task.group_id, userId)
+      const current = memberScores.get(key) ?? { completedTasks: 0, contributionPoints: 0, progressTasks: [], totalTasks: 0 }
+      const earned = task.status === 'done' ? taskWeight * share : 0
+
+      memberScores.set(key, {
+        completedTasks: current.completedTasks + (task.status === 'done' ? 1 : 0),
+        contributionPoints: current.contributionPoints + earned,
+        progressTasks: [...current.progressTasks, task],
+        totalTasks: current.totalTasks + 1,
+      })
+
+      if (task.status === 'done') {
+        groupPoints.set(task.group_id, (groupPoints.get(task.group_id) ?? 0) + earned)
+        projectPoints.set(task.project_id, (projectPoints.get(task.project_id) ?? 0) + earned)
+      }
+    }
+  }
+
+  return { groupPoints, memberScores, projectPoints }
 }
 
-function buildMemberProgress({ assignments, contributionLogs, members, profileByUserId, tasks }) {
-  const tasksById = new Map(tasks.map((task) => [task.id, task]))
-  const assignmentsByUser = groupBy(assignments, (assignment) => assignment.assignee_id)
-  const contributionsByUser = groupBy(contributionLogs, (log) => log.user_id)
-
+function buildMemberProgress({ members, memberScores, profileByUserId }) {
   return members.map((member) => {
-    const assigned = assignmentsByUser.get(member.user_id) ?? []
-    const assignedTasks = assigned.map((assignment) => tasksById.get(assignment.task_id)).filter(Boolean)
-    const contributions = contributionsByUser.get(member.user_id) ?? []
+    const score = memberScores.get(memberScoreKey(member.group_id, member.user_id)) ?? {
+      completedTasks: 0,
+      contributionPoints: 0,
+      progressTasks: [],
+      totalTasks: 0,
+    }
     const profile = profileByUserId.get(member.user_id)
 
     return {
       avatarUrl: profile?.avatar_url,
-      completedTasks: assignedTasks.filter((task) => task.status === 'done').length,
-      contributionPoints: contributions.reduce((sum, log) => sum + Number(log.points ?? 0), 0),
+      completedTasks: score.completedTasks,
+      contributionPoints: roundPoints(score.contributionPoints),
       displayName: profile?.display_name ?? member.users?.email,
       email: member.users?.email,
-      progress: average(assignedTasks.map((task) => task.progress ?? (task.status === 'done' ? 100 : 0))),
-      totalTasks: assignedTasks.length,
+      progress: average(score.progressTasks.map((task) => task.progress ?? (task.status === 'done' ? 100 : 0))),
+      totalTasks: score.totalTasks,
       userId: member.user_id,
     }
   })
@@ -327,7 +408,7 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
   if (classIds.length === 0 && groupIds.length === 0 && projectIds.length === 0) {
     return {
       assignments: [],
-      contributionLogs: [],
+      approvedReassignments: [],
       groups: [],
       members: [],
       profileByUserId: new Map(),
@@ -369,8 +450,9 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
     resolvedGroupIds.length > 0
       ? supabaseAdminClient
         .from('tasks')
-        .select('id, project_id, group_id, parent_task_id, title, status, progress, metadata, groups:group_id (name), projects:project_id (title)')
+        .select('id, project_id, group_id, parent_task_id, title, status, progress, priority, estimated_hours, difficulty, complexity, archived_at, metadata, groups:group_id (name), projects:project_id (title)')
         .in('group_id', resolvedGroupIds)
+        .is('archived_at', null)
       : { data: [] },
     resolvedGroupIds.length > 0
       ? supabaseAdminClient
@@ -395,16 +477,26 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
 
   if (assignmentsError) throw new HttpError(400, 'Unable to load task assignments', assignmentsError.message)
 
-  const contributionLogs = await loadContributionLogs({ groupIds: resolvedGroupIds, projectIds: resolvedProjectIds })
+  const { data: approvedReassignments, error: reassignmentsError } = taskIds.length > 0
+    ? await supabaseAdminClient
+      .from('reassignment_requests')
+      .select('id, task_id, current_assignee_id, requested_assignee_id, score_policy, reviewed_at')
+      .in('task_id', taskIds)
+      .eq('status', 'approved')
+      .order('reviewed_at', { ascending: false })
+    : { data: [] }
+
+  if (reassignmentsError) throw new HttpError(400, 'Unable to load task reassignments', reassignmentsError.message)
+
   const profileByUserId = await getProfiles([
     ...(members ?? []).map((member) => member.user_id),
     ...(assignments ?? []).map((assignment) => assignment.assignee_id),
-    ...contributionLogs.map((log) => log.user_id),
+    ...(approvedReassignments ?? []).flatMap((row) => [row.current_assignee_id, row.requested_assignee_id]).filter(Boolean),
   ])
 
   return {
     assignments: assignments ?? [],
-    contributionLogs,
+    approvedReassignments: approvedReassignments ?? [],
     groups: groups ?? [],
     members: members ?? [],
     profileByUserId,
@@ -418,15 +510,14 @@ function buildDashboard(data, scope) {
   const tasksByGroup = groupBy(data.tasks, (task) => task.group_id)
   const membersByGroup = groupBy(data.members, (member) => member.group_id)
   const assignmentsByTaskId = groupBy(data.assignments, (assignment) => assignment.task_id)
-  const contributionsByProject = groupBy(data.contributionLogs, (log) => log.project_id)
-  const contributionsByGroup = groupBy(data.contributionLogs, (log) => log.group_id)
+  const pointScores = buildTaskPointScores(data.tasks, data.assignments, data.approvedReassignments)
 
   const projects = data.projects.map((project) => {
     const tasks = tasksByProject.get(project.id) ?? []
     const completion = taskCompletion(tasks)
     return {
       classId: project.class_id,
-      contributionPoints: (contributionsByProject.get(project.id) ?? []).reduce((sum, log) => sum + Number(log.points ?? 0), 0),
+      contributionPoints: roundPoints(pointScores.projectPoints.get(project.id) ?? 0),
       id: project.id,
       progress: average(tasks.map((task) => task.progress ?? (task.status === 'done' ? 100 : 0))),
       status: project.status,
@@ -438,21 +529,18 @@ function buildDashboard(data, scope) {
   const groups = data.groups.map((group) => {
     const tasks = tasksByGroup.get(group.id) ?? []
     const members = membersByGroup.get(group.id) ?? []
-    const groupContributions = contributionsByGroup.get(group.id) ?? []
 
     return {
       classId: group.class_id,
       className: group.classes?.title,
       section: group.classes?.section,
-      contributionPoints: groupContributions.reduce((sum, log) => sum + Number(log.points ?? 0), 0),
+      contributionPoints: roundPoints(pointScores.groupPoints.get(group.id) ?? 0),
       id: group.id,
       memberCount: members.length,
       members: buildMemberProgress({
-        assignments: data.assignments.filter((assignment) => tasks.some((task) => task.id === assignment.task_id)),
-        contributionLogs: groupContributions,
         members,
+        memberScores: pointScores.memberScores,
         profileByUserId: data.profileByUserId,
-        tasks,
       }),
       name: group.name,
       progress: average(tasks.map((task) => task.progress ?? (task.status === 'done' ? 100 : 0))),
@@ -468,7 +556,7 @@ function buildDashboard(data, scope) {
     overview: {
       averageGroupProgress: average(groups.map((group) => group.progress)),
       averageProjectProgress: average(projects.map((project) => project.progress)),
-      contributionPoints: data.contributionLogs.reduce((sum, log) => sum + Number(log.points ?? 0), 0),
+      contributionPoints: roundPoints(groups.reduce((sum, group) => sum + Number(group.contributionPoints ?? 0), 0)),
       groups: groups.length,
       projects: projects.length,
       taskCompletion: taskCompletion(data.tasks),
@@ -505,16 +593,19 @@ export async function getProgressDashboard(userId, role) {
   if (error) throw new HttpError(400, 'Unable to load your groups', error.message)
   const groupIds = (memberships ?? []).map((membership) => membership.group_id)
   const data = await loadProgressData({ groupIds })
+  const pointScores = buildTaskPointScores(data.tasks, data.assignments, data.approvedReassignments)
   const assignedTasks = data.assignments
     .filter((assignment) => assignment.assignee_id === userId)
     .map((assignment) => data.tasks.find((task) => task.id === assignment.task_id))
     .filter(Boolean)
-  const personalContributions = data.contributionLogs.filter((log) => log.user_id === userId)
+  const personalContributionPoints = [...pointScores.memberScores.entries()]
+    .filter(([key]) => key.endsWith(`:${userId}`))
+    .reduce((sum, [, score]) => sum + Number(score.contributionPoints ?? 0), 0)
 
   return {
     ...buildDashboard(data, { role }),
     personal: {
-      contributionPoints: personalContributions.reduce((sum, log) => sum + Number(log.points ?? 0), 0),
+      contributionPoints: roundPoints(personalContributionPoints),
       progress: average(assignedTasks.map((task) => task.progress ?? (task.status === 'done' ? 100 : 0))),
       taskCompletion: taskCompletion(assignedTasks),
     },

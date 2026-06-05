@@ -1801,6 +1801,15 @@ a {
   grid-column: 1 / -1;
 }
 
+.task-owner-panel {
+  align-items: start;
+}
+
+.task-owner-names {
+  margin: 0;
+  color: #e2e8f0;
+}
+
 .task-comment-form {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1880,6 +1889,13 @@ a {
 .task-progress-table {
   display: grid;
   gap: 12px;
+}
+
+.task-progress-table--scroll {
+  max-height: 540px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .progress-grid,
@@ -2659,6 +2675,16 @@ body:has(.dashboard-shell) .topbar-actions .topbar-profile-button:hover {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+}
+
+.my-task-progress-card {
+  background: linear-gradient(180deg, rgba(11, 61, 175, 0.12), rgba(35, 230, 110, 0.05));
+  border-color: rgba(40, 215, 255, 0.28);
+}
+
+.my-task-progress-card .progress-track,
+.my-task-progress-card .progress-bar {
+  background: rgba(148, 163, 184, 0.28);
 }
 
 .generated-task-edit {
@@ -8829,6 +8855,7 @@ html[data-theme="light"] body:has(.dashboard-shell) .progress-metric,
 html[data-theme="light"] body:has(.dashboard-shell) .progress-row-card,
 html[data-theme="light"] body:has(.dashboard-shell) .member-progress-card,
 html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row,
+html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card,
 html[data-theme="light"] body:has(.dashboard-shell) .progress-section,
 html[data-theme="light"] body:has(.dashboard-shell) .metric-card,
 html[data-theme="light"] body:has(.dashboard-shell) .analytics-panel,
@@ -8867,6 +8894,16 @@ html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-content {
   background: #ffffff !important;
   border-color: #dbe3ee !important;
   box-shadow: var(--shadow-card) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card {
+  background: linear-gradient(180deg, #eef5ff, #f8fbff) !important;
+  border-color: #c7ddff !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card .progress-track,
+html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card .progress-bar {
+  background: #dbe7f7 !important;
 }
 
 html[data-theme="light"] body:has(.dashboard-shell) .module-header,

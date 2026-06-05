@@ -71,7 +71,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
   const assignedNames = useMemo(() => {
     if (!task.assignments.length) return []
     const byId = new Map(members.map((member) => [member.userId, member.displayName]))
-    return task.assignments.map((assignment) => byId.get(assignment.assigneeId) ?? 'Unknown member')
+    return task.assignments.map((assignment) => byId.get(assignment.assigneeId) ?? assignment.displayName ?? assignment.email ?? 'Unknown member')
   }, [members, task.assignments])
 
   useEffect(() => {
@@ -112,12 +112,17 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
     }
   }
 
-  async function toggleAssignee(userId, checked) {
-    const nextAssigneeIds = checked
-      ? [...new Set([...assigneeIds, userId])]
-      : assigneeIds.filter((assigneeId) => assigneeId !== userId)
-
-    await onUpdate(task.id, { assigneeIds: nextAssigneeIds })
+  async function claimTask() {
+    if (!currentUserId || hasAssignees) return
+    setIsSaving(true)
+    setSaveError('')
+    try {
+      await onUpdate(task.id, { assigneeIds: [currentUserId] })
+    } catch (error) {
+      setSaveError(error.message ?? 'Unable to claim task')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   async function archiveTask() {
@@ -183,11 +188,11 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
           <dl className="compact-details">
             <div><dt>Group</dt><dd>{task.group?.name ?? 'Group'}</dd></div>
             <div>
-              <dt>{isProfessor ? 'Assigned to' : 'Assignees'}</dt>
+              <dt>{isProfessor ? 'Assigned to' : 'Owners'}</dt>
               <dd>
                 {isProfessor
                   ? (assignedNames.length ? assignedNames.join(', ') : 'Not assigned to anyone yet.')
-                  : (task.assignments.length || 'None')}
+                  : (assignedNames.length ? assignedNames.join(', ') : 'Not claimed yet')}
               </dd>
             </div>
             <div><dt>My progress</dt><dd>{task.memberScoreWeight ?? 0}%</dd></div>
@@ -218,14 +223,18 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
               {!canUpdateStatus ? <p className="form-error">Only assigned owners can update this task status.</p> : null}
               {saveError ? <p className="form-error">{saveError}</p> : null}
 
-              <div className="task-assignees">
+              <div className="task-assignees task-owner-panel">
                 <p className="eyebrow">Owners</p>
-                {members.map((member) => (
-                  <label className="check-row" key={member.userId}>
-                    <input type="checkbox" checked={assigneeIds.includes(member.userId)} onChange={(event) => toggleAssignee(member.userId, event.target.checked)} />
-                    <span>{member.displayName}</span>
-                  </label>
-                ))}
+                {assignedNames.length ? (
+                  <p className="task-owner-names">{assignedNames.join(', ')}</p>
+                ) : (
+                  <>
+                    <p className="task-owner-names">No owner yet. Any active group member can claim this task.</p>
+                    <button className="secondary-button" type="button" onClick={claimTask} disabled={isSaving || !currentUserId}>
+                      {isSaving ? 'Claiming...' : 'Claim task'}
+                    </button>
+                  </>
+                )}
               </div>
             </>
           ) : null}

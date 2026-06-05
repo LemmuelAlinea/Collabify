@@ -198,7 +198,7 @@ export function ProgressDashboardPage() {
         <ProgressMetric label="Project progress" value={`${visibleAverage.project}%`} hint={`${visibleProjects.length} projects`} />
         <ProgressMetric label="Group progress" value={`${visibleAverage.group}%`} hint={`${visibleGroups.length} groups`} />
         <ProgressMetric label="Task completion" value={`${visibleTaskCompletion.progress}%`} hint={completionLabel(visibleTaskCompletion)} />
-        <ProgressMetric label="Contribution points" value={visibleContributionPoints} hint="logged contributions" />
+        <ProgressMetric label="Contribution points" value={visibleContributionPoints} hint="completed task points" />
       </div>
 
       {timelineError ? (
@@ -219,7 +219,7 @@ export function ProgressDashboardPage() {
       {!isProfessor ? (
         <>
           <ProgressSection title="My Progress">
-            <div className="progress-row-card">
+            <div className="progress-row-card my-task-progress-card">
               <div>
                 <h4>My task progress</h4>
                 <p>{myTasksWithShare.length} tasks · normalized to 100%</p>
@@ -305,8 +305,8 @@ export function ProgressDashboardPage() {
       </ProgressSection>
 
       <ProgressSection title="Task Progress">
-        <div className="task-progress-table">
-          {topItems(visibleTasks, 12).map((task) => (
+        <div className="task-progress-table task-progress-table--scroll">
+          {visibleTasks.map((task) => (
             <article className="task-progress-row" key={task.id}>
               <div>
                 <h4>{task.title}</h4>
