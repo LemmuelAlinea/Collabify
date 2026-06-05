@@ -986,6 +986,9 @@ export async function updateTask(userId, role, taskId, payload) {
   const mappedProgress = !isProfessor && payload.status
     ? progressForStatus(payload.status)
     : undefined
+  const archiveTimestamp = payload.archived === true
+    ? new Date().toISOString()
+    : payload.archived === false ? null : undefined
 
   const updatePayload = {
     parent_task_id: payload.parentTaskId,
@@ -1001,7 +1004,6 @@ export async function updateTask(userId, role, taskId, payload) {
     progress: isProfessor ? undefined : mappedProgress ?? payload.progress,
     difficulty: payload.difficulty,
     complexity: payload.complexity,
-    archived_at: payload.archived ? new Date().toISOString() : undefined,
     completed_at: !isProfessor && payload.status === 'done'
       ? new Date().toISOString()
       : !isProfessor && payload.status && payload.status !== 'done' ? null : undefined,
@@ -1018,6 +1020,16 @@ export async function updateTask(userId, role, taskId, payload) {
       .eq('id', taskId)
 
     if (error) throw new HttpError(400, 'Unable to update task', error.message)
+  }
+
+  if (archiveTimestamp !== undefined) {
+    const ids = [taskId, ...(await collectDescendantIds(taskId))]
+    const { error } = await supabaseAdminClient
+      .from('tasks')
+      .update({ archived_at: archiveTimestamp })
+      .in('id', ids)
+
+    if (error) throw new HttpError(400, 'Unable to update task archive status', error.message)
   }
 
   if (!isProfessor) await syncAssignments(taskId, existing.group_id, payload.assigneeIds, userId)

@@ -77,6 +77,23 @@ export async function updateGroupMember(id, userId, payload) {
   return data.group
 }
 
+export async function finalizeGroup(id) {
+  return apiRequest(`/groups/${id}/finalize`, { method: 'POST' })
+}
+
+export async function getGroupPopQuiz(id) {
+  const data = await apiRequest(`/groups/${id}/pop-quiz`)
+  return data.quiz
+}
+
+export async function submitGroupPopQuiz(id, payload) {
+  const data = await apiRequest(`/groups/${id}/pop-quiz`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return data.quiz
+}
+
 export async function updateStudentFormedGroupsStatus(payload) {
   const data = await apiRequest('/groups/student-formed/status', {
     method: 'PATCH',

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { announcementRoutes } from './features/announcements/routes/announcementRoutes.js'
 import { analyticsRoutes } from './features/analytics/routes/analyticsRoutes.js'
+import { archiveRoutes } from './features/archives/routes/archiveRoutes.js'
 import { authRoutes } from './features/auth/routes/authRoutes.js'
 import { classRoutes } from './features/classes/routes/classRoutes.js'
 import { contributionRoutes } from './features/contributions/routes/contributionRoutes.js'
@@ -28,6 +29,7 @@ routes.get('/health', (_req, res) => {
 routes.use('/auth', authRoutes)
 routes.use('/announcements', announcementRoutes)
 routes.use('/analytics', analyticsRoutes)
+routes.use('/archives', archiveRoutes)
 routes.use('/classes', classRoutes)
 routes.use('/contributions', contributionRoutes)
 routes.use('/curricula', curriculumRoutes)

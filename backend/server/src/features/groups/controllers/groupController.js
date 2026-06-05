@@ -1,6 +1,8 @@
 import {
   addGroupMember,
   createGroup,
+  finalizeGroupProject,
+  getGroupPopQuiz,
   listAvailableStudentGroups,
   getEligibleGroupMembers,
   getGroupDetails,
@@ -11,6 +13,7 @@ import {
   updateStudentFormedGroupsStatus,
   updateGroup,
   updateGroupMember,
+  submitGroupPopQuiz,
 } from '../services/groupService.js'
 
 export async function getGroups(req, res, next) {
@@ -125,6 +128,33 @@ export async function patchStudentFormedGroupsStatus(req, res, next) {
   try {
     const groups = await updateStudentFormedGroupsStatus(req.auth.user.id, req.auth.role, req.body)
     res.json({ groups })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postFinalizeGroup(req, res, next) {
+  try {
+    const result = await finalizeGroupProject(req.auth.user.id, req.auth.role, req.params.id)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function getPopQuiz(req, res, next) {
+  try {
+    const quiz = await getGroupPopQuiz(req.auth.user.id, req.auth.role, req.params.id)
+    res.json({ quiz })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postPopQuiz(req, res, next) {
+  try {
+    const quiz = await submitGroupPopQuiz(req.auth.user.id, req.auth.role, req.params.id, req.body)
+    res.json({ quiz })
   } catch (error) {
     next(error)
   }

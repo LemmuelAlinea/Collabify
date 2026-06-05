@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ProtectedRoute } from './ProtectedRoute'
+import { ArchivePage } from '../../features/archives/pages/ArchivePage'
 import { ClassDetailsPage } from '../../features/classes/pages/ClassDetailsPage'
 import { AnalyticsDashboardPage } from '../../features/analytics/pages/AnalyticsDashboardPage'
 import { ProfessorClassesPage } from '../../features/classes/pages/ProfessorClassesPage'
@@ -64,7 +65,7 @@ export function AppRouter() {
             <Route path="/student/contributions" element={<ContributionsPage />} />
             <Route path="/student/reassignments" element={<ReassignmentsPage />} />
             <Route path="/student/messages" element={<MessagesPage />} />
-            <Route path="/student/analytics" element={<AnalyticsDashboardPage />} />
+            <Route path="/student/analytics" element={<Navigate to="/student/dashboard" replace />} />
           </Route>
         </Route>
 
@@ -83,6 +84,7 @@ export function AppRouter() {
             <Route path="/professor/tasks" element={<TasksPage />} />
             <Route path="/professor/tasks/ai-planner" element={<TaskGenerationPage />} />
             <Route path="/professor/tasks/:taskId" element={<TaskDetailsPage />} />
+            <Route path="/professor/archive" element={<ArchivePage />} />
             <Route path="/professor/submissions" element={<Navigate to="/professor/tasks" replace />} />
             <Route path="/professor/progress" element={<ProgressDashboardPage />} />
             <Route path="/professor/health" element={<ProjectHealthDashboardPage />} />

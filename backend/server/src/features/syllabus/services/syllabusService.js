@@ -82,6 +82,7 @@ export async function listProfessorSyllabi(professorId) {
     .from('syllabi')
     .select(SYLLABUS_SELECT.replace('classes:class_id', 'classes:class_id!inner'))
     .eq('classes.professor_id', professorId)
+    .eq('is_active', true)
     .order('created_at', { ascending: false })
 
   if (error) {

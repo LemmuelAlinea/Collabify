@@ -1,17 +1,23 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { USER_ROLES } from '../../auth/constants/roles'
 import { getAnalytics } from '../services/analyticsService'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AnalyticsContext = createContext(null)
 
 export function AnalyticsProvider({ children }) {
-  const { user } = useAuth()
+  const { role, user } = useAuth()
   const [analytics, setAnalytics] = useState(null)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   const loadAnalytics = useCallback(async (filters = {}) => {
-    if (!user?.id) return null
+    if (!user?.id || role !== USER_ROLES.PROFESSOR) {
+      setAnalytics(null)
+      setIsLoading(false)
+      return null
+    }
     setIsLoading(true)
     setError('')
 
@@ -25,11 +31,45 @@ export function AnalyticsProvider({ children }) {
     } finally {
       setIsLoading(false)
     }
-  }, [user?.id])
+  }, [role, user?.id])
 
   useEffect(() => {
-    loadAnalytics()
-  }, [loadAnalytics])
+    let isMounted = true
+
+    if (!user?.id || role !== USER_ROLES.PROFESSOR) {
+      Promise.resolve().then(() => {
+        if (!isMounted) return
+        setAnalytics(null)
+        setError('')
+        setIsLoading(false)
+      })
+      return () => {
+        isMounted = false
+      }
+    }
+
+    Promise.resolve().then(() => {
+      if (!isMounted) return
+      setIsLoading(true)
+      setError('')
+    })
+    getAnalytics()
+      .then((data) => {
+        if (!isMounted) return
+        setAnalytics(data)
+      })
+      .catch((loadError) => {
+        if (!isMounted) return
+        setError(loadError.message)
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [role, user?.id])
 
   const value = useMemo(() => ({
     analytics,

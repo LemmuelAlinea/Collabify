@@ -1,4 +1,5 @@
 import { HttpError } from '../../../core/errors/httpError.js'
+import { env } from '../../../config/env.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
 
@@ -13,6 +14,7 @@ const GROUP_SELECT = `
   member_limit,
   creation_method,
   formation_status,
+  status,
   created_at,
   updated_at,
   classes:class_id (
@@ -76,6 +78,7 @@ function normalizeGroup(group, members = [], profileByUserId = new Map()) {
     memberLimit: group.member_limit,
     creationMethod: group.creation_method ?? 'manual',
     formationStatus: group.formation_status ?? null,
+    status: group.status ?? 'active',
     createdAt: group.created_at,
     updatedAt: group.updated_at,
     class: group.classes ? {
@@ -97,6 +100,130 @@ function normalizeGroup(group, members = [], profileByUserId = new Map()) {
     } : null,
     members: members.map((member) => normalizeMember(member, profileByUserId)),
   }
+}
+
+function normalizeQuizQuestion(question, index) {
+  const options = Array.isArray(question?.options) ? question.options.slice(0, 4).map(String) : []
+  while (options.length < 4) options.push(`Option ${options.length + 1}`)
+  const rawCorrect = String(question?.correctOption ?? question?.answer ?? 'A').trim().toUpperCase()
+  const correctOption = ['A', 'B', 'C', 'D'].includes(rawCorrect) ? rawCorrect : 'A'
+
+  return {
+    id: question?.id ?? `q${index + 1}`,
+    prompt: String(question?.prompt ?? question?.question ?? `Which task detail is correct for item ${index + 1}?`).slice(0, 500),
+    options: options.map((label, optionIndex) => ({
+      key: ['A', 'B', 'C', 'D'][optionIndex],
+      label,
+    })),
+    correctOption,
+  }
+}
+
+function stripQuizAnswers(attempt) {
+  return {
+    id: attempt.id,
+    groupId: attempt.group_id,
+    userId: attempt.user_id,
+    questions: (attempt.questions ?? []).map(({ correctOption, ...question }) => question),
+    score: attempt.score,
+    status: attempt.status,
+    completedAt: attempt.completed_at,
+  }
+}
+
+function fallbackQuiz(member, tasks) {
+  const sourceTasks = tasks.length ? tasks : [{ title: 'Project work', description: 'Group project tasks', status: 'done' }]
+  const first = sourceTasks[0]
+  const second = sourceTasks[1] ?? first
+  const third = sourceTasks[2] ?? second
+  const descriptions = sourceTasks.map((task) => task.description).filter(Boolean)
+
+  return [
+    {
+      id: 'q1',
+      prompt: `What was the main deliverable expected from "${first.title}"?`,
+      options: [
+        first.description || `A completed output for ${first.title}`,
+        'A new unrelated group membership request',
+        'A profile picture update',
+        'A notification cleanup only',
+      ],
+      correctOption: 'A',
+    },
+    {
+      id: 'q2',
+      prompt: `Which action best proves "${second.title}" was completed properly?`,
+      options: [
+        'Leaving the task without evidence',
+        second.description || `Submitting the required ${second.title} output`,
+        'Changing only the group name',
+        'Ignoring the deadline',
+      ],
+      correctOption: 'B',
+    },
+    {
+      id: 'q3',
+      prompt: 'Why should finished project tasks be reviewed before final submission?',
+      options: [
+        'To remove all member assignments',
+        'To skip project requirements',
+        'To check quality, completeness, and alignment with the project goals',
+        'To hide task history',
+      ],
+      correctOption: 'C',
+    },
+    {
+      id: 'q4',
+      prompt: `Which statement best connects "${third.title}" to project completion?`,
+      options: [
+        'It is unrelated once marked done',
+        'It only changes the dashboard color',
+        'It replaces every other project task',
+        third.description || `${third.title} contributes a required project output`,
+      ],
+      correctOption: 'D',
+    },
+    {
+      id: 'q5',
+      prompt: 'What should a member understand about their completed tasks?',
+      options: [
+        descriptions[0] || 'The purpose, output, and quality expectations of the work they finished',
+        'Only the task title, not the actual work',
+        'Only who created the group',
+        'Only the app navigation menu',
+      ],
+      correctOption: 'A',
+    },
+  ].map(normalizeQuizQuestion)
+}
+
+async function runPopQuizAi({ group, member, tasks }) {
+  if (!env.n8nPopQuizWebhookUrl) return fallbackQuiz(member, tasks)
+
+  const response = await fetch(env.n8nPopQuizWebhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      input: {
+        group: { id: group.id, name: group.name, projectId: group.project_id },
+        member,
+        tasks,
+      },
+      instructions: [
+        'Create serious project/task comprehension questions.',
+        'Ask about purpose, requirements, deliverables, quality criteria, dependencies, risks, or implementation decisions.',
+        'Do not ask which task the student was assigned to.',
+        'Do not make every correct answer option A; distribute answers across A, B, C, and D.',
+        'Return exactly 5 questions with exactly 4 options each.',
+      ],
+    }),
+  })
+
+  if (!response.ok) return fallbackQuiz(member, tasks)
+  const data = await response.json().catch(() => null)
+  const questions = data?.questions ?? data?.quiz?.questions ?? data
+  if (!Array.isArray(questions)) return fallbackQuiz(member, tasks)
+  return questions.slice(0, 5).map(normalizeQuizQuestion)
 }
 
 function getGroupMemberLimit(group) {
@@ -125,6 +252,17 @@ function average(values) {
   const valid = values.map(Number).filter((value) => Number.isFinite(value))
   if (valid.length === 0) return 0
   return valid.reduce((sum, value) => sum + value, 0) / valid.length
+}
+
+function groupBy(items, keyFn) {
+  const map = new Map()
+  for (const item of items) {
+    const key = keyFn(item)
+    const rows = map.get(key) ?? []
+    rows.push(item)
+    map.set(key, rows)
+  }
+  return map
 }
 
 function normalizeRange(values) {
@@ -603,6 +741,185 @@ async function assertGroupManager(group, userId, role) {
     .maybeSingle()
 
   if (error || !data) throw new HttpError(403, 'Only group leaders can manage members')
+}
+
+function isWorkTask(task) {
+  const taskType = task.metadata?.taskType ?? (task.parent_task_id ? 'child' : 'standalone')
+  return taskType !== 'main'
+}
+
+async function loadGroupWorkTasks(groupId) {
+  const { data, error } = await supabaseAdminClient
+    .from('tasks')
+    .select('id, title, description, status, priority, due_at, completed_at, metadata, parent_task_id')
+    .eq('group_id', groupId)
+    .is('archived_at', null)
+
+  if (error) throw new HttpError(400, 'Unable to load group tasks', error.message)
+  const parentTaskIds = new Set((data ?? []).map((task) => task.parent_task_id).filter(Boolean))
+  return (data ?? []).filter((task) => isWorkTask(task) && !parentTaskIds.has(task.id))
+}
+
+async function loadTaskAssignments(taskIds) {
+  if (!taskIds.length) return []
+  const { data, error } = await supabaseAdminClient
+    .from('task_assignments')
+    .select('task_id, assignee_id')
+    .in('task_id', taskIds)
+
+  if (error) throw new HttpError(400, 'Unable to load task assignments', error.message)
+  return data ?? []
+}
+
+async function loadQuizAttempt(groupId, userId) {
+  const { data, error } = await supabaseAdminClient
+    .from('group_pop_quiz_attempts')
+    .select('*')
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) throw new HttpError(400, 'Unable to load pop quiz', error.message)
+  return data ? stripQuizAnswers(data) : null
+}
+
+export async function getGroupPopQuiz(userId, role, groupId) {
+  const group = await getGroup(groupId)
+  if (role === 'professor') await assertProfessorOwnsClass(group.class_id, userId)
+  if (role === 'student') {
+    const { data, error } = await supabaseAdminClient
+      .from('group_members')
+      .select('id')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (error || !data) throw new HttpError(404, 'Group not found')
+  }
+
+  return loadQuizAttempt(groupId, userId)
+}
+
+export async function finalizeGroupProject(userId, role, groupId) {
+  if (role !== 'student') throw new HttpError(403, 'Only student leaders can finalize projects')
+  const group = await getGroup(groupId)
+  const { membersByGroupId, profileByUserId } = await loadMembersByGroupIds([groupId])
+  const activeMembers = (membersByGroupId.get(groupId) ?? []).filter((member) => member.status === 'active')
+  const leader = activeMembers.find((member) => member.user_id === userId && member.is_leader)
+  if (!leader) throw new HttpError(403, 'Only the group leader can finalize this project')
+
+  const tasks = await loadGroupWorkTasks(groupId)
+  if (tasks.length === 0) throw new HttpError(422, 'This group has no tasks to finalize')
+  if (tasks.some((task) => task.status !== 'done')) throw new HttpError(422, 'All group tasks must be done before finalizing')
+
+  const assignments = await loadTaskAssignments(tasks.map((task) => task.id))
+  const assignmentsByMember = groupBy(assignments, (assignment) => assignment.assignee_id)
+  const attempts = []
+
+  for (const member of activeMembers) {
+    const memberTaskIds = new Set((assignmentsByMember.get(member.user_id) ?? []).map((assignment) => assignment.task_id))
+    const memberTasks = tasks.filter((task) => memberTaskIds.has(task.id))
+    const quizTasks = (memberTasks.length ? memberTasks : tasks).map((task) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      dueAt: task.due_at,
+      completedAt: task.completed_at,
+    }))
+    const memberPayload = {
+      userId: member.user_id,
+      displayName: profileByUserId.get(member.user_id)?.display_name ?? member.users?.email,
+      email: member.users?.email,
+    }
+    const generatedQuestions = await runPopQuizAi({ group, member: memberPayload, tasks: quizTasks })
+    const questions = generatedQuestions.length === 5
+      ? generatedQuestions
+      : [...generatedQuestions, ...fallbackQuiz(memberPayload, quizTasks)].slice(0, 5)
+
+    const { data, error } = await supabaseAdminClient
+      .from('group_pop_quiz_attempts')
+      .upsert({
+        group_id: groupId,
+        user_id: member.user_id,
+        generated_by: userId,
+        questions,
+        answers: [],
+        score: 0,
+        status: 'in_progress',
+        completed_at: null,
+      }, { onConflict: 'group_id,user_id' })
+      .select('*')
+      .single()
+
+    if (error) throw new HttpError(400, 'Unable to save pop quiz', error.message)
+    attempts.push(data)
+  }
+
+  const { error: updateError } = await supabaseAdminClient
+    .from('groups')
+    .update({ status: 'finished' })
+    .eq('id', groupId)
+
+  if (updateError) throw new HttpError(400, 'Unable to finalize group', updateError.message)
+
+  return {
+    group: await getGroupWithMembers(groupId),
+    quiz: stripQuizAnswers(attempts.find((attempt) => attempt.user_id === userId)),
+  }
+}
+
+export async function submitGroupPopQuiz(userId, role, groupId, payload) {
+  if (role !== 'student') throw new HttpError(403, 'Only students can submit pop quizzes')
+  const { data: membership, error: membershipError } = await supabaseAdminClient
+    .from('group_members')
+    .select('id')
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (membershipError || !membership) throw new HttpError(404, 'Group not found')
+
+  const { data: attempt, error } = await supabaseAdminClient
+    .from('group_pop_quiz_attempts')
+    .select('*')
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) throw new HttpError(400, 'Unable to load pop quiz', error.message)
+  if (!attempt) throw new HttpError(404, 'Pop quiz not found')
+  if (attempt.status === 'completed') return stripQuizAnswers(attempt)
+
+  const answers = Array.isArray(payload.answers) ? payload.answers : []
+  const normalizedAnswers = (attempt.questions ?? []).map((question) => {
+    const answer = answers.find((item) => item.questionId === question.id)
+    return {
+      questionId: question.id,
+      selectedOption: String(answer?.selectedOption ?? '').toUpperCase(),
+      correctOption: question.correctOption,
+      isCorrect: String(answer?.selectedOption ?? '').toUpperCase() === question.correctOption,
+    }
+  })
+  const score = normalizedAnswers.filter((answer) => answer.isCorrect).length * 20
+
+  const { data: saved, error: saveError } = await supabaseAdminClient
+    .from('group_pop_quiz_attempts')
+    .update({
+      answers: normalizedAnswers,
+      score,
+      status: 'completed',
+      completed_at: new Date().toISOString(),
+    })
+    .eq('id', attempt.id)
+    .select('*')
+    .single()
+
+  if (saveError) throw new HttpError(400, 'Unable to submit pop quiz', saveError.message)
+  return stripQuizAnswers(saved)
 }
 
 async function assertProfessorCanManageGroup(group, professorId, role) {

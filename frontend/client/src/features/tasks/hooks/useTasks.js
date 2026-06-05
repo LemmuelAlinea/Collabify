@@ -74,6 +74,7 @@ export function useTasks(filters) {
 
   const save = useCallback(async (id, payload) => {
     const task = await updateTask(id, payload)
+    setTasks((current) => replaceTask(current, task))
     await loadTasks({ silent: true })
     return task
   }, [loadTasks])

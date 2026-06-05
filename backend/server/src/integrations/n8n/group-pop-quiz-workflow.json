@@ -1,0 +1,157 @@
+{
+  "name": "Collabify - Group Pop Quiz",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "collabify/group-pop-quiz",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "63e5839d-6964-47d2-a7c1-ff5ffdf5699a",
+      "name": "Group Pop Quiz Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ],
+      "webhookId": "collabify-group-pop-quiz"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nconst input = body.input;\nif (!input?.member || !Array.isArray(input?.tasks)) throw new Error('Missing quiz input');\nconst taskLines = input.tasks.map((task, index) => `${index + 1}. ${task.title}: ${task.description ?? 'No description'} (status: ${task.status})`).join('\\n');\nreturn [{ json: { input, prompt: `Create exactly 5 serious ABCD multiple-choice quiz questions for ${input.member.displayName ?? 'this student'} based on the project tasks they completed. The questions must test understanding of purpose, requirements, deliverables, quality criteria, dependencies, risks, or implementation decisions from the task descriptions. Do NOT ask which task they were assigned to. Do NOT make every answer option A. Distribute correctOption across A, B, C, and D. Use only these tasks:\\n${taskLines}\\nReturn JSON only with {\"questions\":[{\"id\":\"q1\",\"prompt\":\"...\",\"options\":[\"A text\",\"B text\",\"C text\",\"D text\"],\"correctOption\":\"A\"}]}. Each options array must have exactly 4 concise options. Every correctOption must be one of A, B, C, D.` } }];"
+      },
+      "id": "a743c776-e568-4322-bb64-e7299942f7aa",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You write short student pop quizzes. Return valid JSON only."
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "temperature": 0.2,
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "id": "280905d9-827d-4ba2-8985-3a2c5946c6f6",
+      "name": "Generate Questions",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -260,
+        0
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL_ID",
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output ?? $json.text ?? $json;\nconst parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\nconst questions = Array.isArray(parsed.questions) ? parsed.questions : [];\nreturn [{ json: { questions: questions.slice(0, 5) } }];"
+      },
+      "id": "e4fa1fb0-033b-41ee-a536-082066a5d8f8",
+      "name": "Normalize Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "d720cfd6-2d45-4ce9-9b43-e9e20cfd0c17",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        200,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Group Pop Quiz Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Questions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Questions": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

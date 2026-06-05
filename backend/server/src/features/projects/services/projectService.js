@@ -266,6 +266,7 @@ export async function listProjects(userId, role) {
       .from('projects')
       .select(PROJECT_SELECT.replace('classes:class_id', 'classes:class_id!inner'))
       .eq('classes.professor_id', userId)
+      .neq('status', 'archived')
       .order('created_at', { ascending: false })
 
     if (error) throw new HttpError(400, 'Unable to load projects', error.message)

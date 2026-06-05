@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   BarChart3,
+  Archive,
   BookOpen,
   Bot,
   ClipboardList,
@@ -41,6 +42,7 @@ const navIcons = {
   Analytics: BarChart3,
   Contributions: LineChart,
   'Project Health': ShieldAlert,
+  Archive,
   Profile: CircleUserRound,
 }
 
@@ -76,6 +78,7 @@ const navSections = {
         { to: '/professor/groups', label: 'Groups' },
         { to: '/professor/tasks', label: 'Tasks' },
         { to: '/professor/tasks/ai-planner', label: 'AI Planner', isChild: true },
+        { to: '/professor/archive', label: 'Archive' },
         { to: '/professor/reassignments', label: 'Reassignments' },
         { to: '/professor/messages', label: 'Messages' },
       ],
@@ -92,7 +95,6 @@ const navSections = {
       items: [
         { to: '/professor/progress', label: 'Progress' },
         { to: '/professor/analytics', label: 'Analytics' },
-        { to: '/professor/health', label: 'Project Health' },
       ],
     },
   ],

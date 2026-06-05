@@ -65,3 +65,10 @@ export const studentFormedStatusSchema = z.object({
   projectId: uuid,
   status: z.enum(['open', 'closed', 'finalized']),
 })
+
+export const popQuizSubmitSchema = z.object({
+  answers: z.array(z.object({
+    questionId: z.string().min(1).max(100),
+    selectedOption: z.enum(['A', 'B', 'C', 'D']),
+  })).length(5),
+})

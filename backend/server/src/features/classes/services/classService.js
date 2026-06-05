@@ -20,6 +20,8 @@ const CLASS_SELECT = `
   section,
   join_code,
   is_archived,
+  archived_at,
+  archived_by,
   created_at,
   updated_at
 `
@@ -40,6 +42,8 @@ function normalizeClass(classItem) {
     schoolYear: classItem.school_year ?? classItem.academic_year,
     section: classItem.section,
     isArchived: classItem.is_archived,
+    archivedAt: classItem.archived_at,
+    archivedBy: classItem.archived_by,
     createdAt: classItem.created_at,
     updatedAt: classItem.updated_at,
   }
@@ -294,7 +298,11 @@ export async function archiveClass(professorId, classId) {
 
   const { data, error } = await supabaseAdminClient
     .from('classes')
-    .update({ is_archived: true })
+    .update({
+      is_archived: true,
+      archived_at: new Date().toISOString(),
+      archived_by: professorId,
+    })
     .eq('id', classId)
     .select(CLASS_SELECT)
     .single()

@@ -8,7 +8,7 @@ import { ProgressMetric } from '../../progress/components/ProgressMetric'
 import { ProgressSection } from '../../progress/components/ProgressSection'
 import { useProgress } from '../../progress/hooks/useProgress'
 import { TaskDetailsModal } from '../../tasks/components/TaskDetailsModal'
-import { getGroup, updateGroupMember } from '../services/groupService'
+import { finalizeGroup, getGroup, getGroupPopQuiz, submitGroupPopQuiz, updateGroupMember } from '../services/groupService'
 
 function normalizeTaskShares(tasks) {
   if (!tasks.length) return []
@@ -36,6 +36,10 @@ export function StudentGroupDetailsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTask, setSelectedTask] = useState(null)
   const [notice, setNotice] = useState('')
+  const [quiz, setQuiz] = useState(null)
+  const [quizAnswers, setQuizAnswers] = useState({})
+  const [isFinalizing, setIsFinalizing] = useState(false)
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
 
   const loadGroup = useCallback(async () => {
     setIsLoading(true)
@@ -52,6 +56,21 @@ export function StudentGroupDetailsPage() {
   useEffect(() => {
     loadGroup()
   }, [loadGroup])
+
+  useEffect(() => {
+    if (role !== USER_ROLES.STUDENT || !groupId || !user?.id) return
+    let isMounted = true
+    async function loadQuiz() {
+      const nextQuiz = await getGroupPopQuiz(groupId).catch(() => null)
+      if (isMounted && nextQuiz?.status === 'in_progress') setQuiz((current) => current ?? nextQuiz)
+    }
+    loadQuiz()
+    const timer = window.setInterval(loadQuiz, 5000)
+    return () => {
+      isMounted = false
+      window.clearInterval(timer)
+    }
+  }, [groupId, role, user?.id])
 
   const progressGroup = useMemo(
     () => (progress?.groups ?? []).find((item) => item.id === groupId),
@@ -80,6 +99,11 @@ export function StudentGroupDetailsPage() {
   }, [groupTasks])
   const currentMembership = group?.members.find((member) => member.userId === user?.id && member.status === 'active')
   const canManageMembers = role === USER_ROLES.PROFESSOR || Boolean(currentMembership?.isLeader)
+  const allTasksDone = taskCompletion.total > 0 && taskCompletion.completed === taskCompletion.total
+  const canFinalize = role === USER_ROLES.STUDENT && Boolean(currentMembership?.isLeader) && allTasksDone
+  const finalizeHint = !currentMembership?.isLeader
+    ? 'Only the group leader can finalize this project.'
+    : !allTasksDone ? 'All group tasks must be done before finalizing.' : 'Ready for final quiz.'
   const basePath = role === USER_ROLES.PROFESSOR ? '/professor' : '/student'
 
   async function makeLeader(member) {
@@ -103,6 +127,50 @@ export function StudentGroupDetailsPage() {
     })
   }
 
+  async function finalizeProject() {
+    if (!canFinalize) return
+    setIsFinalizing(true)
+    setError('')
+    setNotice('')
+    try {
+      const result = await finalizeGroup(group.id)
+      setGroup(result.group)
+      setQuiz(result.quiz)
+      setQuizAnswers({})
+      setNotice('Project finalized. Complete the pop quiz.')
+    } catch (finalizeError) {
+      setError(finalizeError.message)
+    } finally {
+      setIsFinalizing(false)
+    }
+  }
+
+  function updateQuizAnswer(questionId, selectedOption) {
+    setQuizAnswers((current) => ({ ...current, [questionId]: selectedOption }))
+  }
+
+  async function submitQuiz(event) {
+    event.preventDefault()
+    if (!quiz) return
+    setIsSubmittingQuiz(true)
+    setError('')
+    try {
+      await submitGroupPopQuiz(group.id, {
+        answers: quiz.questions.map((question) => ({
+          questionId: question.id,
+          selectedOption: quizAnswers[question.id],
+        })),
+      })
+      setQuiz(null)
+      setQuizAnswers({})
+      setNotice('Pop quiz submitted.')
+    } catch (submitError) {
+      setError(submitError.message)
+    } finally {
+      setIsSubmittingQuiz(false)
+    }
+  }
+
   if (isLoading || isProgressLoading) return <div className="route-state">Loading group...</div>
   if (error) return <div className="route-state">{error}</div>
   if (!group) return <div className="route-state">Group not found</div>
@@ -123,11 +191,25 @@ export function StudentGroupDetailsPage() {
           <h2>{group.name}</h2>
           <p>{group.project?.title ?? 'Project'}</p>
         </div>
-        {group.project?.id ? <Link className="secondary-link-button" to={`${basePath}/projects/${group.project.id}`}>Open project</Link> : null}
+        <div className="group-details-actions">
+          {group.project?.id ? <Link className="secondary-link-button" to={`${basePath}/projects/${group.project.id}`}>Open project</Link> : null}
+        </div>
       </div>
 
       {notice ? <p className="form-success">{notice}</p> : null}
       {progressError ? <p className="form-error">{progressError}</p> : null}
+
+      {role === USER_ROLES.STUDENT ? (
+        <section className="group-finalize-panel">
+          <div>
+            <h3>Finalize project</h3>
+            <p>{finalizeHint}</p>
+          </div>
+          <button className="primary-button" type="button" disabled={!canFinalize || isFinalizing} onClick={finalizeProject}>
+            {isFinalizing ? 'Finalizing...' : 'Finalize project'}
+          </button>
+        </section>
+      ) : null}
 
       <section className="group-details-members-panel">
         <div className="task-section-heading">
@@ -210,6 +292,43 @@ export function StudentGroupDetailsPage() {
           onClose={() => setSelectedTask(null)}
           taskId={selectedTask.id}
         />
+      ) : null}
+
+      {quiz ? (
+        <div className="pop-quiz-backdrop">
+          <form className="pop-quiz-modal" onSubmit={submitQuiz}>
+            <div className="pop-quiz-header">
+              <div>
+                <p className="eyebrow">Final project check</p>
+                <h3>Pop Quiz</h3>
+              </div>
+            </div>
+            <div className="pop-quiz-list">
+              {quiz.questions.map((question, index) => (
+                <fieldset className="pop-quiz-question" key={question.id}>
+                  <legend>{index + 1}. {question.prompt}</legend>
+                  <div className="pop-quiz-options">
+                    {question.options.map((option) => (
+                      <label key={option.key}>
+                        <input
+                          type="radio"
+                          name={`quiz-${question.id}`}
+                          value={option.key}
+                          checked={quizAnswers[question.id] === option.key}
+                          onChange={() => updateQuizAnswer(question.id, option.key)}
+                        />
+                        <span>{option.key}. {option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+            </div>
+            <button className="primary-button" type="submit" disabled={isSubmittingQuiz || Object.keys(quizAnswers).length !== quiz.questions.length}>
+              {isSubmittingQuiz ? 'Submitting...' : 'Submit quiz'}
+            </button>
+          </form>
+        </div>
       ) : null}
     </section>
   )

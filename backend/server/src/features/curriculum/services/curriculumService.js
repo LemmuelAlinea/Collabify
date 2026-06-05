@@ -126,7 +126,7 @@ async function replaceProgramStudies(curriculumId, programStudies) {
   if (error) throw new HttpError(400, 'Unable to save program of study', error.message)
 }
 
-export async function listProfessorCurricula(professorId, includeArchived = true) {
+export async function listProfessorCurricula(professorId, includeArchived = false) {
   let query = supabaseAdminClient
     .from('curricula')
     .select(CURRICULUM_SELECT)

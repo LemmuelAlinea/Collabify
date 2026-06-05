@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Check, Pencil, X } from 'lucide-react'
 import { USER_ROLES } from '../../auth/constants/roles'
 
 function formatDate(value) {
@@ -17,6 +18,17 @@ function progressForStatus(status) {
     review: 50,
     done: 100,
   }[status] ?? 0
+}
+
+function toDateTimeInput(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return localDate.toISOString().slice(0, 16)
+}
+
+function fromDateTimeInput(value) {
+  return value ? new Date(value).toISOString() : null
 }
 
 function CommentBox({ comments, onSubmit }) {
@@ -61,6 +73,14 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
   const [status, setStatus] = useState(task.status)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [isEditSaving, setIsEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editForm, setEditForm] = useState({
+    description: task.description ?? '',
+    dueAt: toDateTimeInput(task.dueAt),
+    title: task.title ?? '',
+  })
   const assigneeIds = task.assignments.map((assignment) => assignment.assigneeId)
   const hasAssignees = assigneeIds.length > 0
   const isAssignedToMe = Boolean(currentUserId && assigneeIds.includes(currentUserId))
@@ -78,6 +98,54 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
     setStatus(task.status)
     setDraftProgress(task.progress ?? 0)
   }, [task.progress, task.status])
+
+  useEffect(() => {
+    if (isEditing) return
+    setEditForm({
+      description: task.description ?? '',
+      dueAt: toDateTimeInput(task.dueAt),
+      title: task.title ?? '',
+    })
+  }, [isEditing, task.description, task.dueAt, task.title])
+
+  function updateEditField(event) {
+    const { name, value } = event.target
+    setEditForm((current) => ({ ...current, [name]: value }))
+  }
+
+  function cancelEdit() {
+    setIsEditing(false)
+    setEditError('')
+    setEditForm({
+      description: task.description ?? '',
+      dueAt: toDateTimeInput(task.dueAt),
+      title: task.title ?? '',
+    })
+  }
+
+  async function saveEdits(event) {
+    event.preventDefault()
+    const title = editForm.title.trim()
+    if (!title) {
+      setEditError('Title is required')
+      return
+    }
+
+    setIsEditSaving(true)
+    setEditError('')
+    try {
+      await onUpdate(task.id, {
+        description: editForm.description.trim() || null,
+        dueAt: fromDateTimeInput(editForm.dueAt),
+        title,
+      })
+      setIsEditing(false)
+    } catch (error) {
+      setEditError(error.message ?? 'Failed to save task')
+    } finally {
+      setIsEditSaving(false)
+    }
+  }
 
   function changeStatus(nextStatus) {
     const nextProgress = progressForStatus(nextStatus)
@@ -133,16 +201,54 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
     if (window.confirm(`Delete "${task.title}"?`)) await onDelete(task.id)
   }
 
+  const editButton = (
+    <button className="icon-button task-edit-button" type="button" onClick={() => setIsEditing(true)} aria-label={`Edit ${task.title}`}>
+      <Pencil size={16} aria-hidden="true" />
+    </button>
+  )
+
+  const editFormMarkup = (
+    <form className="task-edit-form" onSubmit={saveEdits}>
+      <label className="form-field" htmlFor={`task-title-${task.id}`}>
+        <span>Title</span>
+        <input id={`task-title-${task.id}`} name="title" value={editForm.title} onChange={updateEditField} maxLength={180} required />
+      </label>
+      <label className="form-field" htmlFor={`task-description-${task.id}`}>
+        <span>Description</span>
+        <textarea id={`task-description-${task.id}`} name="description" value={editForm.description} onChange={updateEditField} maxLength={5000} rows={3} />
+      </label>
+      <label className="form-field" htmlFor={`task-due-${task.id}`}>
+        <span>Deadline</span>
+        <input id={`task-due-${task.id}`} name="dueAt" type="datetime-local" value={editForm.dueAt} onChange={updateEditField} />
+      </label>
+      {editError ? <p className="form-error">{editError}</p> : null}
+      <div className="task-edit-actions">
+        <button className="icon-button task-edit-save" type="submit" disabled={isEditSaving} aria-label="Save task edits">
+          <Check size={16} aria-hidden="true" />
+        </button>
+        <button className="icon-button" type="button" onClick={cancelEdit} disabled={isEditSaving} aria-label="Cancel task edits">
+          <X size={16} aria-hidden="true" />
+        </button>
+      </div>
+    </form>
+  )
+
   if (isMainTask) {
     return (
       <section className="main-task-section">
         <div className="main-task-heading">
-          <div>
-            <p className="eyebrow">Main task</p>
-            <h2>{task.title}</h2>
-            {task.description ? <p>{task.description}</p> : null}
+          {isEditing ? editFormMarkup : (
+            <div>
+              <p className="eyebrow">Main task</p>
+              <h2>{task.title}</h2>
+              {task.description ? <p>{task.description}</p> : null}
+              <small>{formatDate(task.dueAt)}</small>
+            </div>
+          )}
+          <div className="task-heading-actions">
+            {!isEditing ? editButton : null}
+            {isProfessor ? <button className="danger-button" type="button" onClick={archiveTask}>Archive</button> : null}
           </div>
-          {isProfessor ? <button className="danger-button" type="button" onClick={archiveTask}>Archive</button> : null}
         </div>
         <div className="task-children compact">
           {task.children.map((child) => (
@@ -166,11 +272,16 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
 
   return (
     <article className={`task-card compact-task-card depth-${depth}`}>
-      <button className="task-card-summary" type="button" onClick={() => setIsExpanded((current) => !current)}>
-        <span className={`task-priority priority-${String(task.priority || '').toLowerCase()}`}>{task.priority}</span>
-        <strong>{task.title}</strong>
-        <small>{task.description || 'No description'}</small>
-      </button>
+      <div className="task-card-top">
+        {isEditing ? editFormMarkup : (
+          <button className="task-card-summary" type="button" onClick={() => setIsExpanded((current) => !current)}>
+            <span className={`task-priority priority-${String(task.priority || '').toLowerCase()}`}>{task.priority}</span>
+            <strong>{task.title}</strong>
+            <small>{task.description || 'No description'}</small>
+          </button>
+        )}
+        {!isEditing ? editButton : null}
+      </div>
       <div className="task-card-meta">
         <span>{formatDate(task.dueAt)}</span>
         <span>{status}</span>
