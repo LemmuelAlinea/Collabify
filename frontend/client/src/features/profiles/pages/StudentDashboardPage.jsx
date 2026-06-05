@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  Bell,
   BookOpen,
   CalendarClock,
   ChevronRight,
@@ -17,7 +16,6 @@ import { getClassDetails } from '../../classes/services/classService'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { useGroups } from '../../groups/hooks/useGroups'
 import { useNotifications } from '../../notifications/hooks/useNotifications'
-import { NotificationDropdown } from '../../notifications/components/NotificationDropdown'
 import { useProgress } from '../../progress/hooks/useProgress'
 import { useProjects } from '../../projects/hooks/useProjects'
 import { useTasks } from '../../tasks/hooks/useTasks'
@@ -85,15 +83,9 @@ export function StudentDashboardPage() {
   const { tasks, isLoading: isLoadingTasks } = useTasks(taskFilters)
   const { progress } = useProgress()
   const { activity } = useActivity(activityFilters)
-  const {
-    markAllRead,
-    markRead,
-    notifications,
-    unreadCount,
-  } = useNotifications()
+  const { unreadCount } = useNotifications()
 
   const [search, setSearch] = useState('')
-  const [isBellOpen, setIsBellOpen] = useState(false)
   const [visibleAnnouncements, setVisibleAnnouncements] = useState(ANNOUNCEMENTS_PAGE_SIZE)
   const [expandedIds, setExpandedIds] = useState(() => new Set())
   const [announcementFeed, setAnnouncementFeed] = useState([])
@@ -277,20 +269,6 @@ export function StudentDashboardPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <div className="student-dashboard-bell-wrap">
-            <button className="student-dashboard-bell" type="button" onClick={() => setIsBellOpen((current) => !current)}>
-              <Bell aria-hidden="true" />
-              {unreadCount > 0 ? <strong>{unreadCount}</strong> : null}
-            </button>
-            {isBellOpen ? (
-              <NotificationDropdown
-                notifications={notifications}
-                onMarkAllRead={markAllRead}
-                onMarkRead={markRead}
-              />
-            ) : null}
-          </div>
-          <div className="student-dashboard-avatar">{initials(greetingName)}</div>
         </div>
       </motion.header>
 

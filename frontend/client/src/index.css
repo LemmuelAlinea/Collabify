@@ -1951,7 +1951,7 @@ a {
 }
 
 .task-progress-row__group {
-  color: #22c55e;
+  color: #a78bfa;
 }
 
 .task-progress-row__points {
@@ -4512,9 +4512,12 @@ body:has(.dashboard-shell) .task-progress-row__project {
   color: #38bdf8 !important;
 }
 
-body:has(.dashboard-shell) .task-progress-row__group,
 body:has(.dashboard-shell) .task-progress-row__points {
   color: #23e66e !important;
+}
+
+body:has(.dashboard-shell) .task-progress-row__group {
+  color: #a78bfa !important;
 }
 
 body:has(.dashboard-shell) .task-progress-row__status {
@@ -7390,7 +7393,7 @@ tbody tr:hover,
 
 .student-dashboard-quick-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -9042,6 +9045,11 @@ html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__points,
 body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__group,
 body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__points {
   color: #16a34a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__group,
+body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__group {
+  color: #7c3aed !important;
 }
 
 html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__status,
@@ -11174,6 +11182,13 @@ body[data-theme="light"]:has(.dashboard-shell) .gantt-task-label {
   border-color: #dbe3ee !important;
 }
 
+html[data-theme="light"] body:has(.dashboard-shell) .gantt-task-label,
+body[data-theme="light"]:has(.dashboard-shell) .gantt-task-label {
+  background: #d7e2ee !important;
+  border-right-color: #b9c8d9 !important;
+  border-bottom-color: #c4d1df !important;
+}
+
 html[data-theme="light"] body:has(.dashboard-shell) .gantt-week,
 html[data-theme="light"] body:has(.dashboard-shell) .gantt-task-label strong,
 body[data-theme="light"]:has(.dashboard-shell) .gantt-week,
@@ -11186,6 +11201,11 @@ html[data-theme="light"] body:has(.dashboard-shell) .gantt-task-label span,
 body[data-theme="light"]:has(.dashboard-shell) .gantt-week small,
 body[data-theme="light"]:has(.dashboard-shell) .gantt-task-label span {
   color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .gantt-task-label span,
+body[data-theme="light"]:has(.dashboard-shell) .gantt-task-label span {
+  color: #334155 !important;
 }
 
 html[data-theme="light"] body:has(.dashboard-shell) .gantt-track,

@@ -63,7 +63,6 @@ const navSections = {
       title: 'Insights',
       items: [
         { to: '/student/progress', label: 'Progress' },
-        { to: '/student/contributions', label: 'Contributions' },
       ],
     },
   ],
@@ -93,7 +92,6 @@ const navSections = {
       items: [
         { to: '/professor/progress', label: 'Progress' },
         { to: '/professor/analytics', label: 'Analytics' },
-        { to: '/professor/contributions', label: 'Contributions' },
         { to: '/professor/health', label: 'Project Health' },
       ],
     },
