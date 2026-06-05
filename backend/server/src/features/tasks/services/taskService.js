@@ -298,6 +298,9 @@ function buildTaskTree(tasks) {
 }
 
 function baseTaskWeight(task) {
+  const explicitWeight = Number(task.scoreWeight ?? task.score_weight)
+  if (explicitWeight > 0) return explicitWeight
+
   const priorityWeights = {
     low: 0.75,
     medium: 1,
@@ -908,7 +911,7 @@ export async function createTask(userId, role, payload) {
     const status = 'todo'
     const isMainTask = taskType === 'main'
     const difficulty = payload.difficulty ?? 'medium'
-    const estimatedHours = isMainTask ? null : estimateHours(payload.priority, difficulty)
+    const estimatedHours = isMainTask ? null : payload.estimatedHours ?? estimateHours(payload.priority, difficulty)
 
     const { data, error } = await supabaseAdminClient
       .from('tasks')
@@ -923,7 +926,7 @@ export async function createTask(userId, role, payload) {
         priority: payload.priority ?? 'medium',
         due_at: payload.dueAt,
         estimated_hours: estimatedHours,
-        score_weight: null,
+        score_weight: isMainTask ? null : payload.scoreWeight ?? null,
         progress: 0,
         completed_at: null,
         difficulty,
@@ -991,8 +994,10 @@ export async function updateTask(userId, role, taskId, payload) {
     status: isProfessor ? undefined : payload.status,
     priority: payload.priority,
     due_at: payload.dueAt,
-    estimated_hours: payload.difficulty || payload.priority ? estimateHours(payload.priority ?? existing.priority, payload.difficulty ?? existing.difficulty) : undefined,
-    score_weight: undefined,
+    estimated_hours: payload.estimatedHours !== undefined
+      ? payload.estimatedHours
+      : payload.difficulty || payload.priority ? estimateHours(payload.priority ?? existing.priority, payload.difficulty ?? existing.difficulty) : undefined,
+    score_weight: payload.scoreWeight,
     progress: isProfessor ? undefined : mappedProgress ?? payload.progress,
     difficulty: payload.difficulty,
     complexity: payload.complexity,

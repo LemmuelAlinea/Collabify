@@ -17,6 +17,12 @@ function topItems(items, limit = 8) {
   return [...items].slice(0, limit)
 }
 
+function formatTaskStatus(status) {
+  return String(status || 'todo')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 function normalizeTaskShares(tasks) {
   if (!tasks.length) return []
   const base = Math.floor((100 / tasks.length) * 100) / 100
@@ -231,7 +237,7 @@ export function ProgressDashboardPage() {
               {myTasksWithShare.map((task) => (
                 <article className="task-progress-row" key={task.id}>
                   <div>
-                    <h4>{task.title}</h4>
+                    <h4 className="task-progress-row__title">{task.title}</h4>
                     <p>{task.groupName} · {task.status} · weight {task.share}%</p>
                   </div>
                   <ProgressBar label="Task" value={task.progress ?? 0} />
@@ -257,28 +263,25 @@ export function ProgressDashboardPage() {
         </>
       ) : null}
 
-      <ProgressSection title="Project Progress">
-        <div className="progress-list">
-          {topItems(visibleProjects).map((project) => (
-            <article className="progress-row-card" key={project.id}>
-              <div>
-                <h4>{project.title}</h4>
-                <p>{project.status} · {completionLabel(project.taskCompletion)}</p>
-              </div>
-              <ProgressBar label="Progress" value={project.progress} />
-            </article>
-          ))}
-          {visibleProjects.length === 0 ? <p>No project progress yet.</p> : null}
-        </div>
-      </ProgressSection>
-
       <ProgressSection title="Group Progress">
         <div className="progress-grid">
           {topItems(visibleGroups).map((group) => (
             <article className="progress-row-card" key={group.id}>
               <div>
                 <h4>{group.name}</h4>
-                <p>{group.projectTitle || 'Project'} · {group.memberCount} members</p>
+                <p className="group-progress-meta">
+                  <span className="group-progress-meta__project">{group.projectTitle || 'Project'}</span>
+                  <span className="group-progress-meta__separator">·</span>
+                  <span className="group-progress-meta__members">{group.memberCount} members</span>
+                  <span className="group-progress-meta__separator">·</span>
+                  <span>
+                    <span className="group-progress-meta__completed">{group.taskCompletion?.completed ?? 0}</span>
+                    <span className="group-progress-meta__separator">/</span>
+                    <span className="group-progress-meta__total">{group.taskCompletion?.total ?? 0}</span>
+                    <span> </span>
+                    <span className="group-progress-meta__done">done</span>
+                  </span>
+                </p>
               </div>
               <ProgressBar label="Group" value={group.progress} />
             </article>
@@ -308,9 +311,19 @@ export function ProgressDashboardPage() {
         <div className="task-progress-table task-progress-table--scroll">
           {visibleTasks.map((task) => (
             <article className="task-progress-row" key={task.id}>
-              <div>
-                <h4>{task.title}</h4>
-                <p>{task.projectTitle} · {task.groupName} · {task.status}</p>
+              <div className="task-progress-row__content">
+                <h4 className="task-progress-row__title">{task.title}</h4>
+                <p className="task-progress-row__meta">
+                  <span className="task-progress-row__project">{task.projectTitle || 'Project'}</span>
+                  <span className="task-progress-row__separator">·</span>
+                  <span className="task-progress-row__group">{task.groupName || 'Group'}</span>
+                  <span className="task-progress-row__separator">·</span>
+                  <span className="task-progress-row__points">{Number(task.points ?? 0)} pts</span>
+                  <span className="task-progress-row__separator">·</span>
+                  <span className={`task-progress-row__status task-progress-row__status--${task.status || 'todo'}`}>
+                    {formatTaskStatus(task.status)}
+                  </span>
+                </p>
               </div>
               <ProgressBar label="Task" value={task.progress} />
             </article>
@@ -321,3 +334,4 @@ export function ProgressDashboardPage() {
     </section>
   )
 }
+

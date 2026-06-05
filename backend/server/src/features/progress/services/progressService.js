@@ -30,6 +30,9 @@ function memberScoreKey(groupId, userId) {
 }
 
 function baseTaskWeight(task) {
+  const explicitWeight = Number(task.score_weight ?? task.scoreWeight)
+  if (explicitWeight > 0) return explicitWeight
+
   const priorityWeights = { low: 0.75, medium: 1, high: 1.35, urgent: 1.75 }
   const difficultyWeights = { easy: 2, medium: 4, hard: 7, critical: 10 }
   const difficulty = task.difficulty ?? 'medium'
@@ -336,10 +339,12 @@ function buildTaskPointScores(tasks, assignments, approvedReassignments) {
   const memberScores = new Map()
   const groupPoints = new Map()
   const projectPoints = new Map()
+  const taskPoints = new Map()
 
   for (const task of tasks) {
     if (task.status === 'cancelled') continue
     const taskWeight = weightsByTaskId.get(task.id) ?? 0
+    taskPoints.set(task.id, taskWeight)
     const owners = ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId)
 
     for (const [userId, share] of owners) {
@@ -361,7 +366,7 @@ function buildTaskPointScores(tasks, assignments, approvedReassignments) {
     }
   }
 
-  return { groupPoints, memberScores, projectPoints }
+  return { groupPoints, memberScores, projectPoints, taskPoints }
 }
 
 function buildMemberProgress({ members, memberScores, profileByUserId }) {
@@ -387,7 +392,7 @@ function buildMemberProgress({ members, memberScores, profileByUserId }) {
   })
 }
 
-function buildTaskRows(tasks, assignmentsByTaskId, profileByUserId) {
+function buildTaskRows(tasks, assignmentsByTaskId, profileByUserId, taskPointsById = new Map()) {
   return tasks.map((task) => ({
     assignees: (assignmentsByTaskId.get(task.id) ?? []).map((assignment) => ({
       displayName: profileByUserId.get(assignment.assignee_id)?.display_name ?? assignment.users?.email,
@@ -397,6 +402,7 @@ function buildTaskRows(tasks, assignmentsByTaskId, profileByUserId) {
     groupName: task.groups?.name,
     id: task.id,
     progress: task.progress ?? (task.status === 'done' ? 100 : 0),
+    points: roundPoints(taskPointsById.get(task.id) ?? 0),
     projectId: task.project_id,
     projectTitle: task.projects?.title,
     status: task.status,
@@ -450,7 +456,7 @@ async function loadProgressData({ classIds = [], groupIds = [], projectIds = [] 
     resolvedGroupIds.length > 0
       ? supabaseAdminClient
         .from('tasks')
-        .select('id, project_id, group_id, parent_task_id, title, status, progress, priority, estimated_hours, difficulty, complexity, archived_at, metadata, groups:group_id (name), projects:project_id (title)')
+        .select('id, project_id, group_id, parent_task_id, title, status, progress, priority, estimated_hours, score_weight, difficulty, complexity, archived_at, metadata, groups:group_id (name), projects:project_id (title)')
         .in('group_id', resolvedGroupIds)
         .is('archived_at', null)
       : { data: [] },
@@ -563,7 +569,7 @@ function buildDashboard(data, scope) {
     },
     projects,
     scope,
-    tasks: buildTaskRows(data.tasks, assignmentsByTaskId, data.profileByUserId),
+    tasks: buildTaskRows(data.tasks, assignmentsByTaskId, data.profileByUserId, pointScores.taskPoints),
   }
 }
 

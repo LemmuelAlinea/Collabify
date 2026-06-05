@@ -8,6 +8,9 @@ function average(values) {
 }
 
 function baseTaskWeight(task) {
+  const explicitWeight = Number(task.score_weight ?? task.scoreWeight)
+  if (explicitWeight > 0) return explicitWeight
+
   const priorityWeights = { low: 0.75, medium: 1, high: 1.35, urgent: 1.75 }
   const difficultyWeights = { easy: 2, medium: 4, hard: 7, critical: 10 }
   const difficulty = task.difficulty ?? 'medium'

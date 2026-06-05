@@ -1930,6 +1930,90 @@ a {
   font-weight: 700;
 }
 
+.task-progress-row__content {
+  display: grid;
+  gap: 6px;
+}
+
+.task-progress-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.task-progress-row__separator {
+  color: #94a3b8;
+}
+
+.task-progress-row__project {
+  color: #38bdf8;
+}
+
+.task-progress-row__group {
+  color: #22c55e;
+}
+
+.task-progress-row__points {
+  color: #22c55e;
+  font-weight: 800;
+}
+
+.task-progress-row__status {
+  color: #facc15;
+}
+
+.task-progress-row__status--todo {
+  color: #94a3b8;
+}
+
+.task-progress-row__status--in_progress,
+.task-progress-row__status--in-progress {
+  color: #38bdf8;
+}
+
+.task-progress-row__status--review,
+.task-progress-row__status--in_review,
+.task-progress-row__status--in-review {
+  color: #facc15;
+}
+
+.task-progress-row__status--done {
+  color: #22c55e;
+}
+
+.task-progress-row__status--blocked {
+  color: #ef4444;
+}
+
+.group-progress-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.group-progress-meta__project {
+  color: #38bdf8;
+}
+
+.group-progress-meta__members,
+.group-progress-meta__done {
+  color: #a78bfa;
+}
+
+.group-progress-meta__completed {
+  color: #facc15;
+}
+
+.group-progress-meta__total {
+  color: #23e66e;
+}
+
+.group-progress-meta__separator {
+  color: #94a3b8;
+}
+
 .progress-bar-block {
   display: grid;
   gap: 6px;
@@ -4418,6 +4502,40 @@ body:has(.dashboard-shell) .task-progress-row p,
 body:has(.dashboard-shell) .chat-message-meta,
 body:has(.dashboard-shell) .activity-event p {
   color: #c6d0df !important;
+}
+
+body:has(.dashboard-shell) .task-progress-row__project {
+  color: #38bdf8 !important;
+}
+
+body:has(.dashboard-shell) .task-progress-row__group,
+body:has(.dashboard-shell) .task-progress-row__points {
+  color: #23e66e !important;
+}
+
+body:has(.dashboard-shell) .task-progress-row__status {
+  color: #facc15 !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__project {
+  color: #38bdf8 !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__members,
+body:has(.dashboard-shell) .group-progress-meta__done {
+  color: #a78bfa !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__completed {
+  color: #facc15 !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__total {
+  color: #23e66e !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__separator {
+  color: #94a3b8 !important;
 }
 
 body:has(.dashboard-shell) .sidebar-section > p,
@@ -8904,6 +9022,50 @@ html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card {
 html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card .progress-track,
 html[data-theme="light"] body:has(.dashboard-shell) .my-task-progress-card .progress-bar {
   background: #dbe7f7 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__project,
+body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__project {
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__group,
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__points,
+body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__group,
+body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__points {
+  color: #16a34a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .task-progress-row__status,
+body[data-theme="light"]:has(.dashboard-shell) .task-progress-row__status {
+  color: #ca8a04 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__project,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__project {
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__members,
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__done,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__members,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__done {
+  color: #7c3aed !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__completed,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__completed {
+  color: #ca8a04 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__total,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__total {
+  color: #16a34a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__separator,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__separator {
+  color: #94a3b8 !important;
 }
 
 html[data-theme="light"] body:has(.dashboard-shell) .module-header,
