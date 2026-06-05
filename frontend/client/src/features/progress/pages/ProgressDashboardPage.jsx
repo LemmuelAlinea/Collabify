@@ -275,7 +275,7 @@ export function ProgressDashboardPage() {
                   <span className="group-progress-meta__members">{group.memberCount} members</span>
                   <span className="group-progress-meta__separator">·</span>
                   <span>
-                    <span className="group-progress-meta__completed">{group.taskCompletion?.completed ?? 0}</span>
+                    <span className={`group-progress-meta__completed${(group.taskCompletion?.completed ?? 0) === (group.taskCompletion?.total ?? 0) ? ' group-progress-meta__completed--full' : ''}`}>{group.taskCompletion?.completed ?? 0}</span>
                     <span className="group-progress-meta__separator">/</span>
                     <span className="group-progress-meta__total">{group.taskCompletion?.total ?? 0}</span>
                     <span> </span>

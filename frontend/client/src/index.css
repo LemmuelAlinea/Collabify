@@ -2006,6 +2006,10 @@ a {
   color: #facc15;
 }
 
+.group-progress-meta__completed--full {
+  color: #23e66e;
+}
+
 .group-progress-meta__total {
   color: #23e66e;
 }
@@ -4528,6 +4532,10 @@ body:has(.dashboard-shell) .group-progress-meta__done {
 
 body:has(.dashboard-shell) .group-progress-meta__completed {
   color: #facc15 !important;
+}
+
+body:has(.dashboard-shell) .group-progress-meta__completed--full {
+  color: #23e66e !important;
 }
 
 body:has(.dashboard-shell) .group-progress-meta__total {
@@ -9056,6 +9064,11 @@ body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__done {
 html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__completed,
 body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__completed {
   color: #ca8a04 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__completed--full,
+body[data-theme="light"]:has(.dashboard-shell) .group-progress-meta__completed--full {
+  color: #16a34a !important;
 }
 
 html[data-theme="light"] body:has(.dashboard-shell) .group-progress-meta__total,

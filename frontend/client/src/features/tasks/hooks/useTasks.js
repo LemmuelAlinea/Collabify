@@ -24,8 +24,8 @@ export function useTasks(filters) {
   const [isLoading, setIsLoading] = useState(true)
   const refreshTimerRef = useRef(null)
 
-  const loadTasks = useCallback(async () => {
-    setIsLoading(true)
+  const loadTasks = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setIsLoading(true)
     setError('')
 
     try {
@@ -33,17 +33,13 @@ export function useTasks(filters) {
     } catch (loadError) {
       setError(loadError.message)
     } finally {
-      setIsLoading(false)
+      if (!silent) setIsLoading(false)
     }
   }, [filters])
 
   const refreshTasksSilently = useCallback(async () => {
-    try {
-      setTasks(await getTasks(filters))
-    } catch {
-      // Ignore realtime refresh errors to avoid interrupting active task work.
-    }
-  }, [filters])
+    await loadTasks({ silent: true })
+  }, [loadTasks])
 
   useEffect(() => {
     loadTasks()
@@ -72,19 +68,19 @@ export function useTasks(filters) {
 
   const add = useCallback(async (payload) => {
     const task = await createTask(payload)
-    await loadTasks()
+    await loadTasks({ silent: true })
     return task
   }, [loadTasks])
 
   const save = useCallback(async (id, payload) => {
     const task = await updateTask(id, payload)
-    await loadTasks()
+    await loadTasks({ silent: true })
     return task
   }, [loadTasks])
 
   const remove = useCallback(async (id) => {
     const result = await deleteTask(id)
-    await loadTasks()
+    await loadTasks({ silent: true })
     return result
   }, [loadTasks])
 
