@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MoreVertical } from 'lucide-react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { AnnouncementForm } from './AnnouncementForm'
@@ -23,6 +24,7 @@ export function AnnouncementPanel({ classId, initialAnnouncements }) {
   } = useAnnouncements(classId, initialAnnouncements)
   const [mode, setMode] = useState('list')
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null)
+  const [openMenuId, setOpenMenuId] = useState(null)
   const isProfessor = role === USER_ROLES.PROFESSOR
 
   async function handleSave(payload) {
@@ -89,12 +91,27 @@ export function AnnouncementPanel({ classId, initialAnnouncements }) {
                 <small>{formatDate(announcement.publishedAt)}</small>
               </div>
               {isProfessor ? (
-                <div className="card-actions">
-                  <button className="secondary-button" type="button" onClick={() => startEdit(announcement)}>Edit</button>
-                  <button className="secondary-button" type="button" onClick={() => saveAnnouncement(announcement.id, { isPinned: !announcement.isPinned })}>
-                    {announcement.isPinned ? 'Unpin' : 'Pin'}
+                <div
+                  className="ann-menu"
+                  onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpenMenuId(null) }}
+                >
+                  <button
+                    className="ann-menu-trigger"
+                    type="button"
+                    aria-label="Announcement options"
+                    onClick={() => setOpenMenuId((cur) => (cur === announcement.id ? null : announcement.id))}
+                  >
+                    <MoreVertical size={15} />
                   </button>
-                  <button className="danger-button" type="button" onClick={() => removeAnnouncement(announcement.id)}>Delete</button>
+                  {openMenuId === announcement.id ? (
+                    <div className="ann-menu-dropdown">
+                      <button type="button" onClick={() => { startEdit(announcement); setOpenMenuId(null) }}>Edit</button>
+                      <button type="button" onClick={() => { saveAnnouncement(announcement.id, { isPinned: !announcement.isPinned }); setOpenMenuId(null) }}>
+                        {announcement.isPinned ? 'Unpin' : 'Pin'}
+                      </button>
+                      <button className="ann-menu-danger" type="button" onClick={() => { removeAnnouncement(announcement.id); setOpenMenuId(null) }}>Delete</button>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </article>

@@ -55,6 +55,11 @@ export function ProfessorClassesPage() {
     setNotice('Class archived.')
   }
 
+  function closeModal() {
+    setSelectedClass(null)
+    setMode('list')
+  }
+
   if (isLoading) return <StudentPageSkeleton variant="classes" />
 
   return (
@@ -65,29 +70,36 @@ export function ProfessorClassesPage() {
           <h2>Class Management</h2>
           <p>Create classes, share class codes, assign syllabi, and manage active sections.</p>
         </div>
-        {mode === 'list' ? <button className="primary-button" type="button" onClick={startCreate}>Create class</button> : null}
+        <button className="primary-button" type="button" onClick={startCreate}>Create class</button>
       </div>
       {error ? <p className="form-error">{error}</p> : null}
       {notice ? <p className="form-success">{notice}</p> : null}
+      <div className="class-grid">
+        {classes.map((classItem) => (
+          <ClassCard key={classItem.id} classItem={classItem} onArchive={handleArchive} onEdit={startEdit} />
+        ))}
+        {classes.length === 0 ? <div className="empty-state"><h3>No classes yet</h3><p>Create your first class to start inviting students.</p></div> : null}
+      </div>
       {mode === 'form' ? (
-        <ClassForm
-          classItem={selectedClass}
-          curricula={curricula}
-          syllabi={syllabi}
-          onCancel={() => {
-            setSelectedClass(null)
-            setMode('list')
-          }}
-          onSave={handleSave}
-        />
-      ) : (
-        <div className="class-grid">
-          {classes.map((classItem) => (
-            <ClassCard key={classItem.id} classItem={classItem} onArchive={handleArchive} onEdit={startEdit} />
-          ))}
-          {classes.length === 0 ? <div className="empty-state"><h3>No classes yet</h3><p>Create your first class to start inviting students.</p></div> : null}
+        <div className="class-modal-backdrop" role="presentation" onMouseDown={closeModal}>
+          <div className="class-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="class-modal-header">
+              <div>
+                <p className="eyebrow">Classes</p>
+                <h3>{selectedClass ? 'Edit class' : 'Create class'}</h3>
+              </div>
+              <button className="secondary-button" type="button" onClick={closeModal}>Close</button>
+            </div>
+            <ClassForm
+              classItem={selectedClass}
+              curricula={curricula}
+              syllabi={syllabi}
+              onCancel={closeModal}
+              onSave={handleSave}
+            />
+          </div>
         </div>
-      )}
+      ) : null}
     </section>
   )
 }

@@ -480,14 +480,25 @@ export async function runProjectValidationAi(input) {
     headers['x-collabify-webhook-secret'] = env.n8nWebhookSecret
   }
 
-  const response = await fetch(env.n8nProjectValidationWebhookUrl, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      prompt: buildProjectValidationPrompt(input),
-      input,
-    }),
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+  let response
+
+  try {
+    response = await fetch(env.n8nProjectValidationWebhookUrl, {
+      method: 'POST',
+      headers,
+      signal: controller.signal,
+      body: JSON.stringify({
+        prompt: buildProjectValidationPrompt(input),
+        input,
+      }),
+    })
+  } catch {
+    return buildFallbackValidation(input)
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   if (!response.ok) return buildFallbackValidation(input)
   const data = await response.json().catch(() => null)

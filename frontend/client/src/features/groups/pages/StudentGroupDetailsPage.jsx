@@ -185,7 +185,7 @@ export function StudentGroupDetailsPage() {
         <span>{group.class?.name ?? 'Class'}</span>
       </div>
 
-      <div className="module-header">
+      <div className="module-header student-group-details-hero">
         <div>
           <p className="eyebrow">{role === USER_ROLES.PROFESSOR ? 'Professor group' : 'Student group'}</p>
           <h2>{group.name}</h2>
@@ -193,23 +193,24 @@ export function StudentGroupDetailsPage() {
         </div>
         <div className="group-details-actions">
           {group.project?.id ? <Link className="secondary-link-button" to={`${basePath}/projects/${group.project.id}`}>Open project</Link> : null}
+          {role === USER_ROLES.STUDENT ? (
+            <button className="primary-button" type="button" disabled={!canFinalize || isFinalizing} onClick={finalizeProject}>
+              {isFinalizing ? 'Finalizing...' : 'Finalize project'}
+            </button>
+          ) : null}
         </div>
+        {role === USER_ROLES.STUDENT ? (
+          <section className="group-finalize-panel">
+            <div>
+              <h3>Finalize project</h3>
+              <p>{finalizeHint}</p>
+            </div>
+          </section>
+        ) : null}
       </div>
 
       {notice ? <p className="form-success">{notice}</p> : null}
       {progressError ? <p className="form-error">{progressError}</p> : null}
-
-      {role === USER_ROLES.STUDENT ? (
-        <section className="group-finalize-panel">
-          <div>
-            <h3>Finalize project</h3>
-            <p>{finalizeHint}</p>
-          </div>
-          <button className="primary-button" type="button" disabled={!canFinalize || isFinalizing} onClick={finalizeProject}>
-            {isFinalizing ? 'Finalizing...' : 'Finalize project'}
-          </button>
-        </section>
-      ) : null}
 
       <section className="group-details-members-panel">
         <div className="task-section-heading">

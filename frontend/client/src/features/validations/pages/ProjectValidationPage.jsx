@@ -19,7 +19,7 @@ export function ProjectValidationPage() {
   if (isLoading) return <div className="route-state">Loading validation...</div>
 
   return (
-    <section className="module-page">
+    <section className="module-page project-validation-page">
       <div className="module-header">
         <div>
           <p className="eyebrow">Academic Project Adviser Assistant</p>
