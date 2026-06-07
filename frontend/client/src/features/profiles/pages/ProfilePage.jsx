@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { ProfileAvatar } from '../components/ProfileAvatar'
 import { ProfileDetails } from '../components/ProfileDetails'
@@ -17,9 +18,7 @@ export function ProfilePage() {
     setIsEditing(false)
   }
 
-  if (isLoading) {
-    return <div className="route-state">Loading profile...</div>
-  }
+  if (isLoading) return <StudentPageSkeleton variant="profile" />
 
   if (error || !profile) {
     return (

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useClasses } from '../../classes/hooks/useClasses'
@@ -51,7 +52,7 @@ export function ProjectsPage() {
     setMode('list')
   }
 
-  if (isLoading) return <div className="route-state">Loading projects...</div>
+  if (isLoading) return <StudentPageSkeleton variant="projects" />
 
   return (
     <section className="module-page projects-page">

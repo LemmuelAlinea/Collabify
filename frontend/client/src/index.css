@@ -4726,6 +4726,16 @@ select:focus-visible {
   color: #dbeafe;
 }
 
+.reassignment-archive-button {
+  color: #ef4444;
+}
+
+.reassignment-archive-button:hover {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.16);
+  border-radius: 8px;
+}
+
 .task-version-menu {
   position: relative;
 }
@@ -13587,5 +13597,927 @@ body[data-theme="light"] .dashboard-shell .dashboard-content .projects-page .pro
   body[data-theme="light"] .dashboard-shell .dashboard-content .projects-page .project-grid > .project-card {
     height: auto !important;
     min-height: 350px !important;
+  }
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card {
+  isolation: isolate;
+  position: relative;
+  display: grid !important;
+  grid-template-rows: auto 1fr !important;
+  gap: 14px !important;
+  min-height: 280px !important;
+  padding: clamp(18px, 1.8vw, 24px) !important;
+  overflow: hidden !important;
+  color: #f8fafc !important;
+  background:
+    linear-gradient(150deg, rgba(2, 132, 199, 0.94), rgba(15, 118, 110, 0.86) 48%, rgba(2, 6, 23, 0.98) 100%),
+    radial-gradient(circle at 18% 16%, rgba(125, 211, 252, 0.34), transparent 30%),
+    radial-gradient(circle at 85% 18%, rgba(34, 197, 94, 0.28), transparent 34%),
+    #020617 !important;
+  border: 1px solid rgba(125, 211, 252, 0.4) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 48px rgba(2, 8, 23, 0.28) !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(120deg, transparent 0 58%, rgba(255, 255, 255, 0.13) 58% 59%, transparent 59%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 16px);
+  opacity: 0.58;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -14% -28% 18%;
+  z-index: -1;
+  height: 150px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.42), transparent 68%);
+  filter: blur(10px);
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card:hover,
+.dashboard-shell .dashboard-content .student-groups-page .group-card:focus-within {
+  border-color: rgba(125, 211, 252, 0.78) !important;
+  box-shadow: 0 24px 58px rgba(14, 165, 233, 0.24), 0 18px 42px rgba(2, 8, 23, 0.34) !important;
+  transform: translateY(-4px);
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card .ui-card-header {
+  position: relative;
+  z-index: 1;
+  padding: 0 !important;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card h3,
+.dashboard-shell .dashboard-content .student-groups-page .group-card .ui-card-title {
+  color: #ffffff !important;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem) !important;
+  line-height: 1.1 !important;
+  text-shadow: 0 1px 14px rgba(2, 8, 23, 0.34);
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card p,
+.dashboard-shell .dashboard-content .student-groups-page .group-card .ui-card-description,
+.dashboard-shell .dashboard-content .student-groups-page .group-card .muted-copy {
+  color: rgba(226, 232, 240, 0.92) !important;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card .ui-card-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 0 !important;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card .card-actions {
+  margin: 0 !important;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card :is(.secondary-link-button, button) {
+  min-height: 38px;
+  min-width: 138px;
+  color: #e0f2fe !important;
+  background: rgba(15, 23, 42, 0.38) !important;
+  border: 1px solid rgba(125, 211, 252, 0.35) !important;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card :is(.secondary-link-button, button):hover,
+.dashboard-shell .dashboard-content .student-groups-page .group-card :is(.secondary-link-button, button):focus-visible {
+  color: #ffffff !important;
+  background: rgba(14, 165, 233, 0.26) !important;
+  border-color: rgba(125, 211, 252, 0.62) !important;
+}
+
+.dashboard-shell .dashboard-content .student-groups-page .group-card .text-muted-foreground {
+  color: rgba(219, 234, 254, 0.78) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card,
+body[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card {
+  color: #ffffff !important;
+  background:
+    linear-gradient(150deg, rgba(3, 105, 161, 1), rgba(20, 83, 45, 0.92) 48%, rgba(2, 6, 23, 1) 100%),
+    radial-gradient(circle at 18% 16%, rgba(125, 211, 252, 0.38), transparent 30%),
+    radial-gradient(circle at 85% 18%, rgba(34, 197, 94, 0.32), transparent 34%),
+    #020617 !important;
+  border-color: rgba(125, 211, 252, 0.78) !important;
+  box-shadow: 0 24px 58px rgba(14, 165, 233, 0.2), 0 18px 42px rgba(2, 8, 23, 0.2) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card :is(h3, p, .muted-copy, .ui-card-title, .ui-card-description),
+body[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card :is(h3, p, .muted-copy, .ui-card-title, .ui-card-description) {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card :is(.secondary-link-button, button),
+body[data-theme="light"] .dashboard-shell .dashboard-content .student-groups-page .group-card :is(.secondary-link-button, button) {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.68) !important;
+}
+
+@media (max-width: 640px) {
+  .dashboard-shell .dashboard-content .student-groups-page .group-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-shell .dashboard-content .student-groups-page .group-card {
+    min-height: 260px !important;
+  }
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(360px, 360px));
+  justify-content: start;
+  align-items: start;
+  gap: clamp(14px, 1.6vw, 22px);
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card {
+  isolation: isolate;
+  display: grid !important;
+  grid-template-rows: 82px 126px 112px !important;
+  gap: 12px !important;
+  width: 360px !important;
+  max-width: 360px !important;
+  height: 380px !important;
+  min-height: 380px !important;
+  padding: 14px !important;
+  overflow: hidden !important;
+  color: #f8fafc !important;
+  background:
+    linear-gradient(150deg, rgba(15, 23, 42, 0.98), rgba(2, 132, 199, 0.6) 56%, rgba(2, 6, 23, 0.98) 100%),
+    radial-gradient(circle at 20% 18%, rgba(125, 211, 252, 0.2), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(34, 197, 94, 0.18), transparent 34%),
+    #020617 !important;
+  border: 1px solid rgba(125, 211, 252, 0.36) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 48px rgba(2, 8, 23, 0.28) !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(120deg, transparent 0 58%, rgba(255, 255, 255, 0.1) 58% 59%, transparent 59%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 16px);
+  opacity: 0.58;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card > div:first-child {
+  min-width: 0;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card h3 {
+  color: #ffffff !important;
+  font-size: 1rem !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card :is(p, .eyebrow) {
+  color: rgba(226, 232, 240, 0.9) !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .project-card-heading span {
+  color: #cffafe !important;
+  background: rgba(8, 145, 178, 0.3) !important;
+  border: 1px solid rgba(103, 232, 249, 0.36);
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details > div {
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px 9px;
+  background: rgba(2, 6, 23, 0.44) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details > div:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details dt {
+  color: rgba(219, 234, 254, 0.78) !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details dd {
+  color: #ffffff !important;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list {
+  min-height: 108px !important;
+  max-height: 108px !important;
+  padding-right: 6px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list::after {
+  content: "";
+  display: block;
+  height: 68px;
+  pointer-events: none;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list:has(.member-row:nth-child(3))::after {
+  display: none;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-row {
+  min-height: 34px;
+  color: #e5e7eb;
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .muted-copy {
+  min-height: 104px;
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card,
+body[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card {
+  color: #ffffff !important;
+  background:
+    linear-gradient(150deg, rgba(3, 105, 161, 1), rgba(30, 64, 175, 0.96) 52%, rgba(2, 6, 23, 1) 100%),
+    radial-gradient(circle at 20% 18%, rgba(125, 211, 252, 0.3), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(34, 197, 94, 0.2), transparent 34%),
+    #020617 !important;
+  border-color: rgba(125, 211, 252, 0.72) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card :is(h3, p, .eyebrow, dd, .member-row, .muted-copy),
+body[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card :is(h3, p, .eyebrow, dd, .member-row, .muted-copy) {
+  color: #ffffff !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list,
+.dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list *,
+html[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list,
+html[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list *,
+body[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list,
+body[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .member-list * {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details > div,
+body[data-theme="light"] .dashboard-shell .dashboard-content .professor-groups-page .group-card .compact-details > div {
+  background: rgba(2, 6, 23, 0.46) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+}
+
+@media (max-width: 640px) {
+  .dashboard-shell .dashboard-content .professor-groups-page .group-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-shell .dashboard-content .professor-groups-page .group-card {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page > .module-header {
+  min-height: 112px !important;
+  padding: 20px 16px 18px !important;
+  overflow: visible !important;
+  align-items: flex-start !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page > .module-header > div {
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page > .module-header h2 {
+  line-height: 1.05 !important;
+  margin-top: 2px !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page > .module-header p:not(.eyebrow) {
+  margin-top: 6px !important;
+}
+
+.dashboard-shell .dashboard-content .professor-groups-page > .group-filter-bar {
+  margin-top: 4px !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card {
+  isolation: isolate;
+  position: relative;
+  overflow: hidden !important;
+  min-height: 172px;
+  padding: 16px !important;
+  color: #f8fafc !important;
+  background:
+    linear-gradient(150deg, rgba(15, 23, 42, 0.98), rgba(2, 132, 199, 0.58) 56%, rgba(2, 6, 23, 0.98) 100%),
+    radial-gradient(circle at 18% 16%, rgba(125, 211, 252, 0.22), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(34, 197, 94, 0.16), transparent 34%),
+    #020617 !important;
+  border: 1px solid rgba(125, 211, 252, 0.36) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 18px 42px rgba(2, 8, 23, 0.26) !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(120deg, transparent 0 58%, rgba(255, 255, 255, 0.1) 58% 59%, transparent 59%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 16px);
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card:hover {
+  border-color: rgba(125, 211, 252, 0.76) !important;
+  box-shadow: 0 24px 58px rgba(14, 165, 233, 0.2), 0 18px 42px rgba(2, 8, 23, 0.34) !important;
+  transform: translateY(-3px);
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card-summary strong,
+.dashboard-shell .dashboard-content .task-system-page .task-card-meta,
+.dashboard-shell .dashboard-content .task-system-page .task-open-link,
+.dashboard-shell .dashboard-content .task-system-page .task-progress-meter strong {
+  color: #ffffff !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card-summary small {
+  color: rgba(226, 232, 240, 0.9) !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-progress-meter .progress-track {
+  background: rgba(2, 6, 23, 0.48) !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card-details .compact-details,
+.dashboard-shell .dashboard-content .task-system-page .task-card-details .task-assignees,
+.dashboard-shell .dashboard-content .task-system-page .task-card-details .task-comments {
+  color: #f8fafc !important;
+  background: rgba(2, 6, 23, 0.36) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 8px !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card-details .compact-details > div {
+  background: rgba(2, 6, 23, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 8px !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card-details :is(dt, dd, p, .eyebrow) {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card {
+  color: #ffffff !important;
+  background:
+    linear-gradient(150deg, rgba(3, 105, 161, 1), rgba(30, 64, 175, 0.96) 52%, rgba(2, 6, 23, 1) 100%),
+    radial-gradient(circle at 18% 16%, rgba(125, 211, 252, 0.34), transparent 30%),
+    radial-gradient(circle at 84% 18%, rgba(34, 197, 94, 0.2), transparent 34%),
+    #020617 !important;
+  border-color: rgba(125, 211, 252, 0.72) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card :is(strong, small, span, button, dt, dd, p, .eyebrow),
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card :is(strong, small, span, button, dt, dd, p, .eyebrow) {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-progress-meter .progress-track,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-progress-meter .progress-track {
+  background: rgba(2, 6, 23, 0.48) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-card-details :is(.compact-details, .task-assignees, .task-comments),
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-card-details :is(.compact-details, .task-assignees, .task-comments) {
+  background: rgba(2, 6, 23, 0.36) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card .task-card-summary {
+  min-height: 96px;
+  padding: 12px !important;
+  background: linear-gradient(135deg, rgba(2, 6, 23, 0.42), rgba(15, 23, 42, 0.22)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 8px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card .task-edit-button {
+  color: #ffffff !important;
+  background: rgba(2, 6, 23, 0.58) !important;
+  border: 1px solid rgba(125, 211, 252, 0.34) !important;
+  border-radius: 8px !important;
+}
+
+.dashboard-shell .dashboard-content .task-system-page .task-card .task-open-link {
+  padding: 3px 8px !important;
+  color: #e0f2fe !important;
+  background: rgba(2, 6, 23, 0.44) !important;
+  border: 1px solid rgba(125, 211, 252, 0.28) !important;
+  border-radius: 6px !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-card-summary,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-card-summary {
+  background: linear-gradient(135deg, rgba(2, 6, 23, 0.44), rgba(15, 23, 42, 0.26)) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-edit-button,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-edit-button {
+  color: #ffffff !important;
+  background: rgba(2, 6, 23, 0.58) !important;
+  border-color: rgba(125, 211, 252, 0.34) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-open-link,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-open-link {
+  color: #e0f2fe !important;
+  background: rgba(2, 6, 23, 0.44) !important;
+  border-color: rgba(125, 211, 252, 0.28) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-priority,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-priority {
+  color: #0f172a !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) {
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 252, 0.26) !important;
+  background:
+    linear-gradient(135deg, rgba(88, 28, 135, 0.42), rgba(30, 41, 59, 0.78)),
+    #0b1220 !important;
+  box-shadow: 0 16px 34px rgba(2, 8, 23, 0.28) !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.16), transparent 26%),
+    linear-gradient(120deg, transparent 0 64%, rgba(255, 255, 255, 0.1) 64% 65%, transparent 65%);
+  pointer-events: none;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):hover {
+  border-color: rgba(125, 211, 252, 0.62) !important;
+  box-shadow: 0 20px 42px rgba(14, 165, 233, 0.2), 0 12px 28px rgba(2, 8, 23, 0.34) !important;
+  transform: translateY(-3px);
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 1) {
+  background:
+    linear-gradient(135deg, rgba(88, 28, 135, 0.42), rgba(59, 7, 100, 0.58)),
+    #0b1220 !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2) {
+  background:
+    linear-gradient(135deg, rgba(157, 23, 77, 0.38), rgba(112, 26, 117, 0.56)),
+    #0b1220 !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n) {
+  background:
+    linear-gradient(135deg, rgba(8, 145, 178, 0.36), rgba(21, 94, 117, 0.58)),
+    #0b1220 !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) svg {
+  color: #c4b5fd !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2) svg {
+  color: #f0abfc !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n) svg {
+  color: #67e8f9 !important;
+}
+
+.dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) :is(strong, p, span) {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card),
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) {
+  border-color: rgba(147, 51, 234, 0.18) !important;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 1),
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 1) {
+  background:
+    linear-gradient(135deg, rgba(250, 245, 255, 0.94), rgba(237, 233, 254, 0.96)),
+    #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2),
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2) {
+  background:
+    linear-gradient(135deg, rgba(253, 242, 248, 0.94), rgba(250, 232, 255, 0.96)),
+    #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n),
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n) {
+  background:
+    linear-gradient(135deg, rgba(236, 254, 255, 0.94), rgba(207, 250, 254, 0.96)),
+    #ffffff !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) :is(strong, p, span),
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) :is(strong, p, span) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) svg,
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) svg {
+  color: #7c3aed !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2) svg,
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n + 2) svg {
+  color: #c026d3 !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n) svg,
+body[data-theme="light"] .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card):nth-child(3n) svg {
+  color: #0891b2 !important;
+}
+
+.student-skeleton-page {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  min-height: calc(100vh - 58px);
+  padding: 14px;
+  color: #e5edf8;
+  background:
+    radial-gradient(circle at 84% 88%, rgba(35, 230, 110, 0.08), transparent 28%),
+    linear-gradient(135deg, rgba(16, 36, 37, 0.72), #111111 42%, #111111);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.student-skeleton-line,
+.student-skeleton-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.student-skeleton-line {
+  display: block;
+  width: 100%;
+  height: 14px;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.student-skeleton-line::after,
+.student-skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  animation: student-skeleton-shimmer 1.5s infinite;
+}
+
+.student-skeleton-card {
+  min-height: 120px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  background:
+    linear-gradient(150deg, rgba(15, 23, 42, 0.98), rgba(2, 132, 199, 0.34) 56%, rgba(2, 6, 23, 0.98)),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 16px);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(2, 8, 23, 0.24);
+}
+
+.student-skeleton-header,
+.student-skeleton-dashboard-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 32%);
+  gap: 16px;
+  align-items: start;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(40, 215, 255, 0.08), transparent 28%), #0b1220;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: 10px;
+}
+
+.student-skeleton-line.xs { width: 76px; height: 9px; }
+.student-skeleton-line.title { width: min(320px, 70%); height: 34px; }
+.student-skeleton-line.hero-title { width: min(360px, 78%); height: 32px; }
+.student-skeleton-line.subtitle { width: min(430px, 84%); height: 13px; margin-top: 8px; }
+.student-skeleton-line.button { width: 120px; height: 40px; justify-self: end; }
+.student-skeleton-line.search { height: 40px; }
+.student-skeleton-line.heading { width: 68%; height: 22px; }
+.student-skeleton-line.text { width: 86%; }
+.student-skeleton-line.short { width: 48%; }
+.student-skeleton-line.tag { width: 62px; height: 22px; }
+.student-skeleton-line.label { width: 74px; height: 12px; margin-bottom: 8px; }
+.student-skeleton-line.input { height: 42px; border-radius: 10px; }
+.student-skeleton-line.meta { width: 74%; height: 13px; }
+.student-skeleton-line.progress { height: 10px; border-radius: 999px; }
+.student-skeleton-line.row { height: 48px; }
+.student-skeleton-line.feed { height: 138px; }
+.student-skeleton-line.big { width: 70px; height: 30px; }
+.student-skeleton-line.section-title { width: 220px; height: 20px; }
+.student-skeleton-line.avatar { width: 88px; height: 88px; border-radius: 8px; }
+
+.student-skeleton-card-grid,
+.student-skeleton-task-grid,
+.student-skeleton-quick-grid,
+.student-skeleton-metric-grid,
+.student-skeleton-profile-grid,
+.student-skeleton-reassignment-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.student-skeleton-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+}
+
+.student-skeleton-card-grid .class {
+  min-height: 276px;
+}
+
+.student-skeleton-card-grid .project {
+  min-height: 322px;
+}
+
+.student-skeleton-card-grid .group {
+  min-height: 258px;
+}
+
+.student-skeleton-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: auto;
+}
+
+.student-skeleton-detail-grid .student-skeleton-line {
+  height: 58px;
+}
+
+.student-skeleton-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.student-skeleton-quick-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-skeleton-card.quick {
+  min-height: 58px;
+  padding: 12px;
+}
+
+.student-skeleton-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 49%);
+  gap: 12px;
+}
+
+.student-skeleton-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.student-skeleton-card.panel.large {
+  min-height: 610px;
+}
+
+.student-skeleton-task-grid {
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+}
+
+.student-skeleton-card.task {
+  min-height: 188px;
+}
+
+.student-skeleton-message-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 590px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.student-skeleton-card.chat-list,
+.student-skeleton-card.chat-panel {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.student-skeleton-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.student-skeleton-line.chat-item {
+  height: 62px;
+}
+
+.student-skeleton-line.message-box {
+  height: 350px;
+  margin-top: 12px;
+}
+
+.student-skeleton-line.composer {
+  height: 44px;
+  margin-top: auto;
+}
+
+.student-skeleton-metric-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.student-skeleton-card.metric {
+  min-height: 116px;
+}
+
+.student-skeleton-card.timeline {
+  min-height: 430px;
+}
+
+.student-skeleton-line.timeline-row {
+  height: 32px;
+}
+
+.student-skeleton-card.profile-head {
+  min-height: 116px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.student-skeleton-profile-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.student-skeleton-card.field {
+  min-height: 76px;
+}
+
+.student-skeleton-reassignment-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-skeleton-card.table {
+  min-height: 420px;
+  align-content: start;
+}
+
+.student-skeleton-card.empty-plan {
+  min-height: 84px;
+}
+
+.student-skeleton-metric-grid.analytics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.student-skeleton-metric-grid.analytics-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.student-skeleton-analytics-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.student-skeleton-card.chart {
+  min-height: 300px;
+}
+
+.student-skeleton-line.chart-body {
+  height: 220px;
+  margin-top: 12px;
+}
+
+.student-skeleton-card.archive-table {
+  min-height: 210px;
+  align-content: start;
+}
+
+.student-skeleton-archive-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 150px;
+  gap: 12px;
+  align-items: end;
+}
+
+@keyframes student-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+html[data-theme="light"] .student-skeleton-page,
+body[data-theme="light"] .student-skeleton-page {
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(40, 215, 255, 0.07), transparent 30%), #f8fafc;
+  border-color: #dbe3ee;
+}
+
+html[data-theme="light"] .student-skeleton-header,
+html[data-theme="light"] .student-skeleton-dashboard-head,
+body[data-theme="light"] .student-skeleton-header,
+body[data-theme="light"] .student-skeleton-dashboard-head {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(34, 197, 94, 0.06)), #ffffff;
+  border-color: #dbe3ee;
+}
+
+html[data-theme="light"] .student-skeleton-card,
+body[data-theme="light"] .student-skeleton-card {
+  background:
+    linear-gradient(150deg, rgba(3, 105, 161, 0.92), rgba(30, 64, 175, 0.92) 52%, rgba(2, 6, 23, 0.96)),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 16px) !important;
+  border-color: rgba(14, 165, 233, 0.44);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .student-skeleton-line,
+body[data-theme="light"] .student-skeleton-line {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+@media (max-width: 760px) {
+  .student-skeleton-header,
+  .student-skeleton-dashboard-head,
+  .student-skeleton-dashboard-grid,
+  .student-skeleton-message-layout,
+  .student-skeleton-analytics-charts,
+  .student-skeleton-archive-controls,
+  .student-skeleton-card.profile-head {
+    grid-template-columns: 1fr;
+  }
+
+  .student-skeleton-quick-grid,
+  .student-skeleton-metric-grid,
+  .student-skeleton-metric-grid.analytics,
+  .student-skeleton-metric-grid.analytics-summary,
+  .student-skeleton-profile-grid,
+  .student-skeleton-reassignment-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useGroups } from '../../groups/hooks/useGroups'
@@ -30,7 +31,7 @@ export function ReassignmentsPage() {
     return result
   }
 
-  if (isLoading || isLoadingTasks || isLoadingGroups) return <div className="route-state">Loading reassignments...</div>
+  if (isLoading || isLoadingTasks || isLoadingGroups) return <StudentPageSkeleton variant="reassignments" />
 
   return (
     <section className="module-page">

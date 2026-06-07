@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { RotateCcw, Search, Trash2 } from 'lucide-react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import {
   Table,
   TableBody,
@@ -111,7 +112,7 @@ export function ArchivePage() {
     }
   }
 
-  if (isLoading) return <div className="route-state">Loading archive...</div>
+  if (isLoading) return <StudentPageSkeleton variant="archive" />
 
   return (
     <section className="module-page archive-page">

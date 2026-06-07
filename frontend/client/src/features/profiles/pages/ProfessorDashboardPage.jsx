@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import {
   BookOpen,
   Bot,
@@ -187,7 +188,7 @@ export function ProfessorDashboardPage() {
 
   const name = fullNameFromProfile(profile, user)
   const isLoading = isLoadingClasses || isLoadingProjects || isLoadingGroups || isLoadingTasks
-  if (isLoading) return <div className="route-state">Loading dashboard...</div>
+  if (isLoading) return <StudentPageSkeleton variant="dashboard" />
 
   return (
     <section className="prof-dashboard-page">

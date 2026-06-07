@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useGroups } from '../../groups/hooks/useGroups'
@@ -85,7 +86,7 @@ export function TasksPage() {
     [isProfessor, memberFilter, search, tasks, user?.id],
   )
 
-  if (isLoading || isLoadingGroups || isLoadingProjects) return <div className="route-state">Loading tasks...</div>
+  if (isLoading || isLoadingGroups || isLoadingProjects) return <StudentPageSkeleton variant="tasks" />
 
   return (
     <section className="module-page task-system-page">

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { ProgressBar } from '../components/ProgressBar'
@@ -132,7 +133,7 @@ export function ProgressDashboardPage() {
     navigate(`${basePath}/tasks/${task.id}`)
   }
 
-  if (isLoading) return <div className="route-state">Loading progress...</div>
+  if (isLoading) return <StudentPageSkeleton variant="progress" />
 
   if (error || !progress) {
     return <section className="content-section"><h2>Progress unavailable</h2><p>{error || 'Unable to load progress.'}</p></section>

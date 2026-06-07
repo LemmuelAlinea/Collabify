@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Users } from 'lucide-react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useClasses } from '../../classes/hooks/useClasses'
@@ -47,6 +48,8 @@ export function MessagesPage() {
       setSearchParams(nextParams, { replace: true })
     }
   }, [scope, targetId, searchParams, setSearchParams])
+
+  if (isLoading && messages.length === 0) return <StudentPageSkeleton variant="messages" />
 
   return (
     <section className="module-page messages-page">

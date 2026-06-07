@@ -124,7 +124,7 @@ function ReviewedReassignmentTable({ canArchive = false, emptyLabel, onArchive, 
                 <td>{formatDate(request.createdAt)}</td>
                 <td>
                   {canArchive ? (
-                    <button className="icon-button" type="button" aria-label="Archive reassignment" onClick={() => setArchiveTarget(request)}>
+                    <button className="icon-button reassignment-archive-button" type="button" aria-label="Archive reassignment" title="archive" onClick={() => setArchiveTarget(request)}>
                       <Archive size={16} />
                     </button>
                   ) : (

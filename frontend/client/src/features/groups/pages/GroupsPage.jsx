@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useClasses } from '../../classes/hooks/useClasses'
@@ -336,10 +337,10 @@ export function GroupsPage() {
     setNotice('Member added.')
   }
 
-  if (isLoading || isClassesLoading || isProjectsLoading) return <div className="route-state">Loading groups...</div>
+  if (isLoading || isClassesLoading || isProjectsLoading) return <StudentPageSkeleton variant="groups" />
 
   return (
-    <section className="module-page groups-page">
+    <section className={`module-page groups-page ${isStudent ? 'student-groups-page' : 'professor-groups-page'}`}>
       <div className="module-header">
         <div>
           <p className="eyebrow">{isProfessor ? 'Professor' : 'Student'}</p>

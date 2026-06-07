@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useGroups } from '../../groups/hooks/useGroups'
@@ -8,8 +9,8 @@ import { useTaskGeneration } from '../hooks/useTaskGeneration'
 
 export function TaskGenerationPage() {
   const { role } = useAuth()
-  const { groups } = useGroups()
-  const { projects } = useProjects()
+  const { groups, isLoading: isLoadingGroups } = useGroups()
+  const { projects, isLoading: isLoadingProjects } = useProjects()
   const [projectId, setProjectId] = useState('')
   const [groupId, setGroupId] = useState('')
   const visibleGroups = useMemo(() => groups.filter((group) => !projectId || group.projectId === projectId), [groups, projectId])
@@ -31,6 +32,8 @@ export function TaskGenerationPage() {
     isLoading,
   } = useTaskGeneration(projectId, selectedGroupId, { requiresGroup: isStudent })
   const activeGeneration = generations[0]
+
+  if (isLoadingGroups || isLoadingProjects) return <StudentPageSkeleton variant="planner" />
 
   return (
     <section className="module-page">
@@ -68,7 +71,7 @@ export function TaskGenerationPage() {
           </button>
         </div>
       </div>
-      {isLoading ? <div className="route-state">Loading generated plans...</div> : null}
+      {isLoading ? <StudentPageSkeleton variant="planner" /> : null}
       <ProjectPlanViewer generation={activeGeneration} onAccept={accept} />
       <section className="validation-section">
         <h3>Task Generation History</h3>

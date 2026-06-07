@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { ClassCard } from '../components/ClassCard'
 import { JoinClassForm } from '../components/JoinClassForm'
 import { useClasses } from '../hooks/useClasses'
@@ -7,7 +8,7 @@ export function StudentClassesPage() {
   const { classes, error, isLoading, join } = useClasses()
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false)
 
-  if (isLoading) return <div className="route-state">Loading classes...</div>
+  if (isLoading) return <StudentPageSkeleton variant="classes" />
 
   return (
     <section className="module-page classes-page">

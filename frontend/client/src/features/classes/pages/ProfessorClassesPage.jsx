@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import { ClassCard } from '../components/ClassCard'
 import { ClassForm } from '../components/ClassForm'
 import { useClasses } from '../hooks/useClasses'
@@ -54,7 +55,7 @@ export function ProfessorClassesPage() {
     setNotice('Class archived.')
   }
 
-  if (isLoading) return <div className="route-state">Loading classes...</div>
+  if (isLoading) return <StudentPageSkeleton variant="classes" />
 
   return (
     <section className="module-page classes-page">

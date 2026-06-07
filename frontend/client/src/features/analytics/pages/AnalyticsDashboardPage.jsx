@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
+import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSkeleton'
 import {
   Table,
   TableBody,
@@ -143,7 +144,7 @@ export function AnalyticsDashboardPage() {
   const groupAverageContribution = average(groupRows, 'contributionBalance')
   const studentAverageCompletion = average(studentRows, 'taskCompletion')
 
-  if (isLoading && !analytics) return <div className="route-state">Loading analytics...</div>
+  if (isLoading && !analytics) return <StudentPageSkeleton variant="analytics" />
 
   return (
     <section className="module-page professor-analytics-page">
