@@ -1,0 +1,46 @@
+
+/* ── Auth home button ────────────────────────────────────────── */
+
+.auth-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(148,163,184,0.2);
+  color: #94a3b8;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  flex-shrink: 0;
+}
+
+.auth-home-button:hover {
+  background: rgba(20,99,255,0.1);
+  border-color: rgba(20,99,255,0.35);
+  color: #1463ff;
+}
+
+.auth-home-button:focus-visible {
+  outline: 2px solid #1463ff;
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .auth-home-button {
+  border-color: rgba(15,23,42,0.15);
+  color: #64748b;
+}
+
+html[data-theme="light"] .auth-home-button:hover {
+  background: rgba(20,99,255,0.08);
+  border-color: rgba(20,99,255,0.3);
+  color: #1463ff;
+}

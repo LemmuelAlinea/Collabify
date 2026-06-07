@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Home } from 'lucide-react'
 import { ThemeToggle } from '../../../app/providers/ThemeProvider'
 
 export function AuthLayout({ children, eyebrow, title, subtitle }) {
@@ -13,7 +14,12 @@ export function AuthLayout({ children, eyebrow, title, subtitle }) {
               <h1 id="auth-title">{title}</h1>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="auth-topbar-actions">
+            <Link to="/" className="auth-home-button" aria-label="Go to home page" title="Home">
+              <Home size={16} aria-hidden="true" />
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
         <p className="auth-subtitle">{subtitle}</p>
         {children}

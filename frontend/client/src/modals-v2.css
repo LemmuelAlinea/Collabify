@@ -1,0 +1,592 @@
+/* ================================================================
+   MODALS v2 — Unified design upgrade (dark + light, responsive)
+   CSS-only — zero functional changes
+   ================================================================ */
+
+/* ── Shared backdrop ────────────────────────────────────────── */
+.modal-backdrop,
+.task-modal-backdrop,
+.task-detail-modal-backdrop,
+.pop-quiz-backdrop,
+.program-study-modal-backdrop,
+.ui-dialog-overlay,
+.ui-sheet-overlay {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.modal-backdrop,
+.task-modal-backdrop,
+.pop-quiz-backdrop {
+  background: rgba(2, 6, 23, 0.72) !important;
+}
+
+.task-detail-modal-backdrop {
+  background: rgba(2, 6, 23, 0.80) !important;
+}
+
+.ui-dialog-overlay,
+.ui-sheet-overlay {
+  background: rgba(2, 6, 23, 0.65) !important;
+}
+
+.program-study-modal-backdrop {
+  background: rgba(2, 6, 23, 0.75) !important;
+}
+
+/* ── Shared modal surface tokens ───────────────────────────── */
+:root {
+  --m-bg:        #0c1628;
+  --m-bg-2:      #101e35;
+  --m-border:    rgba(148, 163, 184, 0.12);
+  --m-border-hi: rgba(40, 215, 255, 0.22);
+  --m-text:      #e2e8f0;
+  --m-sub:       #94a3b8;
+  --m-muted:     #64748b;
+  --m-primary:   #1463ff;
+  --m-cyan:      #28d7ff;
+  --m-radius:    18px;
+  --m-shadow:    0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255,255,255,0.04);
+  --m-transition: 160ms ease;
+}
+
+/* ── Generic modal panel ────────────────────────────────────── */
+.modal-panel {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  padding: 24px !important;
+  color: var(--m-text) !important;
+}
+
+/* ── Confirm panel ──────────────────────────────────────────── */
+.confirm-panel {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border-hi) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  padding: 24px !important;
+  color: var(--m-text) !important;
+}
+
+.confirm-panel h3 {
+  color: var(--m-text) !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+
+.confirm-panel p {
+  color: var(--m-sub) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.65 !important;
+  margin: 8px 0 0 !important;
+}
+
+/* ── Task create modal ──────────────────────────────────────── */
+.task-modal {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-top: 1px solid rgba(40, 215, 255, 0.18) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  padding: 22px !important;
+  color: var(--m-text) !important;
+}
+
+.task-modal-header h3 {
+  color: var(--m-text) !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+
+.task-modal-section {
+  gap: 12px !important;
+}
+
+.task-picker-grid {
+  background: var(--m-bg-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Task detail modal ──────────────────────────────────────── */
+.task-detail-modal-panel {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-top: 1px solid var(--m-border-hi) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+}
+
+.task-detail-modal-close {
+  background: var(--m-bg-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 10px !important;
+  color: var(--m-sub) !important;
+  cursor: pointer !important;
+  transition: background var(--m-transition), color var(--m-transition) !important;
+}
+
+.task-detail-modal-close:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #f87171 !important;
+}
+
+.task-detail-main,
+.task-detail-sidebar,
+.task-detail-section,
+.task-activity-panel {
+  background: var(--m-bg-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Pop quiz modal ─────────────────────────────────────────── */
+.pop-quiz-modal {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-top: 1px solid var(--m-border-hi) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  color: var(--m-text) !important;
+  padding: 22px !important;
+}
+
+/* ── Program study modal ────────────────────────────────────── */
+.program-study-modal-card {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border-hi) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  color: var(--m-text) !important;
+  padding: 24px !important;
+}
+
+/* ── Join class modal ───────────────────────────────────────── */
+.join-class-modal {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  color: var(--m-text) !important;
+  padding: 24px !important;
+}
+
+.join-class-modal .join-class-form {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* ── Reassignment modal ─────────────────────────────────────── */
+.reassignment-request-modal {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  color: var(--m-text) !important;
+  padding: 24px !important;
+}
+
+/* ── Pinned modal ───────────────────────────────────────────── */
+.pinned-modal {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  padding: 24px !important;
+  color: var(--m-text) !important;
+}
+
+.pinned-modal-item {
+  background: var(--m-bg-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  transition: border-color var(--m-transition) !important;
+}
+
+.pinned-modal-item:hover {
+  border-color: rgba(40, 215, 255, 0.2) !important;
+}
+
+.pinned-modal-item p,
+.pinned-modal-item small {
+  color: var(--m-sub) !important;
+}
+
+.pinned-modal-item strong {
+  color: var(--m-text) !important;
+}
+
+/* ── UI Dialog (Radix) ──────────────────────────────────────── */
+.ui-dialog-content {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-top: 1px solid rgba(40, 215, 255, 0.18) !important;
+  border-radius: var(--m-radius) !important;
+  box-shadow: var(--m-shadow) !important;
+  padding: 24px !important;
+  color: var(--m-text) !important;
+}
+
+.ui-dialog-title,
+.ui-sheet-title {
+  color: var(--m-text) !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+}
+
+.ui-dialog-description,
+.ui-sheet-description {
+  color: var(--m-sub) !important;
+  font-size: 0.88rem !important;
+  line-height: 1.6 !important;
+}
+
+.ui-dialog-close,
+.ui-sheet-close {
+  background: var(--m-bg-2) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 10px !important;
+  color: var(--m-sub) !important;
+  cursor: pointer !important;
+  transition: background var(--m-transition), color var(--m-transition), border-color var(--m-transition) !important;
+}
+
+.ui-dialog-close:hover,
+.ui-sheet-close:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+/* ── UI Sheet (Radix drawer) ────────────────────────────────── */
+.ui-sheet-content {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  box-shadow: var(--m-shadow) !important;
+  color: var(--m-text) !important;
+  padding: 22px !important;
+}
+
+/* ── Form fields inside modals ──────────────────────────────── */
+.modal-panel .form-field input,
+.modal-panel .form-field select,
+.modal-panel .form-field textarea,
+.task-modal .form-field input,
+.task-modal .form-field select,
+.task-modal .form-field textarea,
+.join-class-modal .form-field input,
+.join-class-modal .form-field select,
+.join-class-modal .form-field textarea,
+.reassignment-request-modal .form-field input,
+.reassignment-request-modal .form-field select,
+.reassignment-request-modal .form-field textarea,
+.ui-dialog-content .form-field input,
+.ui-dialog-content .form-field select,
+.ui-dialog-content .form-field textarea,
+.pop-quiz-modal .form-field input,
+.pop-quiz-modal .form-field select,
+.pop-quiz-modal .form-field textarea {
+  background: var(--m-bg-2) !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 10px !important;
+  color: var(--m-text) !important;
+  transition: border-color var(--m-transition), box-shadow var(--m-transition) !important;
+}
+
+.modal-panel .form-field input:focus,
+.modal-panel .form-field select:focus,
+.modal-panel .form-field textarea:focus,
+.task-modal .form-field input:focus,
+.task-modal .form-field select:focus,
+.task-modal .form-field textarea:focus,
+.join-class-modal .form-field input:focus,
+.reassignment-request-modal .form-field input:focus,
+.reassignment-request-modal .form-field select:focus,
+.reassignment-request-modal .form-field textarea:focus,
+.ui-dialog-content .form-field input:focus,
+.ui-dialog-content .form-field select:focus,
+.ui-dialog-content .form-field textarea:focus,
+.pop-quiz-modal .form-field input:focus,
+.pop-quiz-modal .form-field select:focus,
+.pop-quiz-modal .form-field textarea:focus {
+  border-color: var(--m-primary) !important;
+  box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.15) !important;
+  outline: none !important;
+}
+
+.modal-panel .form-field label,
+.task-modal .form-field label,
+.join-class-modal .form-field label,
+.reassignment-request-modal .form-field label,
+.ui-dialog-content .form-field label,
+.pop-quiz-modal .form-field label {
+  color: var(--m-sub) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+}
+
+/* ── Modal headings ─────────────────────────────────────────── */
+.modal-panel h2,
+.modal-panel h3,
+.join-class-modal h2,
+.join-class-modal h3,
+.reassignment-request-modal h2,
+.reassignment-request-modal h3,
+.pinned-modal h2,
+.pinned-modal h3,
+.program-study-modal-card h3,
+.program-study-modal-card h4 {
+  color: var(--m-text) !important;
+  margin-top: 0 !important;
+}
+
+/* ── Dropdown inside dashboard ──────────────────────────────── */
+body:has(.dashboard-shell) .ui-dropdown-content {
+  background: var(--m-bg) !important;
+  border: 1px solid var(--m-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45) !important;
+}
+
+body:has(.dashboard-shell) .ui-dropdown-item {
+  color: var(--m-sub) !important;
+  border-radius: 9px !important;
+  transition: background var(--m-transition), color var(--m-transition) !important;
+}
+
+body:has(.dashboard-shell) .ui-dropdown-item:hover,
+body:has(.dashboard-shell) .ui-dropdown-item[data-highlighted] {
+  background: rgba(20, 99, 255, 0.12) !important;
+  color: var(--m-text) !important;
+}
+
+/* ── Mobile responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .modal-panel,
+  .task-modal,
+  .pop-quiz-modal,
+  .join-class-modal,
+  .reassignment-request-modal,
+  .pinned-modal,
+  .program-study-modal-card,
+  .ui-dialog-content {
+    border-radius: 14px !important;
+    padding: 18px !important;
+  }
+
+  .task-detail-modal-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ui-sheet-content {
+    padding: 16px !important;
+  }
+}
+
+/* ================================================================
+   LIGHT MODE
+   ================================================================ */
+html[data-theme="light"] {
+  --m-bg:        #ffffff;
+  --m-bg-2:      #f8fafc;
+  --m-border:    #e2e8f0;
+  --m-border-hi: rgba(20, 99, 255, 0.2);
+  --m-text:      #0f172a;
+  --m-sub:       #475569;
+  --m-muted:     #94a3b8;
+  --m-shadow:    0 20px 60px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(15,23,42,0.06);
+}
+
+html[data-theme="light"] .modal-backdrop,
+html[data-theme="light"] .task-modal-backdrop,
+html[data-theme="light"] .pop-quiz-backdrop {
+  background: rgba(15, 23, 42, 0.50) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="light"] .task-detail-modal-backdrop {
+  background: rgba(15, 23, 42, 0.60) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+html[data-theme="light"] .program-study-modal-backdrop {
+  background: rgba(15, 23, 42, 0.55) !important;
+}
+
+html[data-theme="light"] .ui-dialog-overlay,
+html[data-theme="light"] .ui-sheet-overlay {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html[data-theme="light"] .modal-panel,
+html[data-theme="light"] .confirm-panel,
+html[data-theme="light"] .task-modal,
+html[data-theme="light"] .pop-quiz-modal,
+html[data-theme="light"] .join-class-modal,
+html[data-theme="light"] .reassignment-request-modal,
+html[data-theme="light"] .pinned-modal,
+html[data-theme="light"] .program-study-modal-card,
+html[data-theme="light"] .ui-dialog-content,
+html[data-theme="light"] .ui-sheet-content {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  border-top-color: rgba(20, 99, 255, 0.2) !important;
+  color: #0f172a !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"] .confirm-panel {
+  border-color: rgba(20, 99, 255, 0.2) !important;
+}
+
+html[data-theme="light"] .task-detail-modal-panel {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  border-top-color: rgba(20, 99, 255, 0.25) !important;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.14) !important;
+}
+
+html[data-theme="light"] .task-detail-main,
+html[data-theme="light"] .task-detail-sidebar,
+html[data-theme="light"] .task-detail-section,
+html[data-theme="light"] .task-activity-panel {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .task-detail-modal-close {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .task-detail-modal-close:hover {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border-color: rgba(220, 38, 38, 0.3) !important;
+  color: #dc2626 !important;
+}
+
+html[data-theme="light"] .ui-dialog-close,
+html[data-theme="light"] .ui-sheet-close {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .ui-dialog-close:hover,
+html[data-theme="light"] .ui-sheet-close:hover {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border-color: rgba(220, 38, 38, 0.3) !important;
+  color: #dc2626 !important;
+}
+
+html[data-theme="light"] .ui-dialog-title,
+html[data-theme="light"] .ui-sheet-title {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .ui-dialog-description,
+html[data-theme="light"] .ui-sheet-description {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .modal-panel h2,
+html[data-theme="light"] .modal-panel h3,
+html[data-theme="light"] .join-class-modal h2,
+html[data-theme="light"] .join-class-modal h3,
+html[data-theme="light"] .reassignment-request-modal h2,
+html[data-theme="light"] .reassignment-request-modal h3,
+html[data-theme="light"] .pinned-modal h2,
+html[data-theme="light"] .pinned-modal h3,
+html[data-theme="light"] .program-study-modal-card h3,
+html[data-theme="light"] .program-study-modal-card h4,
+html[data-theme="light"] .task-modal-header h3,
+html[data-theme="light"] .confirm-panel h3 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .confirm-panel p,
+html[data-theme="light"] .modal-panel p {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .pinned-modal-item {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .pinned-modal-item:hover {
+  border-color: rgba(20, 99, 255, 0.25) !important;
+}
+
+html[data-theme="light"] .pinned-modal-item p,
+html[data-theme="light"] .pinned-modal-item small {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .pinned-modal-item strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .task-picker-grid {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .modal-panel .form-field input,
+html[data-theme="light"] .modal-panel .form-field select,
+html[data-theme="light"] .modal-panel .form-field textarea,
+html[data-theme="light"] .task-modal .form-field input,
+html[data-theme="light"] .task-modal .form-field select,
+html[data-theme="light"] .task-modal .form-field textarea,
+html[data-theme="light"] .join-class-modal .form-field input,
+html[data-theme="light"] .join-class-modal .form-field select,
+html[data-theme="light"] .join-class-modal .form-field textarea,
+html[data-theme="light"] .reassignment-request-modal .form-field input,
+html[data-theme="light"] .reassignment-request-modal .form-field select,
+html[data-theme="light"] .reassignment-request-modal .form-field textarea,
+html[data-theme="light"] .ui-dialog-content .form-field input,
+html[data-theme="light"] .ui-dialog-content .form-field select,
+html[data-theme="light"] .ui-dialog-content .form-field textarea,
+html[data-theme="light"] .pop-quiz-modal .form-field input,
+html[data-theme="light"] .pop-quiz-modal .form-field select,
+html[data-theme="light"] .pop-quiz-modal .form-field textarea {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .modal-panel .form-field label,
+html[data-theme="light"] .task-modal .form-field label,
+html[data-theme="light"] .join-class-modal .form-field label,
+html[data-theme="light"] .reassignment-request-modal .form-field label,
+html[data-theme="light"] .ui-dialog-content .form-field label,
+html[data-theme="light"] .pop-quiz-modal .form-field label {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-content {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-item {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-item:hover,
+html[data-theme="light"] body:has(.dashboard-shell) .ui-dropdown-item[data-highlighted] {
+  background: rgba(20, 99, 255, 0.08) !important;
+  color: #0f172a !important;
+}

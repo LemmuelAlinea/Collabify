@@ -1,0 +1,145 @@
+
+/* ── Reassignment tables visual upgrade ─────────────────────── */
+
+body:has(.dashboard-shell) .reassignment-approved-panel {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(148,163,184,0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-panel > .section-heading-row h3 {
+  color: #e2e8f0 !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-panel > .section-heading-row .muted-text {
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+}
+
+body:has(.dashboard-shell) .reassignment-search-input {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(148,163,184,0.15) !important;
+  border-radius: 10px !important;
+  color: #e2e8f0 !important;
+  transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+body:has(.dashboard-shell) .reassignment-search-input:focus {
+  border-color: #1463ff !important;
+  box-shadow: 0 0 0 3px rgba(20,99,255,0.15) !important;
+  outline: none !important;
+}
+
+body:has(.dashboard-shell) .reassignment-search-input::placeholder {
+  color: #475569 !important;
+}
+
+body:has(.dashboard-shell) .reassignment-table-wrap {
+  background: transparent !important;
+  border: 1px solid rgba(148,163,184,0.10) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table {
+  background: transparent !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table th {
+  background: rgba(15,23,42,0.55) !important;
+  color: #64748b !important;
+  border-bottom: 1px solid rgba(148,163,184,0.12) !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table td {
+  color: #cbd5e1 !important;
+  border-bottom: 1px solid rgba(148,163,184,0.08) !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table td:first-child {
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table tbody tr {
+  transition: background 150ms ease !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover {
+  background: rgba(20,99,255,0.08) !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover td {
+  color: #e2e8f0 !important;
+}
+
+body:has(.dashboard-shell) .reassignment-approved-table tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+body:has(.dashboard-shell) .reassignment-archive-button {
+  color: #f87171 !important;
+  border-radius: 8px !important;
+  transition: background 150ms ease, color 150ms ease !important;
+}
+
+body:has(.dashboard-shell) .reassignment-archive-button:hover {
+  background: rgba(239,68,68,0.14) !important;
+  color: #fca5a5 !important;
+}
+
+/* ── Light mode ──────────────────────────────────────────────── */
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-panel {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.07) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-panel > .section-heading-row h3 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-search-input {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-search-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-table-wrap {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table th {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table td {
+  color: #334155 !important;
+  border-bottom-color: #f1f5f9 !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table td:first-child {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover {
+  background: rgba(20,99,255,0.05) !important;
+}
+
+html[data-theme="light"] body:has(.dashboard-shell) .reassignment-approved-table tbody tr:hover td {
+  color: #0f172a !important;
+}

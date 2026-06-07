@@ -7,13 +7,13 @@ function formatTime(value) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
 }
 
-export function NotificationDropdown({ notifications, onMarkAllRead, onMarkRead }) {
+export function NotificationDropdown({ dropdownRef, notifications, onMarkAllRead, onMarkRead, style }) {
   const { role } = useAuth()
   const preview = notifications.slice(0, 6)
   const centerPath = role === USER_ROLES.PROFESSOR ? '/professor/notifications' : '/notifications'
 
   return (
-    <div className="notification-dropdown">
+    <div className="notification-dropdown" ref={dropdownRef} style={style}>
       <div className="notification-dropdown-header">
         <strong>Notifications</strong>
         <button type="button" onClick={onMarkAllRead}>Mark all read</button>

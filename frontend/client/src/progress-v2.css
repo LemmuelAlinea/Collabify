@@ -1,0 +1,355 @@
+
+/* ================================================================
+   PROGRESS PAGE v2
+   ================================================================ */
+
+body:has(.progress-dashboard) .progress-dashboard {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 28px !important;
+  max-width: 1240px !important;
+}
+
+/* filter row */
+body:has(.progress-dashboard) .task-filter-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  align-items: flex-end !important;
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(148,163,184,0.12) !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+}
+
+body:has(.progress-dashboard) .task-filter-row .form-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex: 1 !important;
+  min-width: 180px !important;
+  margin: 0 !important;
+}
+
+body:has(.progress-dashboard) .task-filter-row .form-field span {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #64748b !important;
+}
+
+body:has(.progress-dashboard) .task-filter-row select {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(148,163,184,0.15) !important;
+  border-radius: 10px !important;
+  color: #e2e8f0 !important;
+  padding: 8px 12px !important;
+  font-size: 0.875rem !important;
+  cursor: pointer !important;
+  transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+body:has(.progress-dashboard) .task-filter-row select:focus {
+  border-color: #1463ff !important;
+  box-shadow: 0 0 0 3px rgba(20,99,255,0.15) !important;
+  outline: none !important;
+}
+
+/* metric grid */
+body:has(.progress-dashboard) .progress-metric-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+body:has(.progress-dashboard) .progress-metric {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(148,163,184,0.12) !important;
+  border-radius: 16px !important;
+  padding: 20px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease !important;
+}
+
+body:has(.progress-dashboard) .progress-metric:hover {
+  border-color: rgba(40,215,255,0.22) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
+}
+
+body:has(.progress-dashboard) .progress-metric p {
+  font-size: 0.76rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #64748b !important;
+  margin: 0 !important;
+}
+
+body:has(.progress-dashboard) .progress-metric strong {
+  display: block !important;
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  color: #28d7ff !important;
+  line-height: 1.1 !important;
+  margin: 8px 0 4px !important;
+}
+
+body:has(.progress-dashboard) .progress-metric span {
+  font-size: 0.78rem !important;
+  color: #94a3b8 !important;
+  margin: 0 !important;
+}
+
+/* sections */
+body:has(.progress-dashboard) .progress-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(148,163,184,0.10) !important;
+  border-radius: 18px !important;
+  padding: 22px !important;
+}
+
+body:has(.progress-dashboard) .progress-section > h3 {
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  padding-bottom: 14px !important;
+  border-bottom: 1px solid rgba(148,163,184,0.1) !important;
+}
+
+/* grids */
+body:has(.progress-dashboard) .progress-grid,
+body:has(.progress-dashboard) .member-progress-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+/* row cards */
+body:has(.progress-dashboard) .progress-row-card,
+body:has(.progress-dashboard) .member-progress-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(148,163,184,0.12) !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  gap: 14px !important;
+  transition: border-color 150ms ease !important;
+}
+
+body:has(.progress-dashboard) .progress-row-card:hover,
+body:has(.progress-dashboard) .member-progress-card:hover {
+  border-color: rgba(40,215,255,0.2) !important;
+}
+
+body:has(.progress-dashboard) .progress-row-card h4,
+body:has(.progress-dashboard) .member-progress-card h4 {
+  color: #e2e8f0 !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 4px !important;
+}
+
+body:has(.progress-dashboard) .progress-row-card p,
+body:has(.progress-dashboard) .member-progress-card p {
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+}
+
+/* personal card accent */
+body:has(.progress-dashboard) .my-task-progress-card {
+  background: linear-gradient(135deg, rgba(20,99,255,0.08), rgba(40,215,255,0.04)) !important;
+  border-color: rgba(40,215,255,0.18) !important;
+}
+
+/* task table */
+body:has(.progress-dashboard) .task-progress-table {
+  gap: 10px !important;
+}
+
+body:has(.progress-dashboard) .task-progress-table--scroll {
+  max-height: 520px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(40,215,255,0.2) transparent !important;
+}
+
+body:has(.progress-dashboard) .task-progress-row {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(148,163,184,0.10) !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  gap: 12px !important;
+  transition: border-color 150ms ease !important;
+}
+
+body:has(.progress-dashboard) .task-progress-row:hover {
+  border-color: rgba(40,215,255,0.18) !important;
+}
+
+body:has(.progress-dashboard) .task-progress-row__title {
+  color: #cbd5e1 !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+}
+
+/* progress bar */
+body:has(.progress-dashboard) .progress-bar-block {
+  gap: 8px !important;
+}
+
+body:has(.progress-dashboard) .progress-label-row span {
+  color: #94a3b8 !important;
+  font-size: 0.8rem !important;
+}
+
+body:has(.progress-dashboard) .progress-label-row strong {
+  color: #28d7ff !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+}
+
+body:has(.progress-dashboard) .progress-track {
+  height: 7px !important;
+  background: rgba(255,255,255,0.07) !important;
+  border-radius: 999px !important;
+}
+
+body:has(.progress-dashboard) .progress-track span {
+  background: linear-gradient(90deg, #1463ff, #28d7ff) !important;
+  border-radius: 999px !important;
+}
+
+/* ── Light mode ──────────────────────────────────────────────── */
+html[data-theme="light"] body:has(.progress-dashboard) .task-filter-row {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .task-filter-row .form-field span {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .task-filter-row select {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-metric {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 12px rgba(15,23,42,0.06) !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-metric strong {
+  color: #1463ff !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-metric p {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-metric span {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-section {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-section > h3 {
+  color: #475569 !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-row-card,
+html[data-theme="light"] body:has(.progress-dashboard) .member-progress-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 6px rgba(15,23,42,0.05) !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-row-card:hover,
+html[data-theme="light"] body:has(.progress-dashboard) .member-progress-card:hover {
+  border-color: rgba(20,99,255,0.25) !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-row-card h4,
+html[data-theme="light"] body:has(.progress-dashboard) .member-progress-card h4 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-row-card p,
+html[data-theme="light"] body:has(.progress-dashboard) .member-progress-card p {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .my-task-progress-card {
+  background: linear-gradient(135deg, rgba(20,99,255,0.06), rgba(40,215,255,0.03)) !important;
+  border-color: rgba(20,99,255,0.2) !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .task-progress-row {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .task-progress-row:hover {
+  border-color: rgba(20,99,255,0.22) !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .task-progress-row__title {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-label-row span {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-label-row strong {
+  color: #1463ff !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-track {
+  background: #e2e8f0 !important;
+}
+
+html[data-theme="light"] body:has(.progress-dashboard) .progress-track span {
+  background: linear-gradient(90deg, #1463ff, #0ea5e9) !important;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body:has(.progress-dashboard) .task-filter-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  body:has(.progress-dashboard) .task-filter-row .form-field {
+    min-width: 100% !important;
+  }
+
+  body:has(.progress-dashboard) .progress-metric-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  body:has(.progress-dashboard) .progress-grid,
+  body:has(.progress-dashboard) .member-progress-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body:has(.progress-dashboard) .progress-metric strong {
+    font-size: 1.6rem !important;
+  }
+}

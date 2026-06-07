@@ -109,6 +109,7 @@ export function DashboardLayout() {
   const { role, signOut } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isActionsCollapsed, setIsActionsCollapsed] = useState(false)
   const profilePath = role === USER_ROLES.PROFESSOR ? '/professor/profile' : '/student/profile'
 
   const sections = navSections[role] ?? []
@@ -202,16 +203,24 @@ export function DashboardLayout() {
           <strong>Logout</strong>
         </button>
       </aside>
+      <div className={`desktop-floating-actions${isActionsCollapsed ? ' is-actions-collapsed' : ''}`}>
+        <button
+          aria-label={isActionsCollapsed ? 'Expand toolbar' : 'Collapse toolbar'}
+          className="floating-actions-toggle"
+          type="button"
+          onClick={() => setIsActionsCollapsed((c) => !c)}
+        >
+          {isActionsCollapsed ? <ChevronLeft size={14} aria-hidden="true" /> : <ChevronRight size={14} aria-hidden="true" />}
+        </button>
+        <div className="floating-actions-items">
+          <NotificationBell />
+          <ThemeToggle />
+          <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
+            <UserRound size={18} aria-hidden="true" />
+          </NavLink>
+        </div>
+      </div>
       <main className="dashboard-content">
-        <header className="desktop-app-bar">
-          <div className="topbar-actions">
-            <NotificationBell />
-            <ThemeToggle />
-            <NavLink to={profilePath} className="topbar-profile-button" aria-label="Profiles" title="Profiles">
-              <UserRound size={18} aria-hidden="true" />
-            </NavLink>
-          </div>
-        </header>
         <Outlet />
       </main>
     </div>
