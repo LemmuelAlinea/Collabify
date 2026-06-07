@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Users } from 'lucide-react'
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useClasses } from '../../classes/hooks/useClasses'
-import { getClassDetails } from '../../classes/services/classService'
 import { useGroups } from '../../groups/hooks/useGroups'
 import { ChatComposer } from '../components/ChatComposer'
 import { MessageList } from '../components/MessageList'
@@ -15,26 +15,23 @@ export function MessagesPage() {
   const { classes } = useClasses()
   const { groups } = useGroups()
   const [scope, setScope] = useState(searchParams.get('scope') === 'group' ? 'group' : 'class')
-  const [targetId, setTargetId] = useState('')
-  const [classChatId, setClassChatId] = useState('')
+  const [manualTargetId, setManualTargetId] = useState('')
   const [showPinned, setShowPinned] = useState(false)
-  const chatId = scope === 'class' ? classChatId : targetId
-  const { error, isLoading, messages, pin, remove, send } = useMessages(scope, chatId)
-  const pinnedMessages = messages.filter((message) => message.isPinned)
 
   const targets = useMemo(() => (
     scope === 'class'
-      ? classes.map((item) => ({ id: item.id, name: `${item.name} ${item.section ?? ''}`.trim() }))
-      : groups.map((item) => ({ id: item.id, name: item.name }))
+      ? classes.map((item) => ({ id: item.id, chatId: item.classChat?.id ?? '', name: `${item.name} ${item.section ?? ''}`.trim() }))
+      : groups.map((item) => ({ id: item.id, chatId: item.groupChat?.id ?? item.id, name: item.name }))
   ), [classes, groups, scope])
-
-  useEffect(() => {
-    const preselectedClassId = searchParams.get('classId')
-    const preselectedGroupId = searchParams.get('groupId')
-    const preferredId = scope === 'class' ? preselectedClassId : preselectedGroupId
-    const validPreferredId = preferredId && targets.some((target) => target.id === preferredId) ? preferredId : ''
-    setTargetId(validPreferredId || (targets[0]?.id ?? ''))
-  }, [scope, targets, searchParams])
+  const routeTargetId = scope === 'class' ? searchParams.get('classId') : searchParams.get('groupId')
+  const routeTargetIsValid = routeTargetId && targets.some((target) => target.id === routeTargetId)
+  const manualTargetIsValid = manualTargetId && targets.some((target) => target.id === manualTargetId)
+  const targetId = manualTargetIsValid ? manualTargetId : routeTargetIsValid ? routeTargetId : targets[0]?.id ?? ''
+  const selectedTarget = targets.find((target) => target.id === targetId)
+  const chatId = selectedTarget?.chatId ?? ''
+  const { error, isLoading, messages, pin, remove, send } = useMessages(scope, chatId)
+  const pinnedMessages = messages.filter((message) => message.isPinned)
+  const chatTitle = selectedTarget?.name ?? (scope === 'class' ? 'Class chat' : 'Group chat')
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams)
@@ -51,29 +48,8 @@ export function MessagesPage() {
     }
   }, [scope, targetId, searchParams, setSearchParams])
 
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadSelectedChat() {
-      setClassChatId('')
-      if (scope !== 'class' || !targetId) return
-
-      const details = await getClassDetails(targetId)
-      if (isMounted) setClassChatId(details.classChat?.id ?? '')
-    }
-
-    loadSelectedChat().catch(() => {
-      if (!isMounted) return
-      setClassChatId('')
-    })
-
-    return () => {
-      isMounted = false
-    }
-  }, [scope, targetId])
-
   return (
-    <section className="module-page">
+    <section className="module-page messages-page">
       <div className="module-header">
         <div>
           <p className="eyebrow">{role}</p>
@@ -82,22 +58,45 @@ export function MessagesPage() {
             Pinned chats ({pinnedMessages.length})
           </button>
         </div>
-        <div className="chat-selector">
-          <select value={scope} onChange={(event) => setScope(event.target.value)}>
-            <option value="class">Class chat</option>
-            {role === USER_ROLES.STUDENT ? <option value="group">Group chat</option> : null}
-          </select>
-          <select value={targetId} onChange={(event) => setTargetId(event.target.value)}>
-            {targets.map((target) => <option key={target.id} value={target.id}>{target.name}</option>)}
-          </select>
-        </div>
       </div>
       {error ? <p className="form-error">{error}</p> : null}
       {isLoading ? <div className="route-state">Loading messages...</div> : null}
       {chatId ? (
-        <div className="chat-panel">
-          <MessageList messages={messages} onDelete={remove} onPin={pin} />
-          <ChatComposer scope={scope} chatId={chatId} onSend={send} />
+        <div className="messages-layout">
+          <aside className="chat-sidebar-panel">
+            <div className="chat-scope-tabs">
+              <button className={scope === 'class' ? 'is-active' : ''} type="button" onClick={() => {
+                setManualTargetId('')
+                setScope('class')
+              }}>Class</button>
+              {role === USER_ROLES.STUDENT ? (
+                <button className={scope === 'group' ? 'is-active' : ''} type="button" onClick={() => {
+                  setManualTargetId('')
+                  setScope('group')
+                }}>Group</button>
+              ) : null}
+            </div>
+            <div className="chat-target-list">
+              {targets.map((target) => (
+                <button className={target.id === targetId ? 'is-active' : ''} key={target.id} type="button" onClick={() => setManualTargetId(target.id)}>
+                  <span><Users size={16} aria-hidden="true" /></span>
+                  <strong>{target.name}</strong>
+                  <small>{scope === 'class' ? 'Class chat' : 'Group chat'}</small>
+                </button>
+              ))}
+            </div>
+          </aside>
+          <div className="chat-panel">
+            <header className="chat-panel-header">
+              <div>
+                <p className="eyebrow">{scope === 'class' ? 'Class chat' : 'Group chat'}</p>
+                <h3>{chatTitle}</h3>
+                <span>Collaborate creatively, deliver clearly.</span>
+              </div>
+            </header>
+            <MessageList messages={messages} onDelete={remove} onPin={pin} />
+            <ChatComposer scope={scope} chatId={chatId} onSend={send} />
+          </div>
         </div>
       ) : (
         <div className="empty-state"><h3>No chat selected</h3><p>Select a class or group.</p></div>

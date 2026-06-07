@@ -342,7 +342,7 @@ body.append(table(
     ["Issue Detected", "Severity", "Evidence", "Resolution / Action"],
     [
         ["Backend ESLint configuration missing", "Medium", "ESLint 9 reported no eslint.config.js in backend/server.", "Add backend eslint.config.js or share frontend ESLint flat config before release."],
-        ["Frontend lint errors", "Medium", "59 errors and 6 warnings across 44 files.", "Refactor mixed exports, adjust useEffect data loading patterns, remove unused variables, and attach caught error cause."],
+        ["Frontend lint errors", "Medium", "55 errors and 6 warnings.", "Refactor mixed exports, adjust useEffect data loading patterns, remove unused variables, and attach caught error cause."],
         ["Backend dependency vulnerabilities", "Low", "npm audit: found 0 vulnerabilities.", "No vulnerable package found at scan time."],
         ["Frontend dependency vulnerabilities", "Low", "npm audit: found 0 vulnerabilities.", "No vulnerable package found at scan time."],
     ],
@@ -356,8 +356,8 @@ found 0 vulnerabilities
 frontend/client> npm audit --audit-level=moderate
 found 0 vulnerabilities
 
-frontend/client> npx eslint . --format json
-errors=59 warnings=6 files=44
+frontend/client> npm run lint
+55 errors, 6 warnings
 Sample rules: react-refresh/only-export-components,
 react-hooks/set-state-in-effect, no-unused-vars,
 react-hooks/static-components, preserve-caught-error.
@@ -373,7 +373,7 @@ const requiredEnv = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
-]:
+]
 
 const missing = requiredEnv.filter((key) => !process.env[key])
 
@@ -546,7 +546,7 @@ styles_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 numbering_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/><w:lvlJc w:val="left"/><w:pPr><w:tabs><w:tab w:val="num" w:pos="720"/></w:tabs><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>
+  <w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="&#8226;"/><w:lvlJc w:val="left"/><w:pPr><w:tabs><w:tab w:val="num" w:pos="720"/></w:tabs><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>
   <w:abstractNum w:abstractNumId="2"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:tabs><w:tab w:val="num" w:pos="720"/></w:tabs><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>
   <w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>
   <w:num w:numId="2"><w:abstractNumId w:val="2"/></w:num>

@@ -54,7 +54,7 @@ export function ProjectsPage() {
   if (isLoading) return <div className="route-state">Loading projects...</div>
 
   return (
-    <section className="module-page">
+    <section className="module-page projects-page">
       <div className="module-header">
         <div>
           <p className="eyebrow">{isProfessor ? 'Professor' : 'Student'}</p>

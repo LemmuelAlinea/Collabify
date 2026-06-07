@@ -40,9 +40,6 @@ export function TaskGenerationPage() {
           <h2>AI Task Generation</h2>
           <p>Generate tasks, subtasks, milestones, dependencies, deadlines, points, and workload plans.</p>
         </div>
-        <button className="primary-button" type="button" disabled={!projectId || (isStudent && !groupId) || isGenerating} onClick={generate}>
-          {isGenerating ? 'Generating...' : 'Generate Tasks with AI'}
-        </button>
       </div>
       {error ? <p className="form-error">{error}</p> : null}
       {isStudent && projectId && !groupId ? <p className="form-error">Choose your group before generating tasks.</p> : null}
@@ -65,6 +62,11 @@ export function TaskGenerationPage() {
             {visibleGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
           </select>
         </label>
+        <div className="ai-planner-actions">
+          <button className="primary-button" type="button" disabled={!projectId || (isStudent && !groupId) || isGenerating} onClick={generate}>
+            {isGenerating ? 'Generating...' : 'Generate Tasks with AI'}
+          </button>
+        </div>
       </div>
       {isLoading ? <div className="route-state">Loading generated plans...</div> : null}
       <ProjectPlanViewer generation={activeGeneration} onAccept={accept} />

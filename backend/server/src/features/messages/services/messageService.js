@@ -165,21 +165,23 @@ async function normalizeMessages(rows, viewerId) {
   const deletedForMe = new Set((deletions ?? []).map((row) => row.message_id))
   const pinByMessageId = new Map((pins ?? []).map((pin) => [pin.message_id, pin]))
   const attachmentsByMessageId = new Map()
+  const signedAttachments = await Promise.all((attachments ?? []).map(async (attachment) => ({
+    id: attachment.id,
+    ownerId: attachment.owner_id,
+    uploadedBy: attachment.uploaded_by,
+    storageBucket: attachment.storage_bucket,
+    storagePath: attachment.storage_path,
+    fileName: attachment.file_name,
+    mimeType: attachment.mime_type,
+    fileSizeBytes: attachment.file_size_bytes,
+    url: await createSignedUrl(attachment),
+    createdAt: attachment.created_at,
+  })))
 
-  for (const attachment of attachments ?? []) {
-    const list = attachmentsByMessageId.get(attachment.owner_id) ?? []
-    list.push({
-      id: attachment.id,
-      uploadedBy: attachment.uploaded_by,
-      storageBucket: attachment.storage_bucket,
-      storagePath: attachment.storage_path,
-      fileName: attachment.file_name,
-      mimeType: attachment.mime_type,
-      fileSizeBytes: attachment.file_size_bytes,
-      url: await createSignedUrl(attachment),
-      createdAt: attachment.created_at,
-    })
-    attachmentsByMessageId.set(attachment.owner_id, list)
+  for (const attachment of signedAttachments) {
+    const list = attachmentsByMessageId.get(attachment.ownerId) ?? []
+    list.push(attachment)
+    attachmentsByMessageId.set(attachment.ownerId, list)
   }
 
   return rows
@@ -221,11 +223,11 @@ export async function listMessages(userId, role, payload) {
     .from('messages')
     .select(MESSAGE_SELECT)
     .eq(column, chat.id)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(200)
 
   if (error) throw new HttpError(400, 'Unable to load messages', error.message)
-  return normalizeMessages(data ?? [], userId)
+  return normalizeMessages([...(data ?? [])].reverse(), userId)
 }
 
 export async function createMessage(userId, role, payload) {

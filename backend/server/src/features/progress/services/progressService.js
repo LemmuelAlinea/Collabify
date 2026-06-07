@@ -256,13 +256,17 @@ function buildTimeline(data, scope) {
       const inProgressAt = firstStatusDate(histories, 'in_progress')
       const reviewAt = firstStatusDate(histories, 'review') ?? firstStatusDate(histories, 'in_review')
       const completedAt = task.completed_at ?? lastStatusDate(histories, 'done') ?? null
-      const startAt = inProgressAt ?? reviewAt ?? assignedAt ?? task.created_at ?? today
+      const claimedAt = assignedAt ?? task.created_at ?? today
+      const startAt = normalizedStatus === 'done'
+        ? claimedAt
+        : inProgressAt ?? reviewAt ?? claimedAt
       const endCandidates = [
         task.due_at,
         normalizedStatus === 'done' ? completedAt : null,
         normalizedStatus !== 'done' && !task.due_at ? today : null,
       ].filter(Boolean)
       const endAt = latestDate(endCandidates) ?? today
+      const durationEndAt = normalizedStatus === 'done' && completedAt ? completedAt : endAt
       const assignees = assignments.map((assignment) => ({
         displayName: data.profileByUserId.get(assignment.assignee_id)?.display_name ?? assignment.users?.email ?? 'Member',
         assignedAt: assignment.assigned_at,
@@ -272,11 +276,12 @@ function buildTimeline(data, scope) {
       return {
         assigneeLabel: assignees.length > 0 ? assignees.map((assignee) => assignee.displayName).join(', ') : 'Unassigned',
         assignees,
+        claimedAt,
         completedAt,
         createdAt: task.created_at,
         description: task.description,
         dueAt: task.due_at,
-        durationDays: daysBetween(startAt, endAt),
+        durationDays: daysBetween(startAt, durationEndAt),
         endAt,
         groupId: task.group_id,
         groupName: task.groups?.name ?? group.name,
@@ -285,6 +290,7 @@ function buildTimeline(data, scope) {
         progress: task.progress ?? (task.status === 'done' ? 100 : 0),
         projectId: task.project_id,
         projectTitle: task.projects?.title ?? group.projects?.title,
+        inProgressAt,
         startAt,
         status: normalizedStatus,
         title: task.title,

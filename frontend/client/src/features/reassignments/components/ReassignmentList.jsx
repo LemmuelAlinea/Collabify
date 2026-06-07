@@ -168,7 +168,7 @@ export function ReassignmentList({ onArchive, onReview, reassignments }) {
 
   if (isStudent) {
     return (
-      <div className="reassignment-reviewed-grid reassignment-reviewed-grid--three">
+      <div className="reassignment-reviewed-grid reassignment-reviewed-grid--three student-reassignment-grid">
         <ReviewedReassignmentTable
           canArchive
           emptyLabel="No pending reassignments match your search."

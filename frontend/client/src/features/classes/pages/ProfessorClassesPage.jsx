@@ -57,7 +57,7 @@ export function ProfessorClassesPage() {
   if (isLoading) return <div className="route-state">Loading classes...</div>
 
   return (
-    <section className="module-page">
+    <section className="module-page classes-page">
       <div className="module-header">
         <div>
           <p className="eyebrow">Professor</p>

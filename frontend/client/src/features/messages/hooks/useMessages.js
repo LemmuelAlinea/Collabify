@@ -52,29 +52,36 @@ export function useMessages(scope, chatId) {
       table: 'messages',
     }
     if (scope === 'class') messageListener.filter = `class_chat_id=eq.${chatId}`
-    if (scope === 'group') messageListener.filter = 'scope=eq.group'
+    if (scope === 'group') messageListener.filter = `group_chat_id=eq.${chatId}`
+
+    let reloadTimer
+    const scheduleLoad = () => {
+      window.clearTimeout(reloadTimer)
+      reloadTimer = window.setTimeout(loadMessages, 120)
+    }
 
     const channel = supabase
       .channel(`chat:${scope}:${chatId}`)
-      .on('postgres_changes', messageListener, loadMessages)
+      .on('postgres_changes', messageListener, scheduleLoad)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'attachments',
-      }, loadMessages)
+      }, scheduleLoad)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'pinned_messages',
-      }, loadMessages)
+      }, scheduleLoad)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'message_deletions',
-      }, loadMessages)
+      }, scheduleLoad)
       .subscribe()
 
     return () => {
+      window.clearTimeout(reloadTimer)
       supabase.removeChannel(channel)
     }
   }, [chatId, loadMessages, scope])

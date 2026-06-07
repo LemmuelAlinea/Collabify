@@ -23,10 +23,18 @@ const CLASS_SELECT = `
   archived_at,
   archived_by,
   created_at,
-  updated_at
+  updated_at,
+  class_chats (
+    id,
+    created_at
+  )
 `
 
 function normalizeClass(classItem) {
+  const classChat = Array.isArray(classItem.class_chats)
+    ? classItem.class_chats[0]
+    : classItem.class_chats
+
   return {
     id: classItem.id,
     professorId: classItem.professor_id,
@@ -46,6 +54,10 @@ function normalizeClass(classItem) {
     archivedBy: classItem.archived_by,
     createdAt: classItem.created_at,
     updatedAt: classItem.updated_at,
+    classChat: classChat ? {
+      id: classChat.id,
+      createdAt: classChat.created_at,
+    } : null,
   }
 }
 

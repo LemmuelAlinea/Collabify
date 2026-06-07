@@ -111,8 +111,9 @@ function TaskTimelineRows({ onTaskClick, range, tasks }) {
 
         {tasks.map((task) => {
           const status = normalizeStatus(task.status)
-          const left = positionFor(task.startAt, range.start, totalDays)
+          const visualStartValue = status === 'done' ? task.inProgressAt ?? task.claimedAt ?? task.startAt : task.startAt
           const visualEndValue = status === 'done' && task.completedAt ? task.completedAt : task.endAt
+          const left = positionFor(visualStartValue, range.start, totalDays)
           const end = Math.max(positionFor(visualEndValue, range.start, totalDays), left + (100 / totalDays))
           const width = Math.max(5, end - left)
           const dueLeft = task.dueAt ? positionFor(task.dueAt, range.start, totalDays) : null
@@ -132,7 +133,7 @@ function TaskTimelineRows({ onTaskClick, range, tasks }) {
                   className={`gantt-bar gantt-bar--${status}`}
                   onClick={() => onTaskClick(task)}
                   style={{ left: `${left}%`, width: `${width}%` }}
-                  title={`${task.title} | Started ${formatDate(task.startAt)} | Due ${formatDate(task.dueAt)}${task.completedAt ? ` | Done ${formatDate(task.completedAt)}` : ''} | ${task.assigneeLabel}`}
+                  title={`${task.title} | Claimed ${formatDate(task.claimedAt)} | Started ${formatDate(visualStartValue)} | Due ${formatDate(task.dueAt)}${task.completedAt ? ` | Done ${formatDate(task.completedAt)}` : ''} | ${task.assigneeLabel}`}
                   type="button"
                 >
                   <span>{task.durationDays}d</span>

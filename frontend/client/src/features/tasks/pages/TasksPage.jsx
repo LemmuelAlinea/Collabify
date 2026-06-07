@@ -95,10 +95,6 @@ export function TasksPage() {
           <h2>Tasks</h2>
           <p>{isProfessor ? 'Manage project task structures.' : 'Manage ownership and execution inside your group.'}</p>
         </div>
-        <div className="button-row">
-          <button className="primary-button" type="button" onClick={() => setIsModalOpen(true)}>Create Task</button>
-          <button className="secondary-button" type="button" onClick={() => navigate(aiPath)}>Generate Tasks with AI</button>
-        </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
@@ -140,6 +136,10 @@ export function TasksPage() {
             <input id="taskSearch" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Task or member" />
           </label>
         ) : null}
+        <div className="button-row task-page-actions">
+          <button className="primary-button" type="button" onClick={() => setIsModalOpen(true)}>Create Task</button>
+          <button className="secondary-button" type="button" onClick={() => navigate(aiPath)}>Generate Tasks with AI</button>
+        </div>
       </div>
 
       <div className="task-board">
