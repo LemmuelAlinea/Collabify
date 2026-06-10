@@ -20,6 +20,7 @@ import { CurriculumDetailsPage } from '../../features/curriculum/pages/Curriculu
 import { CurriculumManagementPage } from '../../features/curriculum/pages/CurriculumManagementPage'
 import { MessagesPage } from '../../features/messages/pages/MessagesPage'
 import { NotificationCenterPage } from '../../features/notifications/pages/NotificationCenterPage'
+import { SkillsOnboardingPage } from '../../features/onboarding/pages/SkillsOnboardingPage'
 import { ProjectHealthDashboardPage } from '../../features/health/pages/ProjectHealthDashboardPage'
 import { ProfessorDashboardPage } from '../../features/profiles/pages/ProfessorDashboardPage'
 import { ProfilePage } from '../../features/profiles/pages/ProfilePage'
@@ -46,6 +47,7 @@ export function AppRouter() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route element={<ProtectedRoute allowedRoles={[USER_ROLES.STUDENT]} />}>
+          <Route path="/student/onboarding" element={<SkillsOnboardingPage />} />
           <Route element={<DashboardLayout />}>
             <Route path="/notifications" element={<NotificationCenterPage />} />
             <Route path="/student/dashboard" element={<StudentDashboardPage />} />

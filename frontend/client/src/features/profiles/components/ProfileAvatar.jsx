@@ -1,4 +1,4 @@
-export function ProfileAvatar({ avatarUrl, fullName }) {
+export function ProfileAvatar({ avatarUrl, fullName, className = '' }) {
   const initials = (fullName || 'Collabify User')
     .split(' ')
     .filter(Boolean)
@@ -7,7 +7,7 @@ export function ProfileAvatar({ avatarUrl, fullName }) {
     .join('')
 
   return (
-    <div className="profile-avatar" aria-label={`${fullName} profile photo`}>
+    <div className={`profile-avatar ${className}`.trim()} aria-label={`${fullName} profile photo`}>
       {avatarUrl ? <img src={avatarUrl} alt="" /> : <span>{initials || 'CU'}</span>}
     </div>
   )

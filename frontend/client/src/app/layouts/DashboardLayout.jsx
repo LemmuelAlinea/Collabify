@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   BarChart3,
   Archive,
@@ -55,8 +55,11 @@ const navSections = {
         { to: '/student/classes', label: 'Classes' },
         { to: '/student/projects', label: 'Projects' },
         { to: '/student/groups', label: 'Groups' },
-        { to: '/student/tasks', label: 'Tasks' },
-        { to: '/student/tasks/ai-planner', label: 'AI Planner', isChild: true },
+        {
+          to: '/student/tasks',
+          label: 'Tasks',
+          children: [{ to: '/student/tasks/ai-planner', label: 'AI Planner' }],
+        },
         { to: '/student/reassignments', label: 'Reassignments' },
         { to: '/student/messages', label: 'Messages' },
       ],
@@ -76,8 +79,11 @@ const navSections = {
         { to: '/professor/classes', label: 'Classes' },
         { to: '/professor/projects', label: 'Projects' },
         { to: '/professor/groups', label: 'Groups' },
-        { to: '/professor/tasks', label: 'Tasks' },
-        { to: '/professor/tasks/ai-planner', label: 'AI Planner', isChild: true },
+        {
+          to: '/professor/tasks',
+          label: 'Tasks',
+          children: [{ to: '/professor/tasks/ai-planner', label: 'AI Planner' }],
+        },
         { to: '/professor/archive', label: 'Archive' },
         { to: '/professor/reassignments', label: 'Reassignments' },
         { to: '/professor/messages', label: 'Messages' },
@@ -105,14 +111,73 @@ function SidebarIcon({ label }) {
   return <Icon size={14} aria-hidden="true" />
 }
 
+function buildInitialExpandedNav(sections, pathname) {
+  const initial = {}
+  sections.forEach((section) => {
+    section.items.forEach((item) => {
+      if (item.children?.some((child) => pathname.startsWith(child.to))) {
+        initial[item.to] = true
+      }
+    })
+  })
+  return initial
+}
+
+function NavItem({ item, expandedNav, onToggleExpand, onNavigate }) {
+  const hasChildren = Boolean(item.children?.length)
+
+  if (!hasChildren) {
+    return (
+      <NavLink to={item.to} title={item.label} onClick={onNavigate}>
+        <span><SidebarIcon label={item.label} /></span>
+        <strong>{item.label}</strong>
+      </NavLink>
+    )
+  }
+
+  const isExpanded = Boolean(expandedNav[item.to])
+
+  return (
+    <div className="sidebar-nav-group">
+      <div className="sidebar-nav-row">
+        <NavLink to={item.to} title={item.label} onClick={onNavigate}>
+          <span><SidebarIcon label={item.label} /></span>
+          <strong>{item.label}</strong>
+        </NavLink>
+        <button
+          type="button"
+          className={`sidebar-expand-toggle${isExpanded ? ' is-expanded' : ''}`}
+          aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${item.label} submenu`}
+          aria-expanded={isExpanded}
+          onClick={() => onToggleExpand(item.to)}
+        >
+          <ChevronRight size={14} aria-hidden="true" />
+        </button>
+      </div>
+      {isExpanded ? item.children.map((child) => (
+        <NavLink key={child.to} to={child.to} className="sidebar-sub-item" onClick={onNavigate}>
+          <span><SidebarIcon label={child.label} /></span>
+          <strong>{child.label}</strong>
+        </NavLink>
+      )) : null}
+    </div>
+  )
+}
+
 export function DashboardLayout() {
   const { role, signOut } = useAuth()
+  const location = useLocation()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isActionsCollapsed, setIsActionsCollapsed] = useState(false)
   const profilePath = role === USER_ROLES.PROFESSOR ? '/professor/profile' : '/student/profile'
 
   const sections = navSections[role] ?? []
+  const [expandedNav, setExpandedNav] = useState(() => buildInitialExpandedNav(sections, location.pathname))
+
+  function toggleExpandedNav(key) {
+    setExpandedNav((current) => ({ ...current, [key]: !current[key] }))
+  }
 
   return (
     <div className={`dashboard-shell ${isCollapsed ? 'is-sidebar-collapsed' : ''} ${isMobileMenuOpen ? 'is-mobile-menu-open' : ''}`}>
@@ -131,10 +196,7 @@ export function DashboardLayout() {
             <div className="sidebar-section" key={section.title}>
               <p>{section.title}</p>
               {section.items.map((item) => (
-                <NavLink key={item.to} to={item.to} title={item.label} className={item.isChild ? 'sidebar-sub-item' : ''}>
-                  <span><SidebarIcon label={item.label} /></span>
-                  <strong>{item.label}</strong>
-                </NavLink>
+                <NavItem key={item.to} item={item} expandedNav={expandedNav} onToggleExpand={toggleExpandedNav} />
               ))}
             </div>
           ))}
@@ -190,10 +252,13 @@ export function DashboardLayout() {
             <div className="sidebar-section" key={section.title}>
               <p>{section.title}</p>
               {section.items.map((item) => (
-                <NavLink key={item.to} to={item.to} className={item.isChild ? 'sidebar-sub-item' : ''} onClick={() => setIsMobileMenuOpen(false)}>
-                  <span><SidebarIcon label={item.label} /></span>
-                  <strong>{item.label}</strong>
-                </NavLink>
+                <NavItem
+                  key={item.to}
+                  item={item}
+                  expandedNav={expandedNav}
+                  onToggleExpand={toggleExpandedNav}
+                  onNavigate={() => setIsMobileMenuOpen(false)}
+                />
               ))}
             </div>
           ))}

@@ -16,6 +16,7 @@ import { progressRoutes } from './features/progress/routes/progressRoutes.js'
 import { projectRoutes } from './features/projects/routes/projectRoutes.js'
 import { projectValidationRoutes } from './features/validations/routes/projectValidationRoutes.js'
 import { reassignmentRoutes } from './features/reassignments/routes/reassignmentRoutes.js'
+import { studentSkillRoutes } from './features/student-skills/routes/studentSkillRoutes.js'
 import { syllabusRoutes } from './features/syllabus/routes/syllabusRoutes.js'
 import { submissionRoutes } from './features/submissions/routes/submissionRoutes.js'
 import { taskRoutes } from './features/tasks/routes/taskRoutes.js'
@@ -43,6 +44,7 @@ routes.use('/progress', progressRoutes)
 routes.use('/projects', projectRoutes)
 routes.use('/validations', projectValidationRoutes)
 routes.use('/reassignments', reassignmentRoutes)
+routes.use('/student-skills', studentSkillRoutes)
 routes.use('/syllabi', syllabusRoutes)
 routes.use('/submissions', submissionRoutes)
 routes.use('/tasks', taskRoutes)

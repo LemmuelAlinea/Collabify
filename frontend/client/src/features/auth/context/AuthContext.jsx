@@ -25,6 +25,7 @@ function normalizeProfile(profile) {
     role: profile.users?.role,
     email: profile.users?.email,
     subjectSpecialization: profile.subject_specialization,
+    skillsOnboardingDone: profile.skills_onboarding_done,
   }
 }
 

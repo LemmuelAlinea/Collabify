@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { BookUser, Camera, GraduationCap, ShieldCheck } from 'lucide-react'
 import { AuthFormField } from '../../auth/components/AuthFormField'
 import { uploadProfilePhoto } from '../services/avatarService'
+import { ProfileAvatar } from './ProfileAvatar'
 
 function toFormState(profile) {
   return {
@@ -25,6 +27,13 @@ export function ProfileForm({ profile, onCancel, onSave }) {
   const [error, setError] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const photoPreview = useMemo(() => (photoFile ? URL.createObjectURL(photoFile) : ''), [photoFile])
+
+  useEffect(() => {
+    if (!photoPreview) return undefined
+    return () => URL.revokeObjectURL(photoPreview)
+  }, [photoPreview])
 
   function updateField(event) {
     setForm((current) => ({
@@ -78,43 +87,96 @@ export function ProfileForm({ profile, onCancel, onSave }) {
 
   return (
     <form className="profile-form" onSubmit={handleSubmit}>
-      <div className="form-grid">
-        <AuthFormField id="firstName" label="First name" name="firstName" required value={form.firstName} onChange={updateField} />
-        <AuthFormField id="lastName" label="Last name" name="lastName" required value={form.lastName} onChange={updateField} />
-      </div>
-
-      <AuthFormField id="middleName" label="Middle name" name="middleName" value={form.middleName} onChange={updateField} />
-      <AuthFormField id="department" label="Department" name="department" value={form.department} onChange={updateField} />
-
-      {profile.role === 'student' ? (
-        <div className="form-grid">
-          <AuthFormField id="yearLevel" label="Year level" name="yearLevel" type="number" min="1" max="5" value={form.yearLevel} onChange={updateField} />
-          <AuthFormField id="section" label="Section" name="section" value={form.section} onChange={updateField} />
+      <div className="profile-form-section">
+        <div className="profile-form-section-header">
+          <span className="profile-form-section-icon" aria-hidden="true">
+            <BookUser size={18} />
+          </span>
+          <div>
+            <h3>Personal information</h3>
+            <p>Your name and department, shown across Collabify.</p>
+          </div>
         </div>
-      ) : (
-        <AuthFormField id="subjectSpecialization" label="Subject specialization" name="subjectSpecialization" value={form.subjectSpecialization} onChange={updateField} />
-      )}
 
-      <label className="form-field" htmlFor="bio">
-        <span>Bio</span>
-        <textarea id="bio" name="bio" rows="5" maxLength="500" value={form.bio} onChange={updateField} />
-      </label>
+        <div className="form-grid">
+          <AuthFormField id="firstName" label="First name" name="firstName" required value={form.firstName} onChange={updateField} />
+          <AuthFormField id="lastName" label="Last name" name="lastName" required value={form.lastName} onChange={updateField} />
+        </div>
 
-      <div className="form-grid">
-        <AuthFormField id="newPassword" label="New password" name="newPassword" type="password" minLength="8" autoComplete="new-password" value={form.newPassword} onChange={updateField} />
-        <AuthFormField id="confirmPassword" label="Re-enter password" name="confirmPassword" type="password" minLength="8" autoComplete="new-password" value={form.confirmPassword} onChange={updateField} />
+        <div className="form-grid">
+          <AuthFormField id="middleName" label="Middle name" name="middleName" value={form.middleName} onChange={updateField} />
+          <AuthFormField id="department" label="Department" name="department" value={form.department} onChange={updateField} />
+        </div>
       </div>
 
-      <label className="form-field" htmlFor="photo">
-        <span>Profile photo</span>
-        <input
-          id="photo"
-          name="photo"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          onChange={(event) => setPhotoFile(event.target.files?.[0] ?? null)}
-        />
-      </label>
+      <div className="profile-form-section">
+        <div className="profile-form-section-header">
+          <span className="profile-form-section-icon" aria-hidden="true">
+            <GraduationCap size={18} />
+          </span>
+          <div>
+            <h3>Academic details</h3>
+            <p>{profile.role === 'student' ? 'Your year level, section, and a short bio.' : 'Your specialization and a short bio.'}</p>
+          </div>
+        </div>
+
+        {profile.role === 'student' ? (
+          <div className="form-grid">
+            <AuthFormField id="yearLevel" label="Year level" name="yearLevel" type="number" min="1" max="5" value={form.yearLevel} onChange={updateField} />
+            <AuthFormField id="section" label="Section" name="section" value={form.section} onChange={updateField} />
+          </div>
+        ) : (
+          <AuthFormField id="subjectSpecialization" label="Subject specialization" name="subjectSpecialization" value={form.subjectSpecialization} onChange={updateField} />
+        )}
+
+        <label className="form-field" htmlFor="bio">
+          <span>Bio</span>
+          <textarea id="bio" name="bio" rows="5" maxLength="500" value={form.bio} onChange={updateField} />
+        </label>
+      </div>
+
+      <div className="profile-form-section">
+        <div className="profile-form-section-header">
+          <span className="profile-form-section-icon" aria-hidden="true">
+            <ShieldCheck size={18} />
+          </span>
+          <div>
+            <h3>Security</h3>
+            <p>Leave blank to keep your current password.</p>
+          </div>
+        </div>
+
+        <div className="form-grid">
+          <AuthFormField id="newPassword" label="New password" name="newPassword" type="password" minLength="8" autoComplete="new-password" value={form.newPassword} onChange={updateField} />
+          <AuthFormField id="confirmPassword" label="Re-enter password" name="confirmPassword" type="password" minLength="8" autoComplete="new-password" value={form.confirmPassword} onChange={updateField} />
+        </div>
+      </div>
+
+      <div className="profile-form-section">
+        <div className="profile-form-section-header">
+          <span className="profile-form-section-icon" aria-hidden="true">
+            <Camera size={18} />
+          </span>
+          <div>
+            <h3>Profile photo</h3>
+            <p>JPEG, PNG, WebP, or GIF.</p>
+          </div>
+        </div>
+
+        <div className="profile-photo-row">
+          <ProfileAvatar avatarUrl={photoPreview || form.avatarUrl} fullName={profile.fullName} className="profile-avatar-md" />
+          <label className="profile-photo-input" htmlFor="photo">
+            <span>Choose a new photo</span>
+            <input
+              id="photo"
+              name="photo"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={(event) => setPhotoFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+      </div>
 
       {error ? <p className="form-error">{error}</p> : null}
 

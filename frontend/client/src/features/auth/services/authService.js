@@ -16,6 +16,7 @@ const PROFILE_SELECT = `
   section,
   subject_specialization,
   bio,
+  skills_onboarding_done,
   users:user_id (
     id,
     email,

@@ -306,7 +306,9 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
                   : (assignedNames.length ? assignedNames.join(', ') : 'Not claimed yet')}
               </dd>
             </div>
-            <div><dt>My progress</dt><dd>{task.memberScoreWeight ?? 0}%</dd></div>
+            {!isProfessor ? (
+              <div><dt>My progress</dt><dd>{task.memberScoreWeight ?? 0}%</dd></div>
+            ) : null}
           </dl>
 
           {!isProfessor ? (

@@ -18,6 +18,7 @@ const PROFILE_SELECT = `
   subject_specialization,
   bio,
   metadata,
+  skills_onboarding_done,
   created_at,
   updated_at,
   users:user_id (
@@ -55,6 +56,7 @@ function normalizeProfile(profile) {
     subjectSpecialization: profile.subject_specialization,
     bio: profile.bio,
     metadata: profile.metadata,
+    skillsOnboardingDone: profile.skills_onboarding_done,
     createdAt: profile.created_at,
     updatedAt: profile.updated_at,
   }
