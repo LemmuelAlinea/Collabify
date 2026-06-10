@@ -26,6 +26,7 @@ const TASK_SELECT = `
   archived_at,
   difficulty,
   complexity,
+  skill_category,
   applies_to_future_groups,
   ai_generated,
   metadata,
@@ -259,6 +260,7 @@ function normalizeTask(task, assignments = [], comments = [], profileByUserId = 
     archivedAt: task.archived_at,
     difficulty: task.difficulty ?? 'medium',
     complexity: Number(task.complexity ?? 1),
+    skillCategory: task.skill_category ?? null,
     appliesToFutureGroups: task.applies_to_future_groups ?? false,
     aiGenerated: task.ai_generated,
     metadata: task.metadata,
@@ -492,6 +494,33 @@ async function listProjectMainTasksByTitle(projectId, title) {
   if (error) throw new HttpError(400, 'Unable to load parent main tasks', error.message)
 
   return (data ?? []).filter((task) => (task.metadata?.taskType ?? 'standalone') === 'main')
+}
+
+const SKILL_CATEGORY_KEYWORDS = {
+  frontend: ['frontend', 'front-end', 'front end', 'ui component', 'react', 'vue', 'angular', 'css', 'html', 'javascript', 'typescript', 'webpage', 'web page', 'responsive', 'styling', 'component'],
+  backend: ['backend', 'back-end', 'back end', 'api', 'endpoint', 'server', 'route', 'authentication', 'auth', 'express', 'node', 'middleware', 'integration'],
+  ui_ux_design: ['ui/ux', 'ux', 'ui design', 'wireframe', 'mockup', 'prototype', 'figma', 'user interface', 'user experience', 'design system', 'layout design', 'visual design'],
+  mobile_dev: ['mobile', 'android', 'ios', 'react native', 'flutter', 'app store', 'play store', 'smartphone'],
+  database: ['database', 'schema', 'migration', 'sql', 'query', 'queries', 'table', 'supabase', 'postgres', 'data model'],
+  qa_testing: ['test', 'testing', 'qa', 'bug', 'quality assurance', 'unit test', 'e2e', 'regression', 'test case'],
+  documentation_technical_writing: ['documentation', 'docs', 'readme', 'technical writing', 'write-up', 'writeup', 'report', 'manual', 'guide'],
+  project_management: ['project management', 'planning', 'schedule', 'scheduling', 'timeline', 'milestone', 'meeting', 'coordination', 'roadmap'],
+}
+
+export function detectSkillCategory(title, description) {
+  const text = `${title ?? ''} ${description ?? ''}`.toLowerCase()
+  if (!text.trim()) return null
+
+  let bestCategory = null
+  let bestScore = 0
+  for (const [category, keywords] of Object.entries(SKILL_CATEGORY_KEYWORDS)) {
+    const score = keywords.reduce((count, keyword) => count + (text.includes(keyword) ? 1 : 0), 0)
+    if (score > bestScore) {
+      bestScore = score
+      bestCategory = category
+    }
+  }
+  return bestCategory
 }
 
 function estimateHours(priority = 'medium', difficulty = 'medium') {
@@ -931,6 +960,7 @@ export async function createTask(userId, role, payload) {
         completed_at: null,
         difficulty,
         complexity: payload.complexity ?? 1,
+        skill_category: payload.skillCategory ?? detectSkillCategory(payload.title, payload.description),
         applies_to_future_groups: isProfessor && payload.groupMode === 'future',
         metadata: { taskType: isMainTask ? 'main' : parentTaskId ? 'child' : 'standalone' },
       })
@@ -952,8 +982,8 @@ export async function updateTask(userId, role, taskId, payload) {
   const isProfessor = role === 'professor'
   if (!isProfessor && (payload.status || payload.progress !== undefined)) {
     const assigneeIds = await getTaskAssigneeIds(taskId)
-    if (assigneeIds.length > 0 && !assigneeIds.includes(userId)) {
-      throw new HttpError(403, 'Only task assignees can update status for assigned tasks')
+    if (assigneeIds.length === 0 || !assigneeIds.includes(userId)) {
+      throw new HttpError(403, 'Claim this task before updating its status')
     }
   }
 
@@ -1004,6 +1034,7 @@ export async function updateTask(userId, role, taskId, payload) {
     progress: isProfessor ? undefined : mappedProgress ?? payload.progress,
     difficulty: payload.difficulty,
     complexity: payload.complexity,
+    skill_category: payload.skillCategory,
     completed_at: !isProfessor && payload.status === 'done'
       ? new Date().toISOString()
       : !isProfessor && payload.status && payload.status !== 'done' ? null : undefined,

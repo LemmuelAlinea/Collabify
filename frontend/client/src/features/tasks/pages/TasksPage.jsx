@@ -4,6 +4,7 @@ import { StudentPageSkeleton } from '../../../components/skeletons/StudentPageSk
 import { USER_ROLES } from '../../auth/constants/roles'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useGroups } from '../../groups/hooks/useGroups'
+import { useStudentSkills } from '../../onboarding/hooks/useStudentSkills'
 import { useProjects } from '../../projects/hooks/useProjects'
 import { TaskCard } from '../components/TaskCard'
 import { TaskCreateModal } from '../components/TaskCreateModal'
@@ -61,6 +62,8 @@ export function TasksPage() {
   const filters = useMemo(() => ({ groupId, projectId }), [groupId, projectId])
   const { add, comment, error, isLoading, remove, save, tasks } = useTasks(filters)
   const isProfessor = role === USER_ROLES.PROFESSOR
+  const { skills } = useStudentSkills({ skipInitialLoad: isProfessor })
+  const mySkillKeys = useMemo(() => new Set(skills.map((skill) => skill.skillKey)), [skills])
   const aiPath = isProfessor ? '/professor/tasks/ai-planner' : '/student/tasks/ai-planner'
   const taskDetailsPath = isProfessor ? '/professor/tasks' : '/student/tasks'
   const selectableMembers = useMemo(() => {
@@ -151,6 +154,7 @@ export function TasksPage() {
             groups={groups}
             task={task}
             role={role}
+            mySkillKeys={mySkillKeys}
             onComment={comment}
             onDelete={remove}
             onOpen={(id) => navigate(`${taskDetailsPath}/${id}`)}

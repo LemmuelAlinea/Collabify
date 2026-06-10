@@ -15,6 +15,16 @@ export const taskStatuses = ['todo', 'in_progress', 'review', 'done', 'blocked',
 export const taskPriorities = ['low', 'medium', 'high', 'urgent']
 export const taskTypes = ['standalone', 'main', 'child']
 export const groupModes = ['selected', 'all', 'future']
+export const taskSkillCategories = [
+  'frontend',
+  'backend',
+  'ui_ux_design',
+  'mobile_dev',
+  'database',
+  'qa_testing',
+  'documentation_technical_writing',
+  'project_management',
+]
 
 export const createTaskSchema = z.object({
   projectId: uuid,
@@ -34,6 +44,7 @@ export const createTaskSchema = z.object({
   scoreWeight: z.number().min(0).max(100).optional().nullable(),
   difficulty: z.enum(['easy', 'medium', 'hard', 'critical']).optional(),
   complexity: z.number().min(0.1).max(10).optional(),
+  skillCategory: z.enum(taskSkillCategories).optional().nullable(),
   assigneeIds: z.array(uuid).optional().default([]),
 })
 
@@ -48,6 +59,7 @@ export const updateTaskSchema = z.object({
   scoreWeight: z.number().min(0).max(100).optional().nullable(),
   difficulty: z.enum(['easy', 'medium', 'hard', 'critical']).optional(),
   complexity: z.number().min(0.1).max(10).optional(),
+  skillCategory: z.enum(taskSkillCategories).optional().nullable(),
   progress: z.number().int().min(0).max(100).optional(),
   assigneeIds: z.array(uuid).optional(),
   archived: z.boolean().optional(),

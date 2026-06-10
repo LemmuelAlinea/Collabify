@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Pencil, X } from 'lucide-react'
 import { USER_ROLES } from '../../auth/constants/roles'
+import { SKILL_CATEGORIES } from '../../onboarding/constants/skills'
 
 function formatDate(value) {
   return value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(value)) : 'No deadline'
@@ -67,7 +68,7 @@ function CommentBox({ comments, onSubmit }) {
   )
 }
 
-export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete, onOpen, onUpdate, role, task }) {
+export function TaskCard({ currentUserId, depth = 0, groups, mySkillKeys, onComment, onDelete, onOpen, onUpdate, role, task }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [draftProgress, setDraftProgress] = useState(task.progress ?? 0)
   const [status, setStatus] = useState(task.status)
@@ -80,12 +81,14 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
     description: task.description ?? '',
     dueAt: toDateTimeInput(task.dueAt),
     title: task.title ?? '',
+    skillCategory: task.skillCategory ?? '',
   })
   const assigneeIds = task.assignments.map((assignment) => assignment.assigneeId)
   const hasAssignees = assigneeIds.length > 0
   const isAssignedToMe = Boolean(currentUserId && assigneeIds.includes(currentUserId))
-  const canUpdateStatus = isAssignedToMe || !hasAssignees
+  const canUpdateStatus = isAssignedToMe
   const isProfessor = role === USER_ROLES.PROFESSOR
+  const isRecommended = !isProfessor && !hasAssignees && task.skillCategory && mySkillKeys?.has(task.skillCategory)
   const isMainTask = task.taskType === 'main' || (!task.parentTaskId && task.children?.length > 0)
   const members = useMemo(() => flattenMembers(groups, task.groupId), [groups, task.groupId])
   const assignedNames = useMemo(() => {
@@ -105,8 +108,9 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
       description: task.description ?? '',
       dueAt: toDateTimeInput(task.dueAt),
       title: task.title ?? '',
+      skillCategory: task.skillCategory ?? '',
     })
-  }, [isEditing, task.description, task.dueAt, task.title])
+  }, [isEditing, task.description, task.dueAt, task.title, task.skillCategory])
 
   function updateEditField(event) {
     const { name, value } = event.target
@@ -120,6 +124,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
       description: task.description ?? '',
       dueAt: toDateTimeInput(task.dueAt),
       title: task.title ?? '',
+      skillCategory: task.skillCategory ?? '',
     })
   }
 
@@ -138,6 +143,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
         description: editForm.description.trim() || null,
         dueAt: fromDateTimeInput(editForm.dueAt),
         title,
+        ...(isProfessor ? { skillCategory: editForm.skillCategory || null } : {}),
       })
       setIsEditing(false)
     } catch (error) {
@@ -221,6 +227,17 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
         <span>Deadline</span>
         <input id={`task-due-${task.id}`} name="dueAt" type="datetime-local" value={editForm.dueAt} onChange={updateEditField} />
       </label>
+      {isProfessor ? (
+        <label className="form-field" htmlFor={`task-skill-${task.id}`}>
+          <span>Related skill</span>
+          <select id={`task-skill-${task.id}`} name="skillCategory" value={editForm.skillCategory} onChange={updateEditField}>
+            <option value="">General / none</option>
+            {SKILL_CATEGORIES.map((category) => (
+              <option key={category.key} value={category.key}>{category.label}</option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {editError ? <p className="form-error">{editError}</p> : null}
       <div className="task-edit-actions">
         <button className="icon-button task-edit-save" type="submit" disabled={isEditSaving} aria-label="Save task edits">
@@ -259,6 +276,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
             groups={groups}
               task={child}
               role={role}
+              mySkillKeys={mySkillKeys}
               onComment={onComment}
               onDelete={onDelete}
               onOpen={onOpen}
@@ -276,6 +294,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
         {isEditing ? editFormMarkup : (
           <button className="task-card-summary" type="button" onClick={() => setIsExpanded((current) => !current)}>
             <span className={`task-priority priority-${String(task.priority || '').toLowerCase()}`}>{task.priority}</span>
+            {isRecommended ? <span className="task-recommended-badge">Recommended for you</span> : null}
             <strong>{task.title}</strong>
             <small>{task.description || 'No description'}</small>
           </button>
@@ -333,7 +352,7 @@ export function TaskCard({ currentUserId, depth = 0, groups, onComment, onDelete
               <button className="primary-button" type="button" onClick={saveTaskProgress} disabled={isSaving || !canUpdateStatus}>
                 {isSaving ? 'Saving...' : 'Save status'}
               </button>
-              {!canUpdateStatus ? <p className="form-error">Only assigned owners can update this task status.</p> : null}
+              {!canUpdateStatus ? <p className="form-error">Claim this task to update its status.</p> : null}
               {saveError ? <p className="form-error">{saveError}</p> : null}
 
               <div className="task-assignees task-owner-panel">

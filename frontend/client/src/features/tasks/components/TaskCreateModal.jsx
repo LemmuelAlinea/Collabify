@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { USER_ROLES } from '../../auth/constants/roles'
+import { SKILL_CATEGORIES } from '../../onboarding/constants/skills'
 
 const initialForm = {
   projectId: '',
@@ -12,6 +13,7 @@ const initialForm = {
   description: '',
   dueAt: '',
   priority: 'medium',
+  skillCategory: '',
   assigneeIds: [],
 }
 
@@ -125,6 +127,7 @@ export function TaskCreateModal({
         description: form.description,
         dueAt: toDateTime(form.dueAt),
         priority: form.priority,
+        skillCategory: form.skillCategory || null,
         assigneeIds: isProfessor ? [] : form.assigneeIds,
       })
       setForm(initialForm)
@@ -237,15 +240,28 @@ export function TaskCreateModal({
           <textarea name="description" rows="3" value={form.description} onChange={updateField} />
         </label>
 
-        <label className="form-field">
-          <span>Priority</span>
-          <select name="priority" value={form.priority} onChange={updateField}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-          </select>
-        </label>
+        <div className="form-grid">
+          <label className="form-field">
+            <span>Priority</span>
+            <select name="priority" value={form.priority} onChange={updateField}>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </label>
+          {isProfessor ? (
+            <label className="form-field">
+              <span>Related skill</span>
+              <select name="skillCategory" value={form.skillCategory} onChange={updateField}>
+                <option value="">Auto-detect from title/description</option>
+                {SKILL_CATEGORIES.map((category) => (
+                  <option key={category.key} value={category.key}>{category.label}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
 
         {!isProfessor && selectedGroup ? (
           <div className="task-modal-section">

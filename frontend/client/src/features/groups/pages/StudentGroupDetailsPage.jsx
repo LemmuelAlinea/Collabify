@@ -242,7 +242,9 @@ export function StudentGroupDetailsPage() {
       </section>
 
       <div className="progress-metric-grid">
-        <ProgressMetric label="My progress" value={`${myProgress}%`} hint={`${myTasksWithShare.filter((task) => task.status === 'done').length}/${myTasksWithShare.length} done`} />
+        {role === USER_ROLES.STUDENT ? (
+          <ProgressMetric label="My progress" value={`${myProgress}%`} hint={`${myTasksWithShare.filter((task) => task.status === 'done').length}/${myTasksWithShare.length} done`} />
+        ) : null}
         <ProgressMetric label="Group progress" value={`${progressGroup?.progress ?? 0}%`} hint={progressGroup ? completionLabel(progressGroup.taskCompletion) : 'No tasks'} />
         <ProgressMetric label="Task completion" value={`${taskCompletion.progress}%`} hint={completionLabel(taskCompletion)} />
         <ProgressMetric label="Members" value={progressGroup?.memberCount ?? group.members.length} hint="active group members" />

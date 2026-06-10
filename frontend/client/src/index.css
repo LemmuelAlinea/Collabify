@@ -4172,6 +4172,19 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
+.task-recommended-badge {
+  width: fit-content;
+  padding: 3px 8px;
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid #22c55e;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 .task-card-meta {
   display: flex;
   flex-wrap: wrap;
@@ -14149,6 +14162,13 @@ body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .
 html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-priority,
 body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-priority {
   color: #0f172a !important;
+}
+
+html[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-recommended-badge,
+body[data-theme="light"] .dashboard-shell .dashboard-content .task-system-page .task-card .task-recommended-badge {
+  color: #064e3b !important;
+  background: #bbf7d0 !important;
+  border-color: #86efac !important;
 }
 
 .dashboard-shell .dashboard-content :is(.student-dashboard-quick-card, .prof-dashboard-action-card) {

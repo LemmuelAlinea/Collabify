@@ -1,6 +1,7 @@
 import { HttpError } from '../../../core/errors/httpError.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
+import { detectSkillCategory } from '../../tasks/services/taskService.js'
 import { runTaskGenerationAi } from './taskGenerationAiService.js'
 
 const GENERATION_SELECT = `
@@ -377,6 +378,7 @@ export async function acceptGeneratedPlan(userId, role, generationId, payload) {
           priority: task.priority,
           due_at: task.dueAt,
           estimated_hours: task.estimatedHours,
+          skill_category: detectSkillCategory(task.title, task.description),
           metadata: { aiGenerationId: generationId, points: task.points, weight: task.weight, roleSuggestion: task.roleSuggestion, reasoning: task.reasoning, learningOutcomes: task.learningOutcomes },
         })
         .select('id')
@@ -399,6 +401,7 @@ export async function acceptGeneratedPlan(userId, role, generationId, payload) {
             priority: subtask.priority,
             due_at: subtask.dueAt,
             estimated_hours: subtask.estimatedHours,
+            skill_category: detectSkillCategory(subtask.title, subtask.description),
             metadata: { aiGenerationId: generationId, points: subtask.points, weight: subtask.weight, roleSuggestion: subtask.roleSuggestion, reasoning: subtask.reasoning, learningOutcomes: subtask.learningOutcomes },
           })
           .select('id')
