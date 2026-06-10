@@ -9,6 +9,7 @@ const MODES = [
   { key: 'manual', label: 'Manual', description: 'Create one group and assign students manually.' },
   { key: 'random', label: 'Random', description: 'Shuffle eligible students into preview groups.' },
   { key: 'similar_performance', label: 'Similar Performance', description: 'Group students by contribution and task performance.' },
+  { key: 'skill_balanced', label: 'Skill-Balanced', description: 'Mix each group with members covering different skill specializations.' },
   { key: 'student_formed', label: 'Student-Formed', description: 'Generate empty groups students can join.' },
 ]
 
@@ -164,6 +165,7 @@ export function GroupCreationDialog({
   const [state, setState] = useState({
     random: { projectId: '', preview: null },
     similar_performance: { projectId: '', preview: null },
+    skill_balanced: { projectId: '', preview: null },
     student_formed: { projectId: '', preview: null },
   })
 
@@ -176,6 +178,7 @@ export function GroupCreationDialog({
     setState((current) => ({
       random: { ...current.random, projectId: current.random.projectId || firstProjectId },
       similar_performance: { ...current.similar_performance, projectId: current.similar_performance.projectId || firstProjectId },
+      skill_balanced: { ...current.skill_balanced, projectId: current.skill_balanced.projectId || firstProjectId },
       student_formed: { ...current.student_formed, projectId: current.student_formed.projectId || firstProjectId },
     }))
   }, [defaultProjectId, groupProjects, open])
@@ -244,11 +247,11 @@ export function GroupCreationDialog({
       <DialogContent className="group-creation-dialog">
         <DialogHeader>
           <DialogTitle>Create Groups</DialogTitle>
-          <DialogDescription>Manual, random, similar performance, and student-formed grouping.</DialogDescription>
+          <DialogDescription>Manual, random, similar performance, skill-balanced, and student-formed grouping.</DialogDescription>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={setMode} className="flex flex-col gap-4">
-          <TabsList className="grid w-full grid-cols-2 gap-2 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 gap-2 md:grid-cols-5">
             {MODES.map((item) => (
               <TabsTrigger key={item.key} value={item.key}>{item.label}</TabsTrigger>
             ))}

@@ -12,6 +12,26 @@ function normalizeSkill(row) {
   }
 }
 
+export async function loadStudentSkillSets(userIds) {
+  if (!userIds.length) return new Map()
+
+  const { data, error } = await supabaseAdminClient
+    .from('student_skill_set')
+    .select('user_id, skill_key, proficiency')
+    .in('user_id', userIds)
+    .order('skill_key', { ascending: true })
+
+  if (error) {
+    throw new HttpError(400, 'Unable to load skill sets', error.message)
+  }
+
+  const map = new Map(userIds.map((id) => [id, []]))
+  for (const row of data ?? []) {
+    map.get(row.user_id)?.push({ skillKey: row.skill_key, proficiency: row.proficiency })
+  }
+  return map
+}
+
 export async function getOwnSkillSet(userId) {
   const { data, error } = await supabaseAdminClient
     .from('student_skill_set')

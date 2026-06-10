@@ -35,7 +35,7 @@ export const addMemberSchema = z.object({
   userId: uuid,
 })
 
-export const groupModeSchema = z.enum(['manual', 'random', 'similar_performance', 'student_formed'])
+export const groupModeSchema = z.enum(['manual', 'random', 'similar_performance', 'skill_balanced', 'student_formed'])
 
 export const groupPreviewSchema = z.object({
   projectId: uuid,

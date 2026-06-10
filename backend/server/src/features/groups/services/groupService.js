@@ -2,6 +2,7 @@ import { HttpError } from '../../../core/errors/httpError.js'
 import { env } from '../../../config/env.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
+import { loadStudentSkillSets } from '../../student-skills/services/studentSkillService.js'
 
 const GROUP_SELECT = `
   id,
@@ -265,6 +266,34 @@ function groupBy(items, keyFn) {
   return map
 }
 
+const PROFICIENCY_RANK = { advanced: 3, intermediate: 2, beginner: 1 }
+
+function getPrimarySkill(skills) {
+  if (!skills?.length) return 'unspecified'
+  return skills.reduce((best, current) => (
+    (PROFICIENCY_RANK[current.proficiency] ?? 0) > (PROFICIENCY_RANK[best.proficiency] ?? 0) ? current : best
+  )).skillKey
+}
+
+async function buildSkillBalancedOrder(students) {
+  const skillsByUser = await loadStudentSkillSets(students.map((student) => student.userId))
+  const buckets = groupBy(students, (student) => getPrimarySkill(skillsByUser.get(student.userId)))
+  for (const [key, bucket] of buckets) buckets.set(key, shuffleItems(bucket))
+
+  const interleaved = []
+  let pushedAny = true
+  while (pushedAny) {
+    pushedAny = false
+    for (const bucket of buckets.values()) {
+      if (bucket.length) {
+        interleaved.push(bucket.shift())
+        pushedAny = true
+      }
+    }
+  }
+  return interleaved
+}
+
 function normalizeRange(values) {
   if (!values.length) return []
   const max = Math.max(...values)
@@ -506,6 +535,12 @@ async function loadStudentPerformance(studentIds) {
   }))
 }
 
+const MODE_GROUP_LABELS = {
+  random: 'Random',
+  similar_performance: 'Performance',
+  skill_balanced: 'Skill-Balanced',
+}
+
 function buildPreviewGroups(students, memberCount, mode) {
   const groups = []
   const completeCount = Math.floor(students.length / memberCount)
@@ -514,7 +549,7 @@ function buildPreviewGroups(students, memberCount, mode) {
   for (let index = 0; index < completeCount; index += 1) {
     const members = usableStudents.slice(index * memberCount, (index + 1) * memberCount)
     groups.push({
-      name: mode === 'student_formed' ? `Group ${index + 1}` : `${mode === 'random' ? 'Random' : 'Performance'} Group ${index + 1}`,
+      name: mode === 'student_formed' ? `Group ${index + 1}` : `${MODE_GROUP_LABELS[mode] ?? 'Performance'} Group ${index + 1}`,
       description: null,
       members,
     })
@@ -613,10 +648,12 @@ export async function previewGroupCreation(userId, role, payload) {
   const students = await loadProjectEligibleStudents(project)
   const orderedStudents = mode === 'random'
     ? shuffleItems(students)
-    : await (async () => {
-      const scores = await loadStudentPerformance(students.map((student) => student.userId))
-      return [...students].sort((left, right) => (scores.get(right.userId)?.score ?? 0) - (scores.get(left.userId)?.score ?? 0))
-    })()
+    : mode === 'skill_balanced'
+      ? await buildSkillBalancedOrder(students)
+      : await (async () => {
+        const scores = await loadStudentPerformance(students.map((student) => student.userId))
+        return [...students].sort((left, right) => (scores.get(right.userId)?.score ?? 0) - (scores.get(left.userId)?.score ?? 0))
+      })()
 
   const result = buildPreviewGroups(orderedStudents, memberCount, mode)
   return {
@@ -624,7 +661,7 @@ export async function previewGroupCreation(userId, role, payload) {
     memberCount,
     groups: result.groups.map((group, index) => ({
       ...group,
-      name: group.name || `${mode === 'random' ? 'Random' : 'Performance'} Group ${index + 1}`,
+      name: group.name || `${MODE_GROUP_LABELS[mode] ?? 'Performance'} Group ${index + 1}`,
     })),
     unassigned: result.unassigned,
     totalGroups: result.groups.length,
