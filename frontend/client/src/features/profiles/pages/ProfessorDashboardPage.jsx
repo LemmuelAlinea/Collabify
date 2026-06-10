@@ -172,19 +172,17 @@ export function ProfessorDashboardPage() {
   ]), [])
 
   const kpis = useMemo(() => {
-    const students = activeClasses.reduce((sum, classItem) => sum + (classItem.memberCount ?? 0), 0)
     const pendingReviews = notifications.filter((notification) => !notification.isRead && (notification.type === 'submission' || notification.type === 'reassignment')).length
     const avgCompletion = progress?.overview?.taskCompletion?.progress ?? 0
     const learningScore = learningInsights[2]?.value ?? 0
     return [
       { label: 'Active Classes', value: activeClasses.length, hint: 'Teaching now' },
       { label: 'Active Projects', value: activeProjects.length, hint: 'Running' },
-      { label: 'Students', value: students, hint: 'Enrolled' },
       { label: 'Pending Reviews', value: pendingReviews, hint: 'Action needed' },
       { label: 'Average Completion', value: `${avgCompletion}%`, hint: 'Across tasks' },
       { label: 'Average Learning', value: `${learningScore}%`, hint: 'Estimated' },
     ]
-  }, [activeClasses, activeProjects.length, learningInsights, notifications, progress?.overview?.taskCompletion?.progress])
+  }, [activeClasses.length, activeProjects.length, learningInsights, notifications, progress?.overview?.taskCompletion?.progress])
 
   const name = fullNameFromProfile(profile, user)
   const isLoading = isLoadingClasses || isLoadingProjects || isLoadingGroups || isLoadingTasks

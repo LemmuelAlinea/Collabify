@@ -9114,13 +9114,14 @@ tbody tr:hover,
 }
 
 .prof-dashboard-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .prof-dashboard-kpi-card {
   display: grid;
+  flex: 1 1 160px;
   gap: 2px;
   padding: 10px;
   border-radius: 12px;
@@ -9478,8 +9479,7 @@ tbody tr:hover,
 }
 
 @media (max-width: 1024px) {
-  .prof-dashboard-actions-grid,
-  .prof-dashboard-kpi-grid {
+  .prof-dashboard-actions-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -9504,7 +9504,6 @@ tbody tr:hover,
   }
 
   .prof-dashboard-actions-grid,
-  .prof-dashboard-kpi-grid,
   .prof-dashboard-class-grid,
   .prof-dashboard-project-grid,
   .prof-dashboard-alert-grid,
@@ -15890,8 +15889,11 @@ body:has(.dashboard-shell) .prof-dashboard-search-wrap input::placeholder {
 
 /* KPI Cards */
 body:has(.dashboard-shell) .prof-dashboard-kpi-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   gap: 12px !important;
+}
+
+body:has(.dashboard-shell) .prof-dashboard-kpi-card {
+  flex-basis: 180px !important;
 }
 
 body:has(.dashboard-shell) .prof-dashboard-kpi-card {
@@ -16336,8 +16338,8 @@ body:has(.dashboard-shell) .segmented-control [aria-selected="true"] {
    RESPONSIVE — Tablet (≤ 1024px)
    ================================================================ */
 @media (max-width: 1024px) {
-  body:has(.dashboard-shell) .prof-dashboard-kpi-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  body:has(.dashboard-shell) .prof-dashboard-kpi-card {
+    flex-basis: calc(33.333% - 8px) !important;
   }
 
   body:has(.dashboard-shell) .prof-dashboard-main-grid {
@@ -16357,8 +16359,8 @@ body:has(.dashboard-shell) .segmented-control [aria-selected="true"] {
    RESPONSIVE — Mobile (≤ 768px)
    ================================================================ */
 @media (max-width: 768px) {
-  body:has(.dashboard-shell) .prof-dashboard-kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  body:has(.dashboard-shell) .prof-dashboard-kpi-card {
+    flex-basis: calc(50% - 6px) !important;
   }
 
   body:has(.dashboard-shell) .prof-dashboard-actions-grid {
