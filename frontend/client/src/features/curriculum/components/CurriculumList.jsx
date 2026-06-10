@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function formatFileSize(bytes) {
@@ -10,16 +10,30 @@ function formatFileSize(bytes) {
 function CurriculumItem({ curriculum, onArchive, onDownload }) {
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
   function openDetails() {
     navigate(`/professor/curriculum/${curriculum.id}`)
   }
 
+  useEffect(() => {
+    if (!isMenuOpen) return undefined
+
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMenuOpen])
+
   return (
     <article className={`syllabus-item clickable-card ${!curriculum.isActive ? 'is-archived' : ''}`} role="button" tabIndex="0" onClick={openDetails} onKeyDown={(event) => event.key === 'Enter' ? openDetails() : null}>
       <div className="syllabus-title-row">
         <h3>{curriculum.title}</h3>
-        <div className="syllabus-menu-wrap" onClick={(event) => event.stopPropagation()}>
+        <div className="syllabus-menu-wrap" ref={menuRef} onClick={(event) => event.stopPropagation()}>
           <button className="icon-menu-button" type="button" onClick={() => setIsMenuOpen((current) => !current)} aria-label="Curriculum actions">...</button>
           {isMenuOpen ? (
             <div className="syllabus-menu">

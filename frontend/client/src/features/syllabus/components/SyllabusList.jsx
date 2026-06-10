@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function formatFileSize(bytes) {
   if (!bytes) return 'Unknown size'
@@ -10,6 +10,7 @@ function SyllabusItem({ onArchive, onDownload, onEdit, syllabus }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const hasLongDescription = (syllabus.description ?? '').length > 110
+  const menuRef = useRef(null)
 
   function handleCardClick() {
     onDownload(syllabus.id)
@@ -19,11 +20,24 @@ function SyllabusItem({ onArchive, onDownload, onEdit, syllabus }) {
     event.stopPropagation()
   }
 
+  useEffect(() => {
+    if (!isMenuOpen) return undefined
+
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMenuOpen])
+
   return (
     <article className={`syllabus-item clickable-card ${!syllabus.isActive ? 'is-archived' : ''}`} role="button" tabIndex="0" onClick={handleCardClick} onKeyDown={(event) => event.key === 'Enter' ? handleCardClick() : null}>
       <div className="syllabus-title-row">
         <h3>{syllabus.title}</h3>
-        <div className="syllabus-menu-wrap" onClick={stopCardClick}>
+        <div className="syllabus-menu-wrap" ref={menuRef} onClick={stopCardClick}>
           <button className="icon-menu-button" type="button" onClick={() => setIsMenuOpen((current) => !current)} aria-label="Syllabus actions">
             ...
           </button>

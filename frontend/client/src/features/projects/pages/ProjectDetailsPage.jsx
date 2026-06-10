@@ -64,6 +64,11 @@ export function ProjectDetailsPage() {
         <div className="class-code-box">
           <span>Status</span>
           <strong>{project.status}</strong>
+          {!isProfessor && project.fileName ? (
+            <button className="secondary-button" type="button" onClick={handleDownload}>
+              Download file
+            </button>
+          ) : null}
         </div>
       </div>
 
