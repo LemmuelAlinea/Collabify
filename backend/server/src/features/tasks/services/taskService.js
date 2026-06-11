@@ -299,7 +299,7 @@ function buildTaskTree(tasks) {
   return roots
 }
 
-function baseTaskWeight(task) {
+export function baseTaskWeight(task) {
   const explicitWeight = Number(task.scoreWeight ?? task.score_weight)
   if (explicitWeight > 0) return explicitWeight
 
@@ -322,7 +322,7 @@ function baseTaskWeight(task) {
   return (difficultyWeights[task.difficulty] ?? 4) * hours * (priorityWeights[task.priority] ?? 1) * complexity
 }
 
-function normalizeGroupWeights(tasks) {
+export function normalizeGroupWeights(tasks) {
   const total = tasks.reduce((sum, task) => sum + baseTaskWeight(task), 0) || 1
   const weightsByTaskId = new Map()
   let used = 0
@@ -624,7 +624,7 @@ async function syncAssignments(taskId, groupId, assigneeIds, assignedBy) {
   if (error) throw new HttpError(400, 'Unable to assign task', error.message)
 }
 
-function groupByRows(rows, key) {
+export function groupByRows(rows, key) {
   const map = new Map()
   for (const row of rows ?? []) {
     const value = row[key]
@@ -635,7 +635,7 @@ function groupByRows(rows, key) {
   return map
 }
 
-function ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId) {
+export function ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId) {
   const reassignment = reassignmentByTaskId.get(task.id)
   if (reassignment?.score_policy === 'full_transfer') {
     return reassignment.requested_assignee_id ? [[reassignment.requested_assignee_id, 1]] : []

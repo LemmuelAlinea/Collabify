@@ -494,7 +494,7 @@ async function loadClassStudents(classId) {
   }))
 }
 
-async function loadStudentPerformance(studentIds) {
+export async function loadStudentPerformance(studentIds) {
   if (!studentIds.length) return new Map()
 
   const [contributionResult, analyticsResult] = await Promise.all([

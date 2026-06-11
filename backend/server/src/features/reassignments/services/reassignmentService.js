@@ -1,6 +1,173 @@
 import { HttpError } from '../../../core/errors/httpError.js'
 import { supabaseAdminClient } from '../../../integrations/supabase/client.js'
 import { assertProfessorOwnsClass } from '../../classes/services/classService.js'
+import { loadStudentPerformance } from '../../groups/services/groupService.js'
+import { groupByRows, normalizeGroupWeights, ownerSharesForTask } from '../../tasks/services/taskService.js'
+import { generateReassignmentAnalysisAiInsight } from './reassignmentAnalysisAiService.js'
+
+const EMERGENCY_REASON_KEYWORDS = [
+  'sick', 'illness', 'ill', 'hospital', 'hospitalized', 'emergency', 'accident',
+  'medical', 'surgery', 'health', 'bereavement', 'death', 'injury', 'injured',
+]
+
+const PERFORMANCE_REASON_KEYWORDS = [
+  'not participating', 'unresponsive', 'inactive', 'not contributing', 'missing',
+  'ghosting', 'ghosted', 'absent', 'ignoring', 'not doing', 'no response',
+  'not responding', 'not communicating', 'disengaged', 'unreliable',
+]
+
+function classifyReason(reason) {
+  const text = (reason ?? '').toLowerCase()
+  const emergencyMatches = EMERGENCY_REASON_KEYWORDS.filter((keyword) => text.includes(keyword))
+  if (emergencyMatches.length) return { category: 'emergency', matchedKeywords: emergencyMatches }
+
+  const performanceMatches = PERFORMANCE_REASON_KEYWORDS.filter((keyword) => text.includes(keyword))
+  if (performanceMatches.length) return { category: 'performance', matchedKeywords: performanceMatches }
+
+  return { category: 'unclear', matchedKeywords: [] }
+}
+
+function buildHeuristicVerdict({ activity, currentAssigneeWorkload, reasonCategory }) {
+  if (reasonCategory === 'emergency') {
+    if (activity.status !== 'active') {
+      return {
+        suggestion: `The stated reason points to an emergency or health issue, and the current assignee's recent activity (${activity.status.replace('_', ' ')}) is consistent with that. This request looks valid.`,
+        verdict: 'valid',
+      }
+    }
+    return {
+      suggestion: 'The stated reason points to an emergency or health issue. Recent activity still looks normal, but emergencies can be sudden, so this request looks plausible.',
+      verdict: 'valid',
+    }
+  }
+
+  if (reasonCategory === 'performance') {
+    if (activity.status !== 'active') {
+      return {
+        suggestion: `The performance concern is supported by the data - the current assignee's activity is ${activity.status.replace('_', ' ')} compared to the rest of the group. This request looks valid, though it reflects negatively on the current assignee.`,
+        verdict: 'valid_negative',
+      }
+    }
+    return {
+      suggestion: "The stated performance concern doesn't match the data - the current assignee's activity and contribution look normal compared to the group. Consider discussing with both students before deciding.",
+      verdict: 'questionable',
+    }
+  }
+
+  if (currentAssigneeWorkload.status === 'over') {
+    return {
+      suggestion: 'The current assignee is carrying more than their fair share of the group workload, which supports reassigning this task even though the stated reason is unclear.',
+      verdict: 'valid',
+    }
+  }
+
+  return {
+    suggestion: "The stated reason isn't clearly an emergency or a performance concern, and the workload/activity data doesn't strongly support or contradict the request. Consider asking for more details before deciding.",
+    verdict: 'needs_info',
+  }
+}
+
+async function analyzeGroupWorkload(groupId) {
+  const [{ data: members, error: memberError }, { data: tasks, error: taskError }] = await Promise.all([
+    supabaseAdminClient
+      .from('group_members')
+      .select('user_id')
+      .eq('group_id', groupId)
+      .eq('status', 'active'),
+    supabaseAdminClient
+      .from('tasks')
+      .select('id, parent_task_id, status, priority, estimated_hours, difficulty, complexity, archived_at')
+      .eq('group_id', groupId)
+      .is('archived_at', null),
+  ])
+
+  if (memberError) throw new HttpError(400, 'Unable to load group members', memberError.message)
+  if (taskError) throw new HttpError(400, 'Unable to load group tasks', taskError.message)
+
+  const memberIds = (members ?? []).map((member) => member.user_id)
+  const parentIds = new Set((tasks ?? []).map((task) => task.parent_task_id).filter(Boolean))
+  const scoredTasks = (tasks ?? []).filter((task) => !parentIds.has(task.id) && task.status !== 'cancelled')
+  const taskIds = scoredTasks.map((task) => task.id)
+
+  const [{ data: assignments, error: assignmentError }, { data: approvedReassignments, error: reassignmentError }] = await Promise.all([
+    taskIds.length
+      ? supabaseAdminClient.from('task_assignments').select('task_id, assignee_id').in('task_id', taskIds)
+      : { data: [] },
+    taskIds.length
+      ? supabaseAdminClient
+        .from('reassignment_requests')
+        .select('task_id, current_assignee_id, requested_assignee_id, score_policy, reviewed_at')
+        .in('task_id', taskIds)
+        .eq('status', 'approved')
+        .order('reviewed_at', { ascending: false })
+      : { data: [] },
+  ])
+
+  if (assignmentError) throw new HttpError(400, 'Unable to load task assignments', assignmentError.message)
+  if (reassignmentError) throw new HttpError(400, 'Unable to load reassignment scores', reassignmentError.message)
+
+  const weightsByTaskId = normalizeGroupWeights(scoredTasks)
+  const assignmentsByTaskId = groupByRows(assignments, 'task_id')
+  const reassignmentByTaskId = new Map()
+  ;(approvedReassignments ?? []).forEach((row) => {
+    if (!reassignmentByTaskId.has(row.task_id)) reassignmentByTaskId.set(row.task_id, row)
+  })
+
+  const memberScores = new Map(memberIds.map((id) => [id, 0]))
+  for (const task of scoredTasks) {
+    const taskPoints = weightsByTaskId.get(task.id) ?? 0
+    ownerSharesForTask(task, assignmentsByTaskId, reassignmentByTaskId).forEach(([ownerId, share]) => {
+      memberScores.set(ownerId, (memberScores.get(ownerId) ?? 0) + (taskPoints * share))
+    })
+  }
+
+  const groupCapacity = Math.max(1, memberIds.length)
+  const targetShare = Math.round((100 / groupCapacity) * 100) / 100
+  const allowedOverage = Math.max(5, targetShare * 0.15)
+
+  return { allowedOverage, memberIds, memberScores, targetShare }
+}
+
+async function analyzeAssigneeActivity(currentAssigneeId, memberIds) {
+  const performanceIds = memberIds.includes(currentAssigneeId) ? memberIds : [...memberIds, currentAssigneeId]
+  const performanceByUser = await loadStudentPerformance(performanceIds)
+
+  const { data: lastLog, error: logError } = await supabaseAdminClient
+    .from('contribution_logs')
+    .select('logged_at')
+    .eq('user_id', currentAssigneeId)
+    .order('logged_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (logError) throw new HttpError(400, 'Unable to load activity logs', logError.message)
+
+  const assigneePerformance = performanceByUser.get(currentAssigneeId) ?? { points: 0, score: 0, taskCompletion: 0 }
+  const scores = [...performanceByUser.values()].map((entry) => entry.score)
+  const groupAverageScore = scores.length
+    ? Math.round((scores.reduce((sum, value) => sum + value, 0) / scores.length) * 100) / 100
+    : 0
+
+  const daysSinceLastActivity = lastLog?.logged_at
+    ? Math.floor((Date.now() - new Date(lastLog.logged_at).getTime()) / (1000 * 60 * 60 * 24))
+    : null
+
+  let status = 'active'
+  if (daysSinceLastActivity === null || daysSinceLastActivity > 14 || assigneePerformance.score === 0) {
+    status = 'inactive'
+  } else if (daysSinceLastActivity > 7 || assigneePerformance.score < groupAverageScore * 0.6) {
+    status = 'low_activity'
+  }
+
+  return {
+    daysSinceLastActivity,
+    groupAverageScore,
+    points: assigneePerformance.points,
+    score: assigneePerformance.score,
+    status,
+    taskCompletion: assigneePerformance.taskCompletion,
+  }
+}
 
 const REQUEST_SELECT = `
   id,
@@ -342,4 +509,58 @@ export async function reviewReassignmentRequest(professorId, requestId, payload)
 
   if (error) throw new HttpError(400, 'Unable to review reassignment request', error.message)
   return (await normalizeRows([data]))[0]
+}
+
+export async function analyzeReassignmentRequest(professorId, requestId) {
+  const request = await getRequest(requestId)
+  await assertProfessorOwnsClass(request.class_id, professorId)
+
+  const { allowedOverage, memberIds, memberScores, targetShare } = await analyzeGroupWorkload(request.current_group_id)
+  const profiles = await getProfiles([...memberIds, request.current_assignee_id])
+
+  const memberWorkloads = memberIds.map((userId) => {
+    const share = Math.round((memberScores.get(userId) ?? 0) * 100) / 100
+    let status = 'balanced'
+    if (share > targetShare + allowedOverage) status = 'over'
+    else if (share < targetShare - allowedOverage) status = 'under'
+    return {
+      name: profiles.get(userId)?.display_name ?? 'Unknown',
+      share,
+      status,
+      userId,
+    }
+  })
+
+  const balanced = memberWorkloads.every((member) => member.status === 'balanced')
+  const currentAssigneeWorkload = memberWorkloads.find((member) => member.userId === request.current_assignee_id) ?? {
+    name: profiles.get(request.current_assignee_id)?.display_name ?? 'Unknown',
+    share: 0,
+    status: 'balanced',
+    userId: request.current_assignee_id,
+  }
+
+  const reason = classifyReason(request.reason)
+  const activity = await analyzeAssigneeActivity(request.current_assignee_id, memberIds)
+  const heuristic = buildHeuristicVerdict({ activity, currentAssigneeWorkload, reasonCategory: reason.category })
+
+  const payload = {
+    activity,
+    heuristicSuggestion: heuristic.suggestion,
+    heuristicVerdict: heuristic.verdict,
+    reason: { category: reason.category, matchedKeywords: reason.matchedKeywords, text: request.reason },
+    workload: { allowedOverage, balanced, currentAssignee: currentAssigneeWorkload, members: memberWorkloads, targetShare },
+  }
+
+  const aiInsight = await generateReassignmentAnalysisAiInsight(payload).catch(() => null)
+
+  return {
+    activity: payload.activity,
+    reason: payload.reason,
+    requestId,
+    source: aiInsight ? 'ai' : 'heuristic',
+    suggestion: aiInsight?.suggestion ?? heuristic.suggestion,
+    summary: aiInsight?.summary ?? null,
+    verdict: aiInsight?.verdict ?? heuristic.verdict,
+    workload: payload.workload,
+  }
 }

@@ -27,6 +27,7 @@ export const env = {
   n8nProjectValidationWebhookUrl: process.env.N8N_PROJECT_VALIDATION_WEBHOOK_URL,
   n8nTaskGenerationWebhookUrl: process.env.N8N_TASK_GENERATION_WEBHOOK_URL,
   n8nProjectHealthWebhookUrl: process.env.N8N_PROJECT_HEALTH_WEBHOOK_URL,
+  n8nReassignmentAnalysisWebhookUrl: process.env.N8N_REASSIGNMENT_ANALYSIS_WEBHOOK_URL,
   n8nPopQuizWebhookUrl: process.env.N8N_POP_QUIZ_WEBHOOK_URL,
   port: Number(process.env.PORT ?? 3000),
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,

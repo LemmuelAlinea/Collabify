@@ -1,0 +1,158 @@
+{
+  "name": "Collabify - AI Reassignment Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "collabify/reassignment-analysis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1f7a6e2a-2b3c-4d5e-8f10-a1b2c3d4e5f6",
+      "name": "Reassignment Analysis Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        0
+      ],
+      "webhookId": "collabify-reassignment-analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\n\nif (!body.prompt) {\n  throw new Error('Missing reassignment analysis prompt');\n}\n\nreturn [{\n  json: {\n    input: body.input,\n    prompt: body.prompt\n  }\n}];"
+      },
+      "id": "2a8b7f3b-3c4d-5e6f-9012-b2c3d4e5f6a7",
+      "name": "Validate Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "text",
+        "operation": "response",
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are Collabify's Reassignment Request Adviser for BSIT academic group projects. Return valid JSON only with keys: summary (string), verdict (one of: valid, valid_negative, questionable, needs_info), and suggestion (string). \"valid\" means the stated reason appears legitimate (e.g. illness/emergency, or a credible skill/role-fit reason). \"valid_negative\" means the reason is a performance concern (e.g. not participating) and the workload/activity data supports it. \"questionable\" means the data does not support the stated reason. \"needs_info\" means the reason is too vague, generic, or unsubstantiated (e.g. a placeholder like \"123\") and there isn't enough signal to judge confidently. Do not approve or reject the request - only assess whether it appears valid. The professor makes the final decision."
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "simplify": true,
+        "options": {
+          "temperature": 0.2,
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          },
+          "maxTokens": 1000
+        }
+      },
+      "id": "3b9c8a4c-4d5e-6f70-0123-c3d4e5f6a7b8",
+      "name": "OpenAI Reassignment Analysis",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $json.output?.[0]?.content?.[0]?.text\n  ?? $json.output?.content?.[0]?.text\n  ?? $json.content?.[0]?.text\n  ?? $json.text\n  ?? $json.message?.content\n  ?? $json.choices?.[0]?.message?.content\n  ?? $json.data?.[0]?.content?.[0]?.text\n  ?? $json.output\n  ?? $json.content\n  ?? $json;\n\nif (!content) throw new Error('OpenAI returned no content');\n\nlet parsed;\nif (typeof content === 'object') {\n  parsed = content;\n} else {\n  try {\n    parsed = JSON.parse(content);\n  } catch (error) {\n    const match = String(content).match(/\\{[\\s\\S]*\\}/);\n    if (!match) throw new Error('OpenAI returned invalid JSON');\n    parsed = JSON.parse(match[0]);\n  }\n}\n\nif (Array.isArray(parsed?.output)) {\n  parsed = parsed.output[0]?.content?.[0]?.text ?? parsed;\n}\nif (Array.isArray(parsed?.content)) {\n  parsed = parsed.content[0]?.text ?? parsed;\n}\nif (typeof parsed === 'string') {\n  parsed = JSON.parse(parsed);\n}\n\nconst analysis = parsed.analysis ?? parsed;\nconst allowedVerdicts = ['valid', 'valid_negative', 'questionable', 'needs_info'];\nconst verdict = allowedVerdicts.includes(analysis.verdict) ? analysis.verdict : 'needs_info';\n\nreturn [{\n  json: {\n    analysis: {\n      summary: analysis.summary ?? '',\n      verdict,\n      suggestion: analysis.suggestion ?? ''\n    }\n  }\n}];"
+      },
+      "id": "4c0d9b5d-5e6f-7081-1234-d4e5f6a7b8c9",
+      "name": "Normalize Analysis JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "5d1eac6e-6f70-8192-2345-e5f6a7b8c9d0",
+      "name": "Respond Reassignment Analysis",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Reassignment Analysis Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Reassignment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Reassignment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Normalize Analysis JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Analysis JSON": {
+      "main": [
+        [
+          {
+            "node": "Respond Reassignment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "versionId": "8a1f2b3c-4d5e-6f70-8192-a1b2c3d4e5f6",
+  "triggerCount": 1,
+  "tags": []
+}

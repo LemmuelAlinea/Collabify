@@ -27,3 +27,10 @@ export async function archiveReassignment(id) {
   })
   return data.reassignment
 }
+
+export async function analyzeReassignment(id) {
+  const data = await apiRequest(`/reassignments/${id}/analyze`, {
+    method: 'POST',
+  })
+  return data.analysis
+}

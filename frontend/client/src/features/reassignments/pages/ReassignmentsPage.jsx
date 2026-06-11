@@ -14,6 +14,7 @@ export function ReassignmentsPage() {
   const { error: groupError, groups, isLoading: isLoadingGroups } = useGroups()
   const { error: taskError, tasks, isLoading: isLoadingTasks } = useTasks(taskFilters)
   const {
+    analyze,
     error,
     isLoading,
     reassignments,
@@ -66,7 +67,7 @@ export function ReassignmentsPage() {
           ) : null}
         </>
       ) : null}
-      <ReassignmentList reassignments={reassignments} onArchive={archive} onReview={review} />
+      <ReassignmentList reassignments={reassignments} onAnalyze={analyze} onArchive={archive} onReview={review} />
     </section>
   )
 }

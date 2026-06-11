@@ -15,12 +15,77 @@ function scoreLabel(value) {
   }[value] ?? value
 }
 
-function ReviewForm({ onReview, request }) {
+const VERDICT_LABELS = {
+  valid: 'Likely valid',
+  valid_negative: 'Likely valid (performance concern)',
+  questionable: 'Questionable',
+  needs_info: 'Needs more information',
+}
+
+const WORKLOAD_STATUS_LABELS = {
+  over: 'Overloaded',
+  under: 'Underloaded',
+  balanced: 'Balanced',
+}
+
+const ACTIVITY_STATUS_LABELS = {
+  active: 'Active',
+  low_activity: 'Low activity',
+  inactive: 'Inactive',
+}
+
+const REASON_CATEGORY_LABELS = {
+  emergency: 'Emergency / health-related',
+  performance: 'Performance concern',
+  unclear: 'Unclear',
+}
+
+function ReassignmentAnalysisPanel({ analysis, currentAssigneeId }) {
+  return (
+    <div className="reassignment-analysis">
+      <div className={`reassignment-analysis-verdict reassignment-analysis-verdict--${analysis.verdict}`}>
+        <strong>{VERDICT_LABELS[analysis.verdict] ?? analysis.verdict}</strong>
+        <p>{analysis.suggestion}</p>
+      </div>
+      <div className="reassignment-analysis-section">
+        <h4>Workload distribution</h4>
+        <p className="muted-text">{analysis.workload.balanced ? 'Tasks appear evenly distributed across the group.' : 'Workload appears uneven across the group.'}</p>
+        <ul className="reassignment-analysis-list">
+          {analysis.workload.members.map((member) => (
+            <li key={member.userId}>
+              <span>{member.name}{member.userId === currentAssigneeId ? ' (current assignee)' : ''}</span>
+              <span>{member.share}% &middot; {WORKLOAD_STATUS_LABELS[member.status] ?? member.status}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="reassignment-analysis-section">
+        <h4>Reason assessment</h4>
+        <p>{REASON_CATEGORY_LABELS[analysis.reason.category] ?? analysis.reason.category}</p>
+        {analysis.reason.matchedKeywords.length ? <p className="muted-text">Matched keywords: {analysis.reason.matchedKeywords.join(', ')}</p> : null}
+      </div>
+      <div className="reassignment-analysis-section">
+        <h4>Current assignee activity</h4>
+        <ul className="reassignment-analysis-list">
+          <li><span>Status</span><span>{ACTIVITY_STATUS_LABELS[analysis.activity.status] ?? analysis.activity.status}</span></li>
+          <li><span>Contribution points</span><span>{analysis.activity.points}</span></li>
+          <li><span>Score vs group average</span><span>{analysis.activity.score} / {analysis.activity.groupAverageScore}</span></li>
+          <li><span>Last activity</span><span>{analysis.activity.daysSinceLastActivity === null ? 'No recorded activity' : `${analysis.activity.daysSinceLastActivity}d ago`}</span></li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function ReviewForm({ onAnalyze, onReview, request }) {
   const [form, setForm] = useState({
     reviewNotes: '',
     scorePolicy: request.scorePolicy,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [analysis, setAnalysis] = useState(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisError, setAnalysisError] = useState('')
 
   function updateField(event) {
     setForm((current) => ({
@@ -42,6 +107,18 @@ function ReviewForm({ onReview, request }) {
     }
   }
 
+  async function runAnalysis() {
+    setIsAnalyzing(true)
+    setAnalysisError('')
+    try {
+      setAnalysis(await onAnalyze(request.id))
+    } catch (error) {
+      setAnalysisError(error.message)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
   return (
     <div className="reassignment-review">
       <label className="form-field" htmlFor={`policy-${request.id}`}>
@@ -59,7 +136,10 @@ function ReviewForm({ onReview, request }) {
       <div className="card-actions">
         <button className="primary-button" type="button" disabled={isSubmitting} onClick={() => submit('approved')}>Approve</button>
         <button className="danger-button" type="button" disabled={isSubmitting} onClick={() => submit('rejected')}>Reject</button>
+        <button className="secondary-button" type="button" disabled={isAnalyzing} onClick={runAnalysis}>{isAnalyzing ? 'Analyzing...' : 'AI Suggest'}</button>
       </div>
+      {analysisError ? <p className="form-error">{analysisError}</p> : null}
+      {analysis ? <ReassignmentAnalysisPanel analysis={analysis} currentAssigneeId={request.currentAssigneeId} /> : null}
     </div>
   )
 }
@@ -157,7 +237,7 @@ function ReviewedReassignmentTable({ canArchive = false, emptyLabel, onArchive, 
   )
 }
 
-export function ReassignmentList({ onArchive, onReview, reassignments }) {
+export function ReassignmentList({ onAnalyze, onArchive, onReview, reassignments }) {
   const { role } = useAuth()
   const isProfessor = role === USER_ROLES.PROFESSOR
   const isStudent = role === USER_ROLES.STUDENT
@@ -216,7 +296,7 @@ export function ReassignmentList({ onArchive, onReview, reassignments }) {
             </dl>
             {request.reviewNotes ? <p><strong>Review:</strong> {request.reviewNotes}</p> : null}
             {isProfessor && request.status === 'pending' ? (
-              <ReviewForm request={request} onReview={onReview} />
+              <ReviewForm request={request} onAnalyze={onAnalyze} onReview={onReview} />
             ) : null}
           </article>
         ))}

@@ -1,4 +1,5 @@
 import {
+  analyzeReassignmentRequest,
   archiveReassignmentRequest,
   createReassignmentRequest,
   listReassignmentRequests,
@@ -36,6 +37,15 @@ export async function patchReassignmentReview(req, res, next) {
   try {
     const reassignment = await reviewReassignmentRequest(req.auth.user.id, req.params.id, req.body)
     res.json({ reassignment })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function postReassignmentAnalysis(req, res, next) {
+  try {
+    const analysis = await analyzeReassignmentRequest(req.auth.user.id, req.params.id)
+    res.json({ analysis })
   } catch (error) {
     next(error)
   }
